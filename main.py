@@ -1,24 +1,195 @@
+import requests
+import json
+import urllib3
 from astrbot.api.event import filter, AstrMessageEvent, MessageEventResult
 from astrbot.api.star import Context, Star, register
 from astrbot.api import logger
+from astrbot.api import AstrBotConfig
 
-@register("helloworld", "YourName", "一个简单的 Hello World 插件", "1.0.0")
-class MyPlugin(Star):
-    def __init__(self, context: Context):
+from .core.request import fetch_jx3_data
+from .core.jx3jiaoyihang import fetch_jx3_jiaoyihang
+# 禁用 SSL 警告
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
+@register("jx3api", "fxdyz", "通过接口调用剑网三API接口获取游戏数据", "1.0.0")
+class Jx3ApiPlugin(Star):
+    def __init__(self, context: Context, config: AstrBotConfig):
         super().__init__(context)
+        self.conf = config
+        print(self.conf)
 
     async def initialize(self):
         """可选择实现异步的插件初始化方法，当实例化该插件类之后会自动调用该方法。"""
-    
-    # 注册指令的装饰器。指令名为 helloworld。注册成功后，发送 `/helloworld` 就会触发这个指令，并回复 `你好, {user_name}!`
-    @filter.command("helloworld")
-    async def helloworld(self, event: AstrMessageEvent):
-        """这是一个 hello world 指令""" # 这是 handler 的描述，将会被解析方便用户了解插件内容。建议填写。
-        user_name = event.get_sender_name()
-        message_str = event.message_str # 用户发的纯文本消息字符串
-        message_chain = event.get_messages() # 用户所发的消息的消息链 # from astrbot.api.message_components import *
-        logger.info(message_chain)
-        yield event.plain_result(f"Hello, {user_name}, 你发了 {message_str}!") # 发送一条纯文本消息
+
+    @filter.command("剑三日常")
+    async def jx3_richang(self, event: AstrMessageEvent):
+        """获取剑网3日常活动信息"""
+        # 接口URL
+        custom_url = "https://www.jx3api.com/data/active/calendar"  
+        # 接口参数
+        params = {
+            "server": "眉间雪",  # 默认服务器
+            "num": 0  # 默认当天
+        }
+        
+        # 获取消息内容
+        message_str = event.message_str.strip()
+        parts = message_str.split()
+
+        # 解析消息内容
+        if len(parts) > 1:
+            params["server"] = parts[1]  # 第二个参数为服务器
+
+        if len(parts) > 2:
+            try:
+                params["num"] = int(parts[2])  # 第三个参数为日期偏移
+            except ValueError:
+                params["num"] = 0  # 参数为日期偏移
+        # 获取数据
+        data = fetch_jx3_data(custom_url, **params)
+        
+        if not data:
+            yield event.plain_result("获取获取接口信息失败，请稍后再试")
+            return
+        
+        # 格式化返回消息
+        try:
+            # 构建回复消息
+            result_msg = f"{params['server']}-{data.get('date')}-星期{data.get('week')}\n"
+            result_msg += f"大战：{data.get('war')}\n"
+            result_msg += f"战场：{data.get('battle')}\n"
+            result_msg += f"阵营：{data.get('orecar')}\n"
+            result_msg += f"宗门：{data.get('school')}\n"
+            result_msg += f"驰援：{data.get('rescue')}\n"
+            result_msg += f"画像：{data.get('draw')}\n"
+            result_msg += f"宠物福缘：\n{data.get('luck')}\n"
+            result_msg += f"家园声望：\n{data.get('card')}\n"
+            result_msg += f"武林通鉴：\n{data.get('team')}\n"
+
+            yield event.plain_result(result_msg)
+            
+        except Exception as e:
+            logger.error(f"处理数据时出错: {e}")
+            yield event.plain_result("处理接口返回信息时出错")
+
+    async def terminate(self):
+        """可选择实现异步的插件销毁方法，当插件被卸载/停用时会调用。"""
+
+
+    @filter.command("剑三骚话")
+    async def jx3_shaohua(self, event: AstrMessageEvent):
+        """随机获取一条与万花门派相关的骚话"""
+        # 接口URL
+        custom_url = "https://www.jx3api.com/data/saohua/random"  
+        # 接口参数
+        params = {
+            "name": "万花",  # 默认值
+        }
+        
+        # 获取消息内容
+
+        # 解析消息内容
+        
+        # 获取数据
+        data = fetch_jx3_data(custom_url, **params)
+        
+        if not data:
+            yield event.plain_result("获取获取接口信息失败，请稍后再试")
+            return
+        
+        # 格式化返回消息
+        try:
+            # 构建回复消息
+            result_msg = f"{data.get('text')}\n"
+
+            yield event.plain_result(result_msg)
+            
+        except Exception as e:
+            logger.error(f"处理数据时出错: {e}")
+            yield event.plain_result("处理接口返回信息时出错")
+
+    async def terminate(self):
+        """可选择实现异步的插件销毁方法，当插件被卸载/停用时会调用。"""
+
+
+    @filter.command("剑三技改")
+    async def jx3_jigai(self, event: AstrMessageEvent):
+        """查询技能的历史修改记录，包括资料片更新、技能调整等信息"""
+        # 接口URL
+        custom_url = "https://www.jx3api.com/data/skills/records"  
+        # 接口参数
+        params = {
+            
+        }
+        
+        # 获取消息内容
+
+        # 解析消息内容
+        
+        # 获取数据
+        data = fetch_jx3_data(custom_url,**params)
+        
+        if not data:
+            yield event.plain_result("获取获取接口信息失败，请稍后再试")
+            return
+        
+        # 格式化返回消息
+        try:
+            # 构建回复消息
+            result_msg = f"剑网三最近技改\n"
+            for i, item in enumerate(data[:2], 1):
+                result_msg += f"{i}. {item.get('title', '无标题')}\n"
+                result_msg += f"时间：{item.get('time', '未知时间')}\n"
+                result_msg += f"链接：{item.get('url', '无链接')}\n\n"
+
+            yield event.plain_result(result_msg)
+            
+        except Exception as e:
+            logger.error(f"处理数据时出错: {e}")
+            yield event.plain_result("处理接口返回信息时出错")
+
+    async def terminate(self):
+        """可选择实现异步的插件销毁方法，当插件被卸载/停用时会调用。"""
+
+
+    @filter.command("剑三交易行")
+    async def jx3_jiaoyihang(self, event: AstrMessageEvent):
+        """获取剑网3交易行信息""" 
+
+        # 接口参数
+        params = {
+            "server": "眉间雪",  # 默认服务器
+            "name": "守缺"  # 默认当天
+        }
+
+
+        # 获取消息内容
+        message_str = event.message_str.strip()
+        parts = message_str.split()
+        
+        # 解析消息内容
+        if len(parts) > 1:
+            params["server"] = parts[1]  # 第二个参数为服务器
+
+        if len(parts) > 2:
+            params["name"] = parts[2]  # 第三个参数为日期偏移
+        # 获取数据
+        data = fetch_jx3_jiaoyihang(params["server"], params["name"])
+        
+        if not data:
+            yield event.plain_result("获取接口信息失败，请稍后再试")
+            return
+        
+        # 格式化返回消息
+        try:
+            # 构建回复消息
+            result_msg = f"{data}\n"
+
+            yield event.plain_result(result_msg)
+            
+        except Exception as e:
+            logger.error(f"处理数据时出错: {e}")
+            yield event.plain_result("处理接口返回信息时出错")
 
     async def terminate(self):
         """可选择实现异步的插件销毁方法，当插件被卸载/停用时会调用。"""

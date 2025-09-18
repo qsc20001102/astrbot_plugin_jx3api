@@ -1,0 +1,8 @@
+{
+  "api_token": {
+    "description": "JX3API的token",
+    "type": "string",
+    "default": "",
+    "hint": "填写购买的JX3API的token，用于访问的付费接口服务"
+  }
+}

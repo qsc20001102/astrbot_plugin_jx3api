@@ -1,4 +1,4 @@
-# helloworld
+# JX3API
 
 AstrBot 插件模板
 
