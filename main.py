@@ -162,7 +162,6 @@ class Jx3ApiPlugin(Star):
             "name": "守缺"  # 默认当天
         }
 
-
         # 获取消息内容
         message_str = event.message_str.strip()
         parts = message_str.split()
