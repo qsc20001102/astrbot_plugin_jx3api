@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>剑网3交易行价格查询</title>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            width: 700px;
+            background-color: #f9f9f9;
+            padding: 15px;
+            margin: 0;
+            box-sizing: border-box;
+        }
+        .header {
+            color: #333;
+            text-align: center;
+            border-bottom: 2px solid #4a90e2;
+            padding-bottom: 8px;
+            margin: 0 0 15px 0;
+            font-size: 24px;
+        }
+        .summary {
+            background-color: #4a90e2;
+            color: white;
+            padding: 8px;
+            border-radius: 4px;
+            margin-bottom: 12px;
+            font-size: 16px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: white;
+            border-radius: 4px;
+            overflow: hidden;
+            font-size: 14px;
+        }
+        th {
+            background-color: #4a90e2;
+            color: white;
+            padding: 8px;
+            text-align: left;
+            border-bottom: 2px solid #ddd;
+        }
+        td {
+            padding: 8px;
+            border-bottom: 1px solid #ddd;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        .item-name {
+            color: #333;
+            font-weight: 500;
+            max-width: 350px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .price {
+            text-align: right;
+            color: #e74c3c;
+            font-weight: bold;
+        }
+        .sample {
+            text-align: center;
+            color: #7f8c8d;
+        }
+        .footer {
+            margin-top: 12px;
+            text-align: center;
+            color: #7f8c8d;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <h1 class="header">剑网3交易行价格查询</h1>
+    
+    <div class="summary">
+        共找到 <strong>{{ items|length }}</strong> 件物品 | 服务器: {{ server }}
+    </div>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>物品名称</th>
+                <th style="text-align: right;">最低价</th>
+                <th style="text-align: center;">样本数</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in items %}
+            <tr>
+                <td class="item-name">{{ item.name }}</td>
+                <td class="price">{{ item.price }}</td>
+                <td class="sample">{{ item.sample_size }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    
+    <div class="footer">
+        数据更新时间: {{ update_time }}
+    </div>
+</body>
+</html>

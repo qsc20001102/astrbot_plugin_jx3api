@@ -1,6 +1,5 @@
-import requests
-import json
 import urllib3
+from datetime import datetime
 from astrbot.api.event import filter, AstrMessageEvent, MessageEventResult
 from astrbot.api.star import Context, Star, register
 from astrbot.api import logger
@@ -8,8 +7,13 @@ from astrbot.api import AstrBotConfig
 
 from .core.request import fetch_jx3_data
 from .core.jx3jiaoyihang import fetch_jx3_jiaoyihang
+from .core.load_template import load_template
+
+from jinja2 import Template
+
 # 禁用 SSL 警告
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
 
 @register("jx3api", "fxdyz", "通过接口调用剑网三API接口获取游戏数据", "1.0.0")
 class Jx3ApiPlugin(Star):
@@ -20,6 +24,7 @@ class Jx3ApiPlugin(Star):
 
     async def initialize(self):
         """可选择实现异步的插件初始化方法，当实例化该插件类之后会自动调用该方法。"""
+
 
     @filter.command("剑三日常")
     async def jx3_richang(self, event: AstrMessageEvent):
@@ -172,23 +177,46 @@ class Jx3ApiPlugin(Star):
 
         if len(parts) > 2:
             params["name"] = parts[2]  # 第三个参数为日期偏移
-        # 获取数据
-        data = fetch_jx3_jiaoyihang(params["server"], params["name"])
-        
-        if not data:
-            yield event.plain_result("获取接口信息失败，请稍后再试")
-            return
-        
-        # 格式化返回消息
-        try:
-            # 构建回复消息
-            result_msg = f"{data}\n"
 
-            yield event.plain_result(result_msg)
-            
+            # 获取交易行数据
+        try:
+            items_data = fetch_jx3_jiaoyihang(params["server"], params["name"])
+
+            if not items_data or items_data == "无交易行数据":
+                yield f"在服务器【{params['server']}】未找到物品【{params['name']}】的交易行数据"
+                return
+                
+            # 加载模板
+            try:
+                template_content = load_template("jiaoyihang.html")
+            except FileNotFoundError as e:
+                logger.error(f"加载模板失败: {e}")
+                yield "系统错误：模板文件不存在"
+                return
+                
+            # 准备模板渲染数据
+            render_data = {
+                "items": items_data,
+                "server": params["server"],
+                "update_time": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            }
+
+            # 渲染为图片 - 可能需要调整选项以适应完整HTML文档
+            options = {
+                "clip": {   
+                    "x": 0,
+                    "y": 0,
+                    "width": 800,
+                    "height": 600
+                }
+            }
+
+            url = await self.html_render(template_content, render_data, options)
+            yield event.image_result(url)
+        
         except Exception as e:
-            logger.error(f"处理数据时出错: {e}")
-            yield event.plain_result("处理接口返回信息时出错")
+            logger.error(f"交易行查询出错: {e}")
+            yield "查询交易行数据时出错，请稍后再试"
 
     async def terminate(self):
         """可选择实现异步的插件销毁方法，当插件被卸载/停用时会调用。"""
