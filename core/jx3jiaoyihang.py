@@ -66,18 +66,30 @@ def fetch_all_pages(base_url, initial_params, max_pages=None):
     return all_data
 
 
-def merge_item_data_by_itemid(price_items, item_list):
+def merge_item_data_by_itemid(price_data, item_list_data):
     """
     根据ItemId和id字段将物品名称信息合并到价格数据中
     
     Args:
         price_data: 第一组数据，包含价格信息的字典
-        item_list_data: 第二组数据，包含物品列表信息的字典
+        item_list_data: 第二组数据，可以是字典（包含"list"键）或直接是物品列表
     
     Returns:
         dict: 合并后的数据，包含价格和名称信息
     """
+    # 提取价格数据中的物品信息
+    price_items = price_data.get("data", {})
     
+    # 处理不同类型的item_list_data输入
+    if isinstance(item_list_data, dict) and "list" in item_list_data:
+        # 如果是字典且包含"list"键
+        item_list = item_list_data.get("list", [])
+    elif isinstance(item_list_data, list):
+        # 如果直接是列表
+        item_list = item_list_data
+    else:
+        # 其他情况，使用空列表
+        item_list = []
     
     # 创建一个字典用于快速查找物品名称，使用id作为键
     item_name_map = {}
@@ -88,7 +100,7 @@ def merge_item_data_by_itemid(price_items, item_list):
             item_name_map[item_id] = item_name
     
     # 创建一个新的结果字典
-    merged_data = {"code": price_items.get("code", 0), "msg": price_items.get("msg", ""), "data": {}}
+    merged_data = {"code": price_data.get("code", 0), "msg": price_data.get("msg", ""), "data": {}}
     
     # 遍历价格数据，添加名称信息
     for item_id, price_info in price_items.items():
@@ -111,49 +123,68 @@ def merge_item_data_by_itemid(price_items, item_list):
 #交易行数据查询函数
 def fetch_jx3_jiaoyihang(inserver="眉间雪", inname="武技殊影图"):
 
-    # URL 编码  
+    # 第一步：获取所有物品列表数据（处理分页）
     custom_url = f"https://node.jx3box.com/item_merged/name/{quote(inname)}"
-    params = {
-        "client": "std",    # 默认客户端
-        "strict": "0" ,  # 默认模糊搜索
-        "page": "1",    # 默认第一页
-        "per": "50"   # 默认每页50条
-        }
+    initial_params = {
+        "client": "std",
+        "strict": "0",
+        "per": "50"  # 每页数量，可以根据需要调整
+    }
     
-    #请求接口获取物品ID
-    data_item = fetch_jx3_data(custom_url,**params)
-
-    # 检查是否获取到数据
-    if not data_item or "list" not in data_item:
+    # 获取所有页面的物品数据
+    all_items = fetch_all_pages(custom_url, initial_params)
+    
+    if not all_items:
         logger.error(f"未找到物品: {inname}")
         return "无交易行数据"
     
-    # 创建一个空列表来存储结果
-    data_item_list = data_item.get("list", [])
-
     # 提取所有ID
-    ids = [item.get("id") for item in data_item_list]
-
+    ids = [item.get("id") for item in all_items if item.get("id")]
+    
+    if not ids:
+        logger.error(f"物品 {inname} 没有有效的ID")
+        return "无交易行数据"
+    
     # 返回格式化结果
-    stringids = ",".join(ids) if ids else ""
-
-    custom_url = f"https://next2.jx3box.com/api/item-price/list"
-    params = {
-            "server": "眉间雪",  # 默认服务器
-            "itemIds": "5_47129"  # 默认物品ID
-        }
+    stringids = ",".join(ids)
+    logger.info(f"搜索到物品: {inname}, 共找到 {len(ids)} 个物品\nIDs: {stringids}")
     
-    # 接受传入的参数
-    params["server"]=inserver
-    params["itemIds"]=stringids
-
-    #请求接口获取物品交易行数据
-    data_price = fetch_jx3_data(custom_url,**params)
-
-    merged_data = merge_item_data_by_itemid(data_price.get("data", []), data_item_list)
-
-    # 打印日志
-    logger.info(f"搜索到物品: \n{inname}\n{merged_data}\n{params}")
+    # 第二步：获取价格数据
+    price_url = "https://next2.jx3box.com/api/item-price/list"
+    price_params = {
+        "server": inserver,
+        "itemIds": stringids
+    }
     
-    return merged_data.get("data", "无交易行数据")
+    price_data = fetch_jx3_data(price_url, **price_params)
+    
+    if not price_data or "data" not in price_data:
+        return "无交易行数据"
+    
+    # 第三步：合并数据
+    merged_data = merge_item_data_by_itemid(price_data, {"list": all_items})
+    
+    # 处理合并后的数据
+    result_items = []
+    for item_id, item_info in merged_data.get("data", {}).items():
+        # 格式化价格（假设价格是以铜钱为单位，转换为金）
+        lowest_price = item_info.get("LowestPrice", 0)
+        bricks = lowest_price // 100000000 if lowest_price else 0
+        gold = (lowest_price % 100000000) // 10000 if lowest_price else 0
+        silver = (lowest_price % 10000) // 100 if lowest_price else 0
+        copper = lowest_price % 100 if lowest_price else 0
+        
+        price_str = f"{bricks}砖{gold}金{silver}银{copper}铜" if lowest_price else "无价格"
+        
+        result_items.append({
+            "name": item_info.get("Name", "未知物品"),
+            "price": price_str,
+            "avg_price": item_info.get("AvgPrice", 0),
+            "sample_size": item_info.get("SampleSize", 0)
+        })
+    
+    # 按价格排序
+    result_items.sort(key=lambda x: x["avg_price"])
+    
+    return result_items
   
