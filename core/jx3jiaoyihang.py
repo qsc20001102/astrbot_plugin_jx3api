@@ -29,7 +29,10 @@ def fetch_jx3_jiaoyihang(inserver="眉间雪", inname="守缺"):
     
     custom_url = f"https://node.jx3box.com/item_merged/name/{encoded_text}"
     params = {
-        "strictly": 0    
+        "client": "std",
+        "strictly": "0" ,
+        "page": "1",  
+        "pre": "50"
         }
     
     data = fetch_jx3_data(custom_url,**params)
