@@ -183,15 +183,19 @@ class Jx3ApiPlugin(Star):
             items_data = fetch_jx3_jiaoyihang(params["server"], params["name"])
 
             if not items_data or items_data == "无交易行数据":
-                yield f"在服务器【{params['server']}】未找到物品【{params['name']}】的交易行数据"
+                yield event.plain_result(f"在服务器【{params['server']}】未找到物品【{params['name']}】的交易行数据")      
                 return
-                
+
+            if not items_data or items_data == "未找到改物品":
+                yield event.plain_result(f"未找到物品【{params['name']}】")      
+                return
+
             # 加载模板
             try:
                 template_content = load_template("jiaoyihang.html")
             except FileNotFoundError as e:
                 logger.error(f"加载模板失败: {e}")
-                yield "系统错误：模板文件不存在"
+                yield event.plain_result("系统错误：模板文件不存在")
                 return
                 
             # 准备模板渲染数据
@@ -201,22 +205,31 @@ class Jx3ApiPlugin(Star):
                 "update_time": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             }
 
-            # 渲染为图片 - 可能需要调整选项以适应完整HTML文档
+            # 调整渲染图片的尺寸
             options = {
-                "clip": {   
+                "viewport": {
+                    "width": 800,
+                    "height": 600,
+                    "device_scale_factor": 1  # 明确设置设备缩放因子
+                },
+                "clip": {
                     "x": 0,
                     "y": 0,
                     "width": 800,
                     "height": 600
-                }
-            }
+                },
+                "full_page": False,
+                "type": "jpeg",
+                "quality": 85,
+                "scale": "device"  # 尝试使用设备缩放
+            }       
 
             url = await self.html_render(template_content, render_data, options)
             yield event.image_result(url)
         
         except Exception as e:
             logger.error(f"交易行查询出错: {e}")
-            yield "查询交易行数据时出错，请稍后再试"
+            yield event.plain_result("查询交易行数据时出错，请稍后再试")
 
     async def terminate(self):
         """可选择实现异步的插件销毁方法，当插件被卸载/停用时会调用。"""

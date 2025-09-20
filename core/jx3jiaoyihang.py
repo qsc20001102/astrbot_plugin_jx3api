@@ -136,14 +136,14 @@ def fetch_jx3_jiaoyihang(inserver="眉间雪", inname="武技殊影图"):
     
     if not all_items:
         logger.error(f"未找到物品: {inname}")
-        return "无交易行数据"
+        return "未找到改物品"
     
     # 提取所有ID
     ids = [item.get("id") for item in all_items if item.get("id")]
     
     if not ids:
         logger.error(f"物品 {inname} 没有有效的ID")
-        return "无交易行数据"
+        return "未找到改物品"
     
     # 返回格式化结果
     stringids = ",".join(ids)
@@ -159,6 +159,9 @@ def fetch_jx3_jiaoyihang(inserver="眉间雪", inname="武技殊影图"):
     price_data = fetch_jx3_data(price_url, **price_params)
     
     if not price_data or "data" not in price_data:
+        return "无交易行数据"
+    
+    if not price_data["data"] or (isinstance(price_data["data"], dict) and not price_data["data"]) or (isinstance(price_data["data"], list) and not price_data["data"]):
         return "无交易行数据"
     
     # 第三步：合并数据
