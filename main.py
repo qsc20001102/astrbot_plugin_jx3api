@@ -159,7 +159,7 @@ class Jx3ApiPlugin(Star):
 
     @filter.command("剑三交易行")
     async def jx3_jiaoyihang(self, event: AstrMessageEvent):
-        """获取剑网3交易行信息""" 
+        """获取剑网3交易行信息 区服+物品名称""" 
 
         # 接口参数
         params = {
