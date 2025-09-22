@@ -1,26 +1,8 @@
 # core/jx3jiaoyihang.py
-import requests
-import json
 from astrbot.api import logger
 from urllib.parse import quote
 
-
-#接口函数的实现
-def fetch_jx3_data(api_url=None, **params):
-    # 函数实现
-    try:
-        response = requests.get(api_url, params=params, timeout=10, verify=False)
-        response.raise_for_status()
-        data = response.json()
-          
-        return data
-        
-    except requests.exceptions.RequestException as e:
-        logger.error(f"请求出错: {e}")
-        return None
-    except json.JSONDecodeError as e:
-        logger.error(f"JSON解析错误: {e}")
-        return None
+from .api_data import api_data_get, api_data_post
 
 
 def fetch_all_pages(base_url, initial_params, max_pages=None):
@@ -44,7 +26,7 @@ def fetch_all_pages(base_url, initial_params, max_pages=None):
         params["page"] = str(current_page)
         
         # 请求数据
-        data = fetch_jx3_data(base_url, **params)
+        data = api_data_get(base_url, params)
         
         if not data or "list" not in data:
             break
@@ -121,7 +103,7 @@ def merge_item_data_by_itemid(price_data, item_list_data):
 
 
 #交易行数据查询函数
-def fetch_jx3_jiaoyihang(inserver="眉间雪", inname="武技殊影图"):
+def jx3_data_jiaoyihang(inserver="眉间雪", inname="武技殊影图"):
 
     # 第一步：获取所有物品列表数据（处理分页）
     custom_url = f"https://node.jx3box.com/item_merged/name/{quote(inname)}"
@@ -156,7 +138,7 @@ def fetch_jx3_jiaoyihang(inserver="眉间雪", inname="武技殊影图"):
         "itemIds": stringids
     }
     
-    price_data = fetch_jx3_data(price_url, **price_params)
+    price_data = api_data_get(price_url, price_params)
     
     if not price_data or "data" not in price_data:
         return "无交易行数据"

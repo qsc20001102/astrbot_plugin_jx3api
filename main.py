@@ -5,9 +5,9 @@ from astrbot.api.star import Context, Star, register
 from astrbot.api import logger
 from astrbot.api import AstrBotConfig
 
-from .core.jx3jiaoyihang import fetch_jx3_jiaoyihang
 from .core.load_template import load_template
-from .core.api_data import api_data, fetch_jx3_data
+from .core.jx3_data import jx3_data_jiaoyihang
+from .core.api_data import api_data_get, api_data_post
 
 # 禁用 SSL 警告
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -38,7 +38,6 @@ class Jx3ApiPlugin(Star):
         # 获取消息内容
         message_str = event.message_str.strip()
         parts = message_str.split()
-
         # 解析消息内容
         if len(parts) > 1:
             params["server"] = parts[1]  # 第二个参数为服务器
@@ -48,14 +47,15 @@ class Jx3ApiPlugin(Star):
                 params["num"] = int(parts[2])  # 第三个参数为日期偏移
             except ValueError:
                 params["num"] = 0  # 参数为日期偏移
+
         # 获取数据
-        data = fetch_jx3_data(custom_url, **params)
+        data = api_data_get(custom_url, params,"data")
         
         if not data:
             yield event.plain_result("获取获取接口信息失败，请稍后再试")
             return
         
-        # 格式化返回消息
+        # 处理返回数据
         try:
             # 构建回复消息
             result_msg = f"{params['server']}-{data.get('date')}-星期{data.get('week')}\n"
@@ -91,13 +91,13 @@ class Jx3ApiPlugin(Star):
         # 解析消息内容
         
         # 获取数据
-        data = fetch_jx3_data(custom_url, **params)
+        data = api_data_get(custom_url, params,"data")
         
         if not data:
             yield event.plain_result("获取获取接口信息失败，请稍后再试")
             return
         
-        # 格式化返回消息
+        # 处理返回数据
         try:
             # 构建回复消息
             result_msg = f"{data.get('text')}\n"
@@ -124,13 +124,13 @@ class Jx3ApiPlugin(Star):
         # 解析消息内容
         
         # 获取数据
-        data = fetch_jx3_data(custom_url,**params)
+        data = api_data_get(custom_url,params,"data")
         
         if not data:
             yield event.plain_result("获取获取接口信息失败，请稍后再试")
             return
         
-        # 格式化返回消息
+        # 处理返回数据
         try:
             # 构建回复消息
             result_msg = f"剑网三最近技改\n"
@@ -147,8 +147,8 @@ class Jx3ApiPlugin(Star):
 
 
     @filter.command("剑三交易行")
-    async def jx3_jiaoyihang(self, event: AstrMessageEvent):
-        """剑三交易行 服务器 物品名称""" 
+    async def jx3_data_jiaoyihang(self, event: AstrMessageEvent):
+        """剑三交易行 物品名称 服务器""" 
 
         # 接口参数
         params = {
@@ -162,14 +162,14 @@ class Jx3ApiPlugin(Star):
         
         # 解析消息内容
         if len(parts) > 1:
-            params["server"] = parts[1]  # 第二个参数为服务器
+            params["name"] = parts[1]  
 
         if len(parts) > 2:
-            params["name"] = parts[2]  # 第三个参数为日期偏移
+            params["server"] = parts[2]  
 
-            # 获取交易行数据
+        # 获取交易行数据
         try:
-            items_data = fetch_jx3_jiaoyihang(params["server"], params["name"])
+            items_data = jx3_data_jiaoyihang(params["server"], params["name"])
 
             if not items_data or items_data == "无交易行数据":
                 yield event.plain_result(f"在服务器【{params['server']}】未找到物品【{params['name']}】的交易行数据")      
@@ -192,13 +192,9 @@ class Jx3ApiPlugin(Star):
                 "items": items_data,
                 "server": params["server"],
                 "update_time": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            }
+            }      
 
-            # 调整渲染图片的尺寸
-            options = {
-            }       
-
-            url = await self.html_render(template_content, render_data, options)
+            url = await self.html_render(template_content, render_data, options={})
             yield event.image_result(url)
         
         except Exception as e:
@@ -215,20 +211,22 @@ class Jx3ApiPlugin(Star):
         params = {
                 "serverName": "眉间雪"  # 默认服务器
         }
+
         # 获取消息内容
         message_str = event.message_str.strip()
         parts = message_str.split()
         # 解析消息内容
         if len(parts) > 1:
             params["serverName"] = parts[1]  # 第二个参数为服务器
+
         # 获取数据
-        data = api_data(custom_url,params)
+        data = api_data_post(custom_url,params,"data")
         
         if not data:
             yield event.plain_result("获取获取接口信息失败，请稍后再试")
             return
         
-        # 格式化返回消息
+        # 处理返回数据
         try:
             # 构建回复消息
             yield event.image_result(data.get("picUrl"))
@@ -236,6 +234,7 @@ class Jx3ApiPlugin(Star):
         except Exception as e:
             logger.error(f"处理数据时出错: {e}")
             yield event.plain_result("处理接口返回信息时出错")
+
 
     @filter.command("剑三金价")
     async def jx3_jinjia(self, event: AstrMessageEvent):
@@ -246,20 +245,22 @@ class Jx3ApiPlugin(Star):
         params = {
                 "serverName": "眉间雪"  # 默认服务器
         }
+
         # 获取消息内容
         message_str = event.message_str.strip()
         parts = message_str.split()
         # 解析消息内容
         if len(parts) > 1:
             params["serverName"] = parts[1]  # 服务器
+
         # 获取数据
-        data = api_data(custom_url,params)
+        data = api_data_post(custom_url,params,"data")
         
         if not data:
             yield event.plain_result("获取获取接口信息失败，请稍后再试")
             return
         
-        # 格式化返回消息
+        # 处理返回数据
         try:
             # 加载模板
             try:
@@ -273,12 +274,9 @@ class Jx3ApiPlugin(Star):
                 "items": data,
                 "server": params["serverName"],
                 "update_time": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            }
-            # 调整渲染图片的尺寸
-            options = {
             } 
 
-            url = await self.html_render(template_content, render_data, options)
+            url = await self.html_render(template_content, render_data, options={})
             yield event.image_result(url)
 
         except Exception as e:
@@ -296,6 +294,7 @@ class Jx3ApiPlugin(Star):
             "adventureName": "阴阳两界",  # 默奇遇
             "serverName": "眉间雪"  # 默认服务器
         }
+
         # 获取消息内容
         message_str = event.message_str.strip()
         parts = message_str.split()
@@ -304,8 +303,9 @@ class Jx3ApiPlugin(Star):
             params["adventureName"] = parts[1]  # 奇遇名称
         if len(parts) > 2:
             params["serverName"] = parts[2]  # 第二个参数为服务器
+
         # 获取数据
-        data = api_data(custom_url,params)
+        data = api_data_post(custom_url,params,"data")
         
         if not data:
             yield event.plain_result("获取获取接口信息失败，请稍后再试")
@@ -334,11 +334,8 @@ class Jx3ApiPlugin(Star):
                 "update_time": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                 ,"qiyuname": params["adventureName"]
             }
-            # 调整渲染图片的尺寸
-            options = {
-            } 
 
-            url = await self.html_render(template_content, render_data, options)
+            url = await self.html_render(template_content, render_data, options={})
             yield event.image_result(url)
             
         except Exception as e:
