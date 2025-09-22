@@ -104,7 +104,16 @@ def merge_item_data_by_itemid(price_data, item_list_data):
 
 #交易行数据查询函数
 def jx3_data_jiaoyihang(inserver="眉间雪", inname="武技殊影图"):
-
+    """
+    获取剑三交易行某区某物品价格数据
+    
+    Args:
+        inserver: 第一组数据，服务器名称
+        inname: 物品名称
+    
+    Returns:
+        list: 合并后的数据，包含价格和名称信息
+    """
     # 第一步：获取所有物品列表数据（处理分页）
     custom_url = f"https://node.jx3box.com/item_merged/name/{quote(inname)}"
     initial_params = {
