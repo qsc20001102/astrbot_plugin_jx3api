@@ -251,7 +251,7 @@ class Jx3ApiPlugin(Star):
         parts = message_str.split()
         # 解析消息内容
         if len(parts) > 1:
-            params["serverName"] = parts[1]  # 第二个参数为服务器
+            params["serverName"] = parts[1]  # 服务器
         # 获取数据
         data = api_data(custom_url,params)
         
@@ -280,11 +280,70 @@ class Jx3ApiPlugin(Star):
 
             url = await self.html_render(template_content, render_data, options)
             yield event.image_result(url)
+
+        except Exception as e:
+            logger.error(f"处理数据时出错: {e}")
+            yield event.plain_result("处理接口返回信息时出错")
+
+
+    @filter.command("剑三奇遇")
+    async def jx3_qiyu(self, event: AstrMessageEvent):
+        """剑三奇遇 奇遇名称 服务器"""
+        # 接口URL
+        custom_url = "https://www.jianxiachaguan.cn/api2/aijx3-jxcg/game/get-adventure-record"  
+        # 接口参数
+        params = {
+            "adventureName": "阴阳两界",  # 默奇遇
+            "serverName": "眉间雪"  # 默认服务器
+        }
+        # 获取消息内容
+        message_str = event.message_str.strip()
+        parts = message_str.split()
+        # 解析消息内容
+        if len(parts) > 1:
+            params["adventureName"] = parts[1]  # 奇遇名称
+        if len(parts) > 2:
+            params["serverName"] = parts[2]  # 第二个参数为服务器
+        # 获取数据
+        data = api_data(custom_url,params)
+        
+        if not data:
+            yield event.plain_result("获取获取接口信息失败，请稍后再试")
+            return
+        
+        #数据处理
+        for item in data:
+            # 格式化时间
+            if "time" in item:
+                dt = datetime.fromtimestamp(item["time"]/1000)
+                item["time"] = dt.strftime("%Y-%m-%d %H:%M:%S")
+
+        # 传入模板渲染
+        try:
+            # 加载模板
+            try:
+                template_content = load_template("qiyuliebiao.html")
+            except FileNotFoundError as e:
+                logger.error(f"加载模板失败: {e}")
+                yield event.plain_result("系统错误：模板文件不存在")
+                return
+            # 准备模板渲染数据
+            render_data = {
+                "items": data,
+                "server": params["serverName"],
+                "update_time": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                ,"qiyuname": params["adventureName"]
+            }
+            # 调整渲染图片的尺寸
+            options = {
+            } 
+
+            url = await self.html_render(template_content, render_data, options)
+            yield event.image_result(url)
             
         except Exception as e:
             logger.error(f"处理数据时出错: {e}")
-            yield event.plain_result("处理接口返回信息时出错")   
-
+            yield event.plain_result("处理接口返回信息时出错") 
 
     async def terminate(self):
         """可选择实现异步的插件销毁方法，当插件被卸载/停用时会调用。"""

@@ -159,7 +159,7 @@
                 </thead>
                 <tbody>
                     {% for item in items %}
-                    <tr {% if loop.index <= 3 %}class="highlight"{% endif %}>
+                    <tr>
                         <td class="item-name">{{ item.name }}</td>
                         <td class="price">{{ item.price }}</td>
                         <td class="sample">{{ item.sample_size }}</td>

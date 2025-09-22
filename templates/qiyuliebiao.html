@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>剑网3各平台金价查询</title>
+    <title>剑网3奇遇查询</title>
     <style>
         * {
             box-sizing: border-box;
@@ -62,7 +62,7 @@
         .table-container {
             padding: 0 30px 30px 30px;
             overflow-x: auto;
-            text-align: center
+            text-align: center;
         }
         table {
             width: 100%;
@@ -140,12 +140,12 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>剑网3各平台金价查询</h1>
-            <div class="server-info">服务器: {{ server }}</div>
+            <h1>剑网3奇遇查询</h1>
+            <div class="server-info">奇遇名称：{{ qiyuname }}    服务器: {{ server }}</div>
         </div>
         
         <div class="summary">
-            <div class="items-count">共找到 <strong>{{ items|length }}</strong> 条数据</div>
+            <div class="items-count">共找到 <strong>{{ items|length }}</strong> 条记录</div>
             <div class="update-time">数据更新时间: {{ update_time }}</div>
         </div>
         
@@ -153,25 +153,19 @@
             <table>
                 <thead>
                     <tr>
-                        <th style="width: 28%; text-align: center;">时间</th>
-                        <th style="width: 12%; text-align: center;">贴吧</th>
-                        <th style="width: 12%; text-align: center;">万宝楼</th>
-                        <th style="width: 12%; text-align: center;">DD373</th>
-                        <th style="width: 12%; text-align: center;">UU898</th>
-                        <th style="width: 12%; text-align: center;">5173</th>
-                        <th style="width: 12%; text-align: center;">7881</th>
+                        <th style="width: 20%; text-align: center;">奇遇名称</th>
+                        <th style="width: 20%; text-align: center;">服务器</th>
+                        <th style="width: 25%; text-align: center;">角色名称</th>
+                        <th style="width: 35%; text-align: center;">触发时间</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for item in items %}
                     <tr>
-                        <td class="date">{{ item.date }}</td>
-                        <td class="priceTieba">{{ item.priceTieba }}</td>
-                        <td class="priceWanbaolou">{{ item.priceWanbaolou }}</td>
-                        <td class="priceDd373">{{ item.priceDd373 }}</td>
-                        <td class="priceUu898">{{ item.priceUu898 }}</td>
-                        <td class="price5173">{{ item.price5173 }}</td>
-                        <td class="priceDd373">{{ item.price7881 }}</td>
+                        <td class="adventureName">{{ item.adventureName }}</td>
+                        <td class="server">{{ server }}</td>
+                        <td class="gameName">{{ item.gameName }}</td>
+                        <td class="time">{{ item.time }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -179,7 +173,7 @@
         </div>
         
         <div class="footer">
-            © 2025 剑网3金价查询系统 | 数据仅供参考，以游戏内实际价格为准
+            © 2025 剑网3奇遇查询系统 | 数据仅供参考，以游戏内实际价格为准
         </div>
     </div>
 </body>
