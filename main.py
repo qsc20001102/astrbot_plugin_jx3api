@@ -5,11 +5,9 @@ from astrbot.api.star import Context, Star, register
 from astrbot.api import logger
 from astrbot.api import AstrBotConfig
 
-from .core.request import fetch_jx3_data
 from .core.jx3jiaoyihang import fetch_jx3_jiaoyihang
 from .core.load_template import load_template
-
-from jinja2 import Template
+from .core.api_data import api_data, fetch_jx3_data
 
 # 禁用 SSL 警告
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -28,7 +26,7 @@ class Jx3ApiPlugin(Star):
 
     @filter.command("剑三日常")
     async def jx3_richang(self, event: AstrMessageEvent):
-        """获取剑网3日常活动信息"""
+        """剑三日常"""
         # 接口URL
         custom_url = "https://www.jx3api.com/data/active/calendar"  
         # 接口参数
@@ -77,13 +75,10 @@ class Jx3ApiPlugin(Star):
             logger.error(f"处理数据时出错: {e}")
             yield event.plain_result("处理接口返回信息时出错")
 
-    async def terminate(self):
-        """可选择实现异步的插件销毁方法，当插件被卸载/停用时会调用。"""
-
 
     @filter.command("剑三骚话")
     async def jx3_shaohua(self, event: AstrMessageEvent):
-        """随机获取一条与万花门派相关的骚话"""
+        """剑三骚话"""
         # 接口URL
         custom_url = "https://www.jx3api.com/data/saohua/random"  
         # 接口参数
@@ -113,13 +108,10 @@ class Jx3ApiPlugin(Star):
             logger.error(f"处理数据时出错: {e}")
             yield event.plain_result("处理接口返回信息时出错")
 
-    async def terminate(self):
-        """可选择实现异步的插件销毁方法，当插件被卸载/停用时会调用。"""
-
 
     @filter.command("剑三技改")
     async def jx3_jigai(self, event: AstrMessageEvent):
-        """查询技能的历史修改记录，包括资料片更新、技能调整等信息"""
+        """剑三技改"""
         # 接口URL
         custom_url = "https://www.jx3api.com/data/skills/records"  
         # 接口参数
@@ -153,13 +145,10 @@ class Jx3ApiPlugin(Star):
             logger.error(f"处理数据时出错: {e}")
             yield event.plain_result("处理接口返回信息时出错")
 
-    async def terminate(self):
-        """可选择实现异步的插件销毁方法，当插件被卸载/停用时会调用。"""
-
 
     @filter.command("剑三交易行")
     async def jx3_jiaoyihang(self, event: AstrMessageEvent):
-        """获取剑网3交易行信息 区服+物品名称""" 
+        """剑三交易行 服务器 物品名称""" 
 
         # 接口参数
         params = {
@@ -207,21 +196,6 @@ class Jx3ApiPlugin(Star):
 
             # 调整渲染图片的尺寸
             options = {
-                "viewport": {
-                    "width": 800,
-                    "height": 600,
-                    "device_scale_factor": 1  # 明确设置设备缩放因子
-                },
-                "clip": {
-                    "x": 0,
-                    "y": 0,
-                    "width": 800,
-                    "height": 600
-                },
-                "full_page": False,
-                "type": "jpeg",
-                "quality": 85,
-                "scale": "device"  # 尝试使用设备缩放
             }       
 
             url = await self.html_render(template_content, render_data, options)
@@ -231,7 +205,86 @@ class Jx3ApiPlugin(Star):
             logger.error(f"交易行查询出错: {e}")
             yield event.plain_result("查询交易行数据时出错，请稍后再试")
 
+
+    @filter.command("剑三沙盘")
+    async def jx3_shapan(self, event: AstrMessageEvent):
+        """剑三沙盘 服务器"""
+        # 接口URL
+        custom_url = "https://www.jianxiachaguan.cn/api2/aijx3-jxcg/game/get-sand-table-img"  
+        # 接口参数
+        params = {
+                "serverName": "眉间雪"  # 默认服务器
+        }
+        # 获取消息内容
+        message_str = event.message_str.strip()
+        parts = message_str.split()
+        # 解析消息内容
+        if len(parts) > 1:
+            params["serverName"] = parts[1]  # 第二个参数为服务器
+        # 获取数据
+        data = api_data(custom_url,params)
+        
+        if not data:
+            yield event.plain_result("获取获取接口信息失败，请稍后再试")
+            return
+        
+        # 格式化返回消息
+        try:
+            # 构建回复消息
+            yield event.image_result(data.get("picUrl"))
+            
+        except Exception as e:
+            logger.error(f"处理数据时出错: {e}")
+            yield event.plain_result("处理接口返回信息时出错")
+
+    @filter.command("剑三金价")
+    async def jx3_jinjia(self, event: AstrMessageEvent):
+        """剑三金价 服务器"""
+        # 接口URL
+        custom_url = "https://www.jianxiachaguan.cn/api2/aijx3-jxcg/game/get-gold"  
+        # 接口参数
+        params = {
+                "serverName": "眉间雪"  # 默认服务器
+        }
+        # 获取消息内容
+        message_str = event.message_str.strip()
+        parts = message_str.split()
+        # 解析消息内容
+        if len(parts) > 1:
+            params["serverName"] = parts[1]  # 第二个参数为服务器
+        # 获取数据
+        data = api_data(custom_url,params)
+        
+        if not data:
+            yield event.plain_result("获取获取接口信息失败，请稍后再试")
+            return
+        
+        # 格式化返回消息
+        try:
+            # 加载模板
+            try:
+                template_content = load_template("jinjia.html")
+            except FileNotFoundError as e:
+                logger.error(f"加载模板失败: {e}")
+                yield event.plain_result("系统错误：模板文件不存在")
+                return
+            # 准备模板渲染数据
+            render_data = {
+                "items": data,
+                "server": params["serverName"],
+                "update_time": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            }
+            # 调整渲染图片的尺寸
+            options = {
+            } 
+
+            url = await self.html_render(template_content, render_data, options)
+            yield event.image_result(url)
+            
+        except Exception as e:
+            logger.error(f"处理数据时出错: {e}")
+            yield event.plain_result("处理接口返回信息时出错")   
+
+
     async def terminate(self):
         """可选择实现异步的插件销毁方法，当插件被卸载/停用时会调用。"""
-
-        
