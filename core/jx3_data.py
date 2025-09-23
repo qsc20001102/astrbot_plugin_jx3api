@@ -3,6 +3,7 @@ from astrbot.api import logger
 from urllib.parse import quote
 
 from .api_data import api_data_get, api_data_post
+from .sql_data import sql_data_searchdata,sql_data_select
 
 
 def fetch_all_pages(base_url, initial_params, max_pages=None):
@@ -126,14 +127,14 @@ def jx3_data_jiaoyihang(inserver="眉间雪", inname="武技殊影图"):
     all_items = fetch_all_pages(custom_url, initial_params)
     
     if not all_items:
-        logger.error(f"未找到物品: {inname}")
+        #logger.error(f"未找到物品: {inname}")
         return "未找到改物品"
     
     # 提取所有ID
     ids = [item.get("id") for item in all_items if item.get("id")]
     
     if not ids:
-        logger.error(f"物品 {inname} 没有有效的ID")
+        #logger.error(f"物品 {inname} 没有有效的ID")
         return "未找到改物品"
     
     # 返回格式化结果
@@ -182,3 +183,49 @@ def jx3_data_jiaoyihang(inserver="眉间雪", inname="武技殊影图"):
     
     return result_items
   
+
+#物价查询
+def jx3_data_wujia(inname="秃盒"):
+    """
+    获取剑三外观物品价格数据
+    
+    Args:
+        inname: 物品名称
+    
+    Returns:
+        list: 合并后的数据，包含价格和名称信息
+    """
+    datas = {
+            "code": 0,  # 默奇遇
+            "msg": "未获取数据"  # 默认服务器
+        }
+    #获取所查询物品的id和官方名称
+    idname = sql_data_select(inname)
+
+    # 查询万宝楼公示数据
+    custom_url = "https://www.aijx3.cn/api2/aijx3-wblwg/record/queryByCondition"
+    initial_params = {
+        "tradeStatus": "3",
+        "accoSeq": "",
+        "orderMode": 1,  # 按时间降序
+        "orderBy":"price_num",
+        "searchId":[idname["searchId"]],
+        "current":1,
+        "size":10
+    }
+
+    datawblgs = api_data_post(custom_url, initial_params,"data")
+    
+    if not datawblgs:
+        datas["code"] = 0
+        datas["msg"] = "数据为空"
+        return
+    
+    goodsId = datawblgs.get("records", "").get("goodsId", "")
+
+    datas["data"] = goodsId
+    datas["code"] = 200
+    datas["msg"] = "处理完成"
+
+
+    return datas

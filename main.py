@@ -6,8 +6,9 @@ from astrbot.api import logger
 from astrbot.api import AstrBotConfig
 
 from .core.load_template import load_template
-from .core.jx3_data import jx3_data_jiaoyihang
+from .core.jx3_data import jx3_data_jiaoyihang,jx3_data_wujia
 from .core.api_data import api_data_get, api_data_post
+from .core.sql_data import sql_data_searchdata,sql_data_select
 
 # 禁用 SSL 警告
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -341,6 +342,42 @@ class Jx3ApiPlugin(Star):
         except Exception as e:
             logger.error(f"处理数据时出错: {e}")
             yield event.plain_result("处理接口返回信息时出错") 
+
+
+    @filter.command("剑三外观数据同步")
+    async def jx3_SearchData(self, event: AstrMessageEvent):
+        """剑三外观数据同步"""
+     
+        try:
+            test = sql_data_searchdata()
+            yield event.plain_result(f"{test}") 
+            
+        except Exception as e:
+            logger.error(f"处理数据时出错: {e}")
+            yield event.plain_result("处理接口返回信息时出错") 
+
+
+    @filter.command("剑三物价")
+    async def jx3_wujia(self, event: AstrMessageEvent):
+        """剑三物价 外观名称"""
+
+        inname = "秃盒"
+
+        # 获取消息内容
+        message_str = event.message_str.strip()
+        parts = message_str.split()
+        # 解析消息内容
+        if len(parts) > 1:
+            inname = parts[1]  # 外观名称
+
+        try:            
+            test = jx3_data_wujia(inname)
+            yield event.plain_result(f"{test}") 
+            
+        except Exception as e:
+            logger.error(f"处理数据时出错: {e}")
+            yield event.plain_result("处理接口返回信息时出错") 
+
 
     async def terminate(self):
         """可选择实现异步的插件销毁方法，当插件被卸载/停用时会调用。"""
