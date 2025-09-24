@@ -205,11 +205,7 @@ def jx3_data_wujia(inname="秃盒"):
     idname = sql_data_select(inname)
     if not idname:
         datas["code"] = 201
-<<<<<<< HEAD
-        datas["msg"] = f"未搜索到{inname}外观"
-=======
         datas["msg"] = "未找到该外观信息"
->>>>>>> cfb4ee1bcc51e772f2c74472e89bfc1e19a22b32
         return
     datas["code"] = 1
     datas["msg"] = "获取外观名称ID完成"
