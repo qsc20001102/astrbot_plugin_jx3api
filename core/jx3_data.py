@@ -1,6 +1,7 @@
 # core/jx3jiaoyihang.py
 from astrbot.api import logger
 from urllib.parse import quote
+from datetime import datetime
 
 from .api_data import api_data_get, api_data_post
 from .sql_data import sql_data_searchdata,sql_data_select
@@ -196,36 +197,86 @@ def jx3_data_wujia(inname="秃盒"):
         list: 合并后的数据，包含价格和名称信息
     """
     datas = {
-            "code": 0,  # 默奇遇
-            "msg": "未获取数据"  # 默认服务器
+            "code": 0,  
+            "msg": "未获取数据",  
+            "data": {}  
         }
     #获取所查询物品的id和官方名称
     idname = sql_data_select(inname)
+    if not idname:
+        datas["code"] = 201
+        datas["msg"] = f"未搜索到{inname}外观"
+        return
+    datas["code"] = 1
+    datas["msg"] = "获取外观名称ID完成"
+    datas["data"]["showName"] = idname.get("showName","未知物品")
+    datas["data"]["searchId"] = idname.get("searchId","未知ID")
+    datas["data"]["Name"] = inname
+    
+    #查询爱剑三获取外观数据
+    aj3_url = "https://www.aijx3.cn/api2/aijx3-wj/goods/getGoodsDetail"
+    aj3_params = {
+        "goodsName":datas["data"]["showName"],
+    }
 
-    # 查询万宝楼公示数据
-    custom_url = "https://www.aijx3.cn/api2/aijx3-wblwg/record/queryByCondition"
-    initial_params = {
+    dataaj3 = api_data_post(aj3_url, aj3_params,"data")
+    datas["data"]["goodsDesc"] = dataaj3.get("goodsDesc","无描述")
+    datas["data"]["publishTime"] = dataaj3.get("publishTime","无数据")
+    datas["data"]["priceNum"] = dataaj3.get("priceNum",0)
+    datas["data"]["imgs"] = dataaj3.get("imgs",[])[0]
+    datas["data"]["goodsId"] = dataaj3.get("goodsId","无数据")
+    datas["code"] = 2
+    datas["msg"] = "获取外观数据完成"
+    
+    # 查询万宝楼数据
+    wbl_url = "https://www.aijx3.cn/api2/aijx3-wblwg/record/queryByCondition"
+    wbl_params = {
         "tradeStatus": "3",
         "accoSeq": "",
         "orderMode": 1,  # 按时间降序
         "orderBy":"price_num",
-        "searchId":[idname["searchId"]],
+        "searchId":[idname['searchId']],
         "current":1,
         "size":10
     }
 
-    datawblgs = api_data_post(custom_url, initial_params,"data")
-    
-    if not datawblgs:
-        datas["code"] = 0
-        datas["msg"] = "数据为空"
-        return
-    
-    goodsId = datawblgs.get("records", "").get("goodsId", "")
+    #第一次查询万宝楼数据，获取公示数据
+    datas["data"]["wblgs"] = []
+    datawblgs = api_data_post(wbl_url, wbl_params,"data")
+    #处理万宝楼公示数据
+    for record in datawblgs.get("records",[]):
+        # 转换时间戳为可读格式
+        dt = datetime.fromtimestamp(record.get("replyTime",0)/1000)
+        record_info = {
+            "priceNum": record.get("priceNum",0),
+            "belongQf2": record.get("belongQf2","无数据"),
+            "replyTime": dt.strftime("%Y-%m-%d %H:%M:%S"),            
+            "discountRate": record.get("discountRate",0.0),
+        }
+        datas["data"]["wblgs"].append(record_info)
 
-    datas["data"] = goodsId
-    datas["code"] = 200
-    datas["msg"] = "处理完成"
+    #数据更新
+    datas["code"] = 3
+    datas["msg"] = "获取万宝楼公示数据完成"
 
+    #第二次查询万宝楼数据，获取在售数据
+    wbl_params["tradeStatus"] = "5"
+    datas["data"]["wblzs"] = []
+    datawblzs = api_data_post(wbl_url, wbl_params,"data")
+    #处理万宝楼在售数据
+    for record in datawblzs.get("records",[]):
+        # 转换时间戳为可读格式
+        dt = datetime.fromtimestamp(record.get("replyTime",0)/1000)
+        record_info = {
+            "priceNum": record.get("priceNum",0),
+            "belongQf2": record.get("belongQf2","无数据"),
+            "replyTime": dt.strftime("%Y-%m-%d %H:%M:%S"),            
+            "discountRate": record.get("discountRate",0.0),
+        }
+        datas["data"]["wblzs"].append(record_info)
+
+        #数据更新
+        datas["code"] = 4
+        datas["msg"] = "获取万宝楼在售数据完成"
 
     return datas
