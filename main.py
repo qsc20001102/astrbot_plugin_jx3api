@@ -370,9 +370,19 @@ class Jx3ApiPlugin(Star):
         if len(parts) > 1:
             inname = parts[1]  # 外观名称
 
-        try:            
-            test = jx3_data_wujia(inname)
-            yield event.plain_result(f"{test}") 
+        try:      
+            # 加载模板
+            try:
+                template_content = load_template("wujia.html")
+            except FileNotFoundError as e:
+                logger.error(f"加载模板失败: {e}")
+                yield event.plain_result("系统错误：模板文件不存在")
+                return
+
+            render_data = jx3_data_wujia(inname)
+            
+            url = await self.html_render(template_content, render_data, options={})
+            yield event.image_result(url)
             
         except Exception as e:
             logger.error(f"处理数据时出错: {e}")

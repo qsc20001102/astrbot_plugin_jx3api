@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ data.showName }} - 剑网3万宝楼</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* 上面的CSS样式 */
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <div class="logo">
+                        <i class="fas fa-dragon"></i> 剑网3万宝楼
+                    </div>
+                </div>
+                <div class="col-md-6 text-end">
+                    <span class="status-badge {% if code == 4 %}code-success{% else %}code-error{% endif %}">
+                        <i class="fas fa-{% if code == 4 %}check-circle{% else %}exclamation-circle{% endif %}"></i> 
+                        {{ msg }}
+                    </span>
+                    <span class="time-badge ms-2">
+                        <i class="far fa-clock"></i> 数据更新时间: {{ now.strftime('%Y-%m-%d %H:%M:%S') if now else '未知' }}
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- 商品基本信息 -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h3 class="mb-0"><i class="fas fa-box-open"></i> 商品基本信息</h3>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <img src="{{ data.imgs }}" alt="{{ data.showName }}" class="product-img">
+                    </div>
+                    <div class="col-md-8">
+                        <h2 class="mb-3">{{ data.showName }}</h2>
+                        <p class="text-muted">商品ID: {{ data.goodsId }} | 搜索ID: {{ data.searchId }}</p>
+                        <p class="mb-3">{{ data.goodsDesc }}</p>
+                        
+                        <div class="row mb-3">
+                            <div class="col-sm-6">
+                                <strong>发布时间:</strong> {{ data.publishTime.split('T')[0] if data.publishTime else '未知' }}
+                            </div>
+                            <div class="col-sm-6">
+                                <strong>参考价格:</strong> <span class="price-tag">{{ data.priceNum }} 元</span>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex">
+                            <button class="btn me-2" style="background-color: var(--jx3-primary); color: var(--jx3-dark);">
+                                <i class="fas fa-shopping-cart"></i> 加入关注
+                            </button>
+                            <button class="btn" style="background-color: var(--jx3-secondary); color: white;">
+                                <i class="fas fa-bell"></i> 价格提醒
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 价格摘要 -->
+        <div class="card summary-card mb-4">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5><i class="fas fa-store"></i> 当前在售摘要</h5>
+                        {% set min_price = data.wblgs|min(attribute='priceNum') %}
+                        {% set max_price = data.wblgs|max(attribute='priceNum') %}
+                        {% set avg_price = (data.wblgs|sum(attribute='priceNum') / data.wblgs|length)|round(1) %}
+                        
+                        <div class="summary-item">
+                            <span>在售商品数量:</span>
+                            <span class="price-cell">{{ data.wblgs|length }}件</span>
+                        </div>
+                        <div class="summary-item">
+                            <span>最低价格:</span>
+                            <span class="price-cell">{{ min_price.priceNum if min_price else 0 }}元 ({{ min_price.belongQf2 if min_price else '未知' }})</span>
+                        </div>
+                        <div class="summary-item">
+                            <span>最高价格:</span>
+                            <span class="price-cell">{{ max_price.priceNum if max_price else 0 }}元 ({{ max_price.belongQf2 if max_price else '未知' }})</span>
+                        </div>
+                        <div class="summary-item">
+                            <span>平均价格:</span>
+                            <span class="price-cell">{{ avg_price }}元</span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <h5><i class="fas fa-history"></i> 历史在售摘要</h5>
+                        {% set min_price_hist = data.wblzs|min(attribute='priceNum') %}
+                        {% set max_price_hist = data.wblzs|max(attribute='priceNum') %}
+                        {% set avg_price_hist = (data.wblzs|sum(attribute='priceNum') / data.wblzs|length)|round(1) %}
+                        
+                        <div class="summary-item">
+                            <span>历史记录数量:</span>
+                            <span class="price-cell">{{ data.wblzs|length }}条</span>
+                        </div>
+                        <div class="summary-item">
+                            <span>最低价格:</span>
+                            <span class="price-cell">{{ min_price_hist.priceNum if min_price_hist else 0 }}元</span>
+                        </div>
+                        <div class="summary-item">
+                            <span>最高价格:</span>
+                            <span class="price-cell">{{ max_price_hist.priceNum if max_price_hist else 0 }}元</span>
+                        </div>
+                        <div class="summary-item">
+                            <span>平均价格:</span>
+                            <span class="price-cell">{{ avg_price_hist }}元</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 在售数据 -->
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h4 class="mb-0"><i class="fas fa-store"></i> 当前在售商品 ({{ data.wblgs|length }}件)</h4>
+                <div>
+                    {% set min_price = data.wblgs|min(attribute='priceNum') %}
+                    {% set max_price = data.wblgs|max(attribute='priceNum') %}
+                    <span class="badge bg-success">最低: {{ min_price.priceNum if min_price else 0 }}元</span>
+                    <span class="badge bg-danger ms-2">最高: {{ max_price.priceNum if max_price else 0 }}元</span>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>价格</th>
+                                <th>服务器</th>
+                                <th>折扣率</th>
+                                <th>更新时间</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in data.wblgs %}
+                            <tr>
+                                <td class="price-cell">{{ item.priceNum }}元</td>
+                                <td><span class="server-badge">{{ item.belongQf2 }}</span></td>
+                                <td>
+                                    <span class="discount-badge {% if item.discountRate > 0 %}discount-positive{% endif %}">
+                                        {{ item.discountRate }}%
+                                    </span>
+                                </td>
+                                <td>{{ item.replyTime }}</td>
+                                <td><button class="btn btn-sm" style="background-color: var(--jx3-primary); color: var(--jx3-dark);">购买</button></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- 历史在售数据 -->
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h4 class="mb-0"><i class="fas fa-history"></i> 历史在售记录 ({{ data.wblzs|length }}条)</h4>
+                <div>
+                    {% set min_price_hist = data.wblzs|min(attribute='priceNum') %}
+                    {% set max_price_hist = data.wblzs|max(attribute='priceNum') %}
+                    <span class="badge bg-success">最低: {{ min_price_hist.priceNum if min_price_hist else 0 }}元</span>
+                    <span class="badge bg-danger ms-2">最高: {{ max_price_hist.priceNum if max_price_hist else 0 }}元</span>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>价格</th>
+                                <th>服务器</th>
+                                <th>折扣率</th>
+                                <th>更新时间</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in data.wblzs %}
+                            <tr>
+                                <td class="price-cell">{{ item.priceNum }}元</td>
+                                <td><span class="server-badge">{{ item.belongQf2 }}</span></td>
+                                <td>
+                                    <span class="discount-badge {% if item.discountRate > 0 %}discount-positive{% endif %}">
+                                        {{ item.discountRate }}%
+                                    </span>
+                                </td>
+                                <td>{{ item.replyTime }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <div class="container">
+            <p>剑网3万宝楼商品数据展示 &copy; 2025 | 数据仅供参考，实际价格以游戏内为准</p>
+        </div>
+    </div>
+
+    <script>
+        // 上面的JavaScript代码
+    </script>
+</body>
+</html>

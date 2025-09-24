@@ -135,4 +135,4 @@ def sql_data_select(search_string):
     finally:
         connection.close()
 
-    return results
+    return results[0] 
