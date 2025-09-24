@@ -203,6 +203,10 @@ def jx3_data_wujia(inname="秃盒"):
         }
     #获取所查询物品的id和官方名称
     idname = sql_data_select(inname)
+    if not idname:
+        datas["code"] = 201
+        datas["msg"] = "未找到该外观信息"
+        return
     datas["code"] = 1
     datas["msg"] = "获取外观名称ID完成"
     datas["data"]["showName"] = idname.get("showName","未知物品")
