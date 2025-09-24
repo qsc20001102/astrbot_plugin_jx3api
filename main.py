@@ -380,9 +380,15 @@ class Jx3ApiPlugin(Star):
                 return
 
             render_data = jx3_data_wujia(inname)
+
+            if render_data.get("code") == "200":
+                url = await self.html_render(template_content, render_data, options={})
+                yield event.image_result(url)
+            else:
+                yield event.plain_result(f"{render_data.get('msg')}")
+                return
             
-            url = await self.html_render(template_content, render_data, options={})
-            yield event.image_result(url)
+
             
         except Exception as e:
             logger.error(f"处理数据时出错: {e}")
