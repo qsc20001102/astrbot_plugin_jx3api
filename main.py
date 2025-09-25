@@ -381,7 +381,7 @@ class Jx3ApiPlugin(Star):
 
             render_data = jx3_data_wujia(inname)
 
-            if render_data.get("code") == "200":
+            if render_data.get("code") == 200:
                 url = await self.html_render(template_content, render_data, options={})
                 yield event.image_result(url)
             else:
