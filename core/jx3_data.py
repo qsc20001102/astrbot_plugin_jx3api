@@ -276,7 +276,7 @@ def jx3_data_wujia(inname="秃盒"):
         datas["data"]["wblzs"].append(record_info)
 
         #数据更新
-        datas["code"] = 4
+        datas["code"] = 200
         datas["msg"] = "获取万宝楼在售数据完成"
 
     return datas
