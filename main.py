@@ -1,29 +1,45 @@
-import urllib3
+from pathlib import Path
 from datetime import datetime
+
 from astrbot.api.event import filter, AstrMessageEvent, MessageEventResult
-from astrbot.api.star import Context, Star, register
+from astrbot.api.star import Context, Star, register, StarTools
 from astrbot.api import logger
 from astrbot.api import AstrBotConfig
 
 from .core.load_template import load_template
 from .core.jx3_data import jx3_data_jiaoyihang,jx3_data_wujia
-from .core.api_data import api_data_get, api_data_post
+from .core.api_data import APIClient,api_data_get, api_data_post
 from .core.sql_data import sql_data_searchdata,sql_data_select
 
-# 禁用 SSL 警告
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-
-@register("jx3api", "fxdyz", "通过接口调用剑网三API接口获取游戏数据", "1.0.0")
+@register("astrbot_plugin_jx3api", 
+          "fxdyz", 
+          "通过接口调用剑网三API接口获取游戏数据", 
+          "1.0.0",
+          "https://github.com/qsc20001102/astrbot_plugin_jx3api.git"
+)
 class Jx3ApiPlugin(Star):
     def __init__(self, context: Context, config: AstrBotConfig):
         super().__init__(context)
+        #获取配置
         self.conf = config
-        print(self.conf)
+        # 本地数据存储路径
+        self.local_data_dir = StarTools.get_data_dir("astrbot_plugin_jx3api")
+        # api数据文件
+        self.api_file = Path(__file__).parent / "api_config.json"
+        logger.info("jx3api插件初始化完成")
 
     async def initialize(self):
         """可选择实现异步的插件初始化方法，当实例化该插件类之后会自动调用该方法。"""
+        #创建类实例
+        self.api_data = APIClient()
+        logger.info("jx3api插件创建实例完成")
 
+    async def message_str(self, event: AstrMessageEvent):
+        """可选择实现异步的消息预处理方法，在消息分发到具体命令前会调用该方法。"""
+        # 预处理消息内容
+        message_str = event.message_str.strip()
+        return message_str.split()
 
     @filter.command("剑三日常")
     async def jx3_richang(self, event: AstrMessageEvent):
@@ -32,25 +48,23 @@ class Jx3ApiPlugin(Star):
         custom_url = "https://www.jx3api.com/data/active/calendar"  
         # 接口参数
         params = {
-            "server": "眉间雪",  # 默认服务器
-            "num": 0  # 默认当天
+            "server": "眉间雪",  # 服务器
+            "num": 0  # 当天
         }
-        
         # 获取消息内容
-        message_str = event.message_str.strip()
-        parts = message_str.split()
+        parts = await self.message_str(event)
         # 解析消息内容
         if len(parts) > 1:
-            params["server"] = parts[1]  # 第二个参数为服务器
+            params["server"] = parts[1]  
 
         if len(parts) > 2:
             try:
-                params["num"] = int(parts[2])  # 第三个参数为日期偏移
+                params["num"] = int(parts[2])  
             except ValueError:
-                params["num"] = 0  # 参数为日期偏移
+                params["num"] = 0  
 
         # 获取数据
-        data = api_data_get(custom_url, params,"data")
+        data = await self.api_data.request(self.api_file['jx3_richang'], params,"data")
         
         if not data:
             yield event.plain_result("获取获取接口信息失败，请稍后再试")

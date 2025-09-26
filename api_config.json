@@ -1,0 +1,11 @@
+{
+    "jx3_richang":{
+        "url":"https://www.jx3api.com/data/active/calendar",
+        "method":"GET",
+        "description":"获取剑网三日常任务",
+        "params":{
+            "server": "眉间雪",  
+            "num": 0  
+        }
+    }
+}
