@@ -133,7 +133,7 @@ class APIClient:
         if 'url' not in api_config or 'method' not in api_config:
             logger.error("api_config必须包含url和method字段")
             return None
-        data = await self._make_request(api_config['method'], api_config['url'], api_config['params'])
+        data = await self._make_request(api_config['method'], api_config['url'], params=api_config['params'])
         
         if data is None:
             return None

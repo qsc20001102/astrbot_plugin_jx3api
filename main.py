@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 from datetime import datetime
 
@@ -26,7 +27,10 @@ class Jx3ApiPlugin(Star):
         # 本地数据存储路径
         self.local_data_dir = StarTools.get_data_dir("astrbot_plugin_jx3api")
         # api数据文件
-        self.api_file = Path(__file__).parent / "api_config.json"
+        self.api_file_path = Path(__file__).parent / "api_config.json"
+        # 读取文件内容
+        with open(self.api_file_path, 'r', encoding='utf-8') as f:
+            self.api_config = json.load(f)  
         logger.info("jx3api插件初始化完成")
 
     async def initialize(self):
@@ -64,7 +68,7 @@ class Jx3ApiPlugin(Star):
                 params["num"] = 0  
 
         # 获取数据
-        data = await self.api_data.request(self.api_file['jx3_richang'], params,"data")
+        data = await self.api_data.request(self.api_config["jx3_richang"],"data")
         
         if not data:
             yield event.plain_result("获取获取接口信息失败，请稍后再试")
