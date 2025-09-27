@@ -74,6 +74,7 @@ class Jx3ApiPlugin(Star):
             logger.error(f"功能函数执行错误: {e}")
             yield event.plain_result("猪脑过载，请稍后再试")        
 
+
     @jx3.command("骚话")
     async def jx3_shaohua(self, event: AstrMessageEvent,):
         """剑三 骚话"""
