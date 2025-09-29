@@ -3,7 +3,7 @@ from astrbot.api import logger
 from urllib.parse import quote
 from datetime import datetime
 
-from .api_data import api_data_get, api_data_post
+from .class_reqsest import api_data_get, api_data_post
 
 
 def fetch_all_pages(base_url, initial_params, max_pages=None):

@@ -2,9 +2,9 @@ from datetime import datetime
 
 from astrbot.api import logger
 
-from .api_data import APIClient
-from .sql_data import AsyncMySQL
-from .basic_Function import load_template, extract_field
+from .class_reqsest import APIClient
+from .cless_mysql import AsyncMySQL
+from .function_basic import load_template, extract_field
 
 class JX3Function:
     def __init__(self, api_config,db: AsyncMySQL ):

@@ -7,10 +7,10 @@ from astrbot.api.star import Context, Star, register, StarTools
 from astrbot.api import logger
 from astrbot.api import AstrBotConfig
 
-from .core.basic_Function import load_template
+from .core.function_basic import load_template
 from .core.jx3_data import jx3_data_jiaoyihang,jx3_data_wujia
-from .core.sql_data import AsyncMySQL
-from .core.jx3_Function import JX3Function
+from .core.cless_mysql import AsyncMySQL
+from .core.cless_jx3 import JX3Function
 
 
 @register("astrbot_plugin_jx3api", 
