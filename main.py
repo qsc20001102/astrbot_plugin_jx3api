@@ -8,7 +8,7 @@ from astrbot.api import logger
 from astrbot.api import AstrBotConfig
 
 from .core.function_basic import load_template
-from .core.jx3_data import jx3_data_jiaoyihang,jx3_data_wujia
+from .core.jx3_data import jx3_data_jiaoyihang
 from .core.cless_mysql import AsyncMySQL
 from .core.cless_jx3 import JX3Function
 
@@ -157,6 +157,23 @@ class Jx3ApiPlugin(Star):
             if data["code"] == 200:
                 url = await self.html_render(data["temp"], data["data"], options={})
                 yield event.image_result(url)
+            else:
+                yield event.plain_result(data["msg"])
+            return
+        except Exception as e:
+            logger.error(f"功能函数执行错误: {e}")
+            yield event.plain_result("猪脑过载，请稍后再试") 
+
+
+    @jx3.command("交易行")
+    async def jx3_jiaoyihang(self, event: AstrMessageEvent,Name: str = "守缺式",server: str = "眉间雪"):
+        """剑三 外观名称"""     
+        try:
+            data=await self.jx3fun.jiaoyihang(Name,server)
+            if data["code"] == 200:
+                #url = await self.html_render(data["temp"], data["data"], options={})
+                #yield event.image_result(url)
+                yield event.plain_result(f"{data['data']}")
             else:
                 yield event.plain_result(data["msg"])
             return

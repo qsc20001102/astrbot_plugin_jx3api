@@ -181,6 +181,49 @@ class APIClient:
         return data.get(outdata, {})
 
 
+    async def all_pages(self,http, api_url, params_data = None, outdata: str = "",listdata: str = "list", max_pages: int = 10):
+        """
+        分页获取所有数据
+            
+        Args:
+            http: 请求方法 ('GET' 或 'POST')
+            api_url: API地址
+            params_data: 参数字典，如 {"name": "万花"}
+            outdata: 返回数据中要提取的字段
+            max_pages: 最大页数限制，0表示不限制
+            listdata: 返回数据中包含列表数据的字段名，默认为"list"
+        Returns:
+            成功时返回所有页数据的列表，失败返回None
+        """    
+        all_data = []
+        current_page = 1
+        
+        while True:
+            # 设置当前页码
+            params = params_data.copy() if params_data else {}
+            params["page"] = str(current_page)
+            
+            # 请求数据
+            if http.upper() == "POST":
+                data = await self.post(api_url, params, outdata)
+            else:
+                data = await self.get(api_url, params, outdata)
+            
+            if not data[listdata]:
+                break
+            
+            # 添加当前页数据到总列表
+            all_data.extend(data[listdata])
+
+            # 检查是否达到最大页数限制
+            if max_pages and current_page >= max_pages:
+                break
+            
+            current_page += 1
+            logger.info(f"已获取第 {current_page} 页数据")
+        return all_data
+
+
 # 保持原有函数接口的兼容性
 async def api_data_post(api_url, params_data=None, outdata=None):
     """兼容原有函数的POST请求"""

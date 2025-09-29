@@ -86,5 +86,24 @@
             "size": 10,
             "tradeStatus": ""
         }
+    },
+    "jx3box_item":{
+        "url":"https://node.jx3box.com/api/node/item/search",
+        "method":"GET",
+        "description":"魔盒中模糊查找剑网三的物品数据",
+        "params":{
+            "keyword": "守缺式",
+            "page": "1",
+            "per": "50"
+        }
+    },
+    "jx3box_itemprice":{
+        "url":"https://next2.jx3box.com/api/item-price/list",
+        "method":"GET",
+        "description":"交易行中在售物品数据",
+        "params":{
+            "server": "眉间雪",
+            "itemIds": ["5_76650"]
+        }
     }
 }

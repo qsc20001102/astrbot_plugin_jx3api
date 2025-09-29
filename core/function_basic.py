@@ -24,6 +24,54 @@ def load_template(template_name):
         return f.read()
     
 
+def flatten_field(data_list, field_name):
+    """
+    提取并扁平化指定字段的值
+
+    从一个字典列表中，收集指定字段的所有值。
+    如果字段的值是列表，则会被展开（扁平化）加入结果；
+    如果字段的值是单个元素，则直接加入结果。
+
+    Args:
+        data_list (list[dict]): 数据列表，每个元素是字典
+        field_name (str): 要提取的字段名
+
+    Returns:
+        list: 扁平化后的字段值列表
+    """
+    extracted_data = []
+    for item in data_list:
+        if field_name in item and item[field_name]:
+            # 如果是 list，展开
+            if isinstance(item[field_name], list):
+                extracted_data.extend(item[field_name])
+            else:
+                extracted_data.append(item[field_name])
+    return extracted_data
+
+
+def extract_fields(data_list, fields):
+    """
+    从字典列表中提取多个字段
+
+    Args:
+        data_list (list[dict]): 包含字典的列表
+        fields (list[str]): 要提取的字段名列表
+
+    Returns:
+        list[dict]: 只包含指定字段的新字典列表
+    """
+    result = []
+    try:
+        for item in data_list:
+            extracted = {field: item.get(field) for field in fields}
+            result.append(extracted)
+    except Exception as e:
+        print(f"提取字段时出错: {e}")
+        return []
+    return result
+
+
 def extract_field(data_list, field_name):
     """
     从列表中的字典提取指定字段的所有值
@@ -35,12 +83,4 @@ def extract_field(data_list, field_name):
     Returns:
         list: 提取出来的字段值列表
     """
-    extracted_data = []
-    for item in data_list:
-        if field_name in item and item[field_name]:
-            # 如果是 list，展开
-            if isinstance(item[field_name], list):
-                extracted_data.extend(item[field_name])
-            else:
-                extracted_data.append(item[field_name])
-    return extracted_data
+    return [item[field_name] for item in data_list if field_name in item]

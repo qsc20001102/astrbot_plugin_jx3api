@@ -4,7 +4,7 @@ from astrbot.api import logger
 
 from .class_reqsest import APIClient
 from .cless_mysql import AsyncMySQL
-from .function_basic import load_template, extract_field
+from .function_basic import load_template, extract_field,flatten_field,extract_fields
 
 class JX3Function:
     def __init__(self, api_config,db: AsyncMySQL ):
@@ -219,7 +219,7 @@ class JX3Function:
             return  return_data
         # 提取数据
         try:
-            extracted_data = extract_field(data, "dataModels")
+            extracted_data = flatten_field(data, "dataModels")
         except FileNotFoundError as e:
             logger.error(f"提取数据失败: {e}")
             return_data["msg"] = "提取指定数据字段失败"
@@ -382,3 +382,44 @@ class JX3Function:
                 continue
         
         return processed
+    
+    async def jiaoyihang(self,Name: str = "守缺式",server: str = "眉间雪"):
+        return_data = {
+            "code": 0,
+            "msg": "功能函数未执行",
+            "data": {}
+        }
+        #在配置文件中获取接口配置
+        api_config = self.__api_config["jx3box_item"]
+        #更新参数
+        api_config["params"]["keyword"] = Name
+        # 获取多页查找信息
+        data = await self.__api.all_pages("GET",api_config["url"],api_config["params"],"data","data")
+        if not data:
+            logger.error(f"获取多页数据失败")
+            return_data["msg"] = "未找到该物品"
+            return  return_data
+        # 提取指定字段
+        fields = ["IconID", "Name","id"]
+        result = extract_fields(data, fields)
+        if not data:
+            logger.error(f"提取字段失败")
+            return_data["msg"] = "未找到该物品"
+            return  return_data
+        # 提取id列表
+        lists_id = extract_field(result, "id")
+        strlists_id = ",".join(str(x) for x in lists_id)
+        logger.info(f"{strlists_id}")
+        #在配置文件中获取接口配置
+        api_config = self.__api_config["jx3box_itemprice"]
+        #更新参数
+        api_config["params"]["itemIds"] = strlists_id
+        api_config["params"]["server"] = server
+        # 获取数据
+        data = await self.__api.get(api_config["url"],api_config["params"],"data")
+        if not data:
+            return_data["msg"] = "未找到在售物品"
+            return  return_data
+        return_data["data"]=data
+        return_data["code"] = 200
+        return return_data
