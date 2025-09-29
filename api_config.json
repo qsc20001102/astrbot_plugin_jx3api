@@ -47,6 +47,44 @@
             "adventureName": "阴阳两界",  
             "serverName": "眉间雪"  
         }
+    },
+    "aijx3_SearchData":{
+        "url":"https://www.aijx3.cn/api2/aijx3-wblwg/basedata/getSearchData",
+        "method":"POST",
+        "description":"获取爱剑网三所有外观数据",
+        "params":{
+        }
+    },
+    "jx3box_exterior":{
+        "url":"https://node.jx3box.com/api/node/v2/exterior/list",
+        "method":"GET",
+        "description":"魔盒中模糊查找剑网三的外观数据",
+        "params":{
+            "keyword": "秃盒",
+            "tradable": "0",
+            "list_type": "0"
+        }
+    },
+    "aijx3_GoodsDetail":{
+        "url":"https://www.aijx3.cn/api2/aijx3-wj/goods/getGoodsDetail",
+        "method":"POST",
+        "description":"在爱剑网三中获取外观详细数据",
+        "params":{
+            "goodsName": "秃盒"
+        }
+    },
+    "aijx3_wblwg":{
+        "url":"https://www.aijx3.cn/api2/aijx3-wblwg/record/queryByCondition",
+        "method":"POST",
+        "description":"在爱剑网三中获取外观详细数据",
+        "params":{
+            "accoSeq": "",
+            "orderMode": 1,
+            "orderBy": "price_num",
+            "searchId": [48356],
+            "current": 1,
+            "size": 10,
+            "tradeStatus": ""
+        }
     }
-
 }

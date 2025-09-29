@@ -3,11 +3,13 @@ from datetime import datetime
 from astrbot.api import logger
 
 from .api_data import APIClient
-from .load_template import load_template
+from .sql_data import AsyncMySQL
+from .basic_Function import load_template, extract_field
 
 class JX3Function:
-    def __init__(self, api_config):
+    def __init__(self, api_config,db: AsyncMySQL ):
         self.__api = APIClient()
+        self.__db = db
         self.__api_config = api_config
 
     async def richang(self,server: str = "眉间雪",num: int = 0):
@@ -200,3 +202,183 @@ class JX3Function:
             return return_data      
         return_data["code"] = 200       
         return return_data
+    
+
+    async def SearchData(self):
+        return_data = {
+            "code": 0,
+            "msg": "功能函数未执行",
+            "data": {}
+        }
+        #在配置文件中获取接口配置
+        api_config = self.__api_config["aijx3_SearchData"]
+        # 获取数据
+        data = await self.__api.post(api_config["url"],api_config["params"],"data")
+        if not data:
+            return_data["msg"] = "获取接口信息失败"
+            return  return_data
+        # 提取数据
+        try:
+            extracted_data = extract_field(data, "dataModels")
+        except FileNotFoundError as e:
+            logger.error(f"提取数据失败: {e}")
+            return_data["msg"] = "提取指定数据字段失败"
+            return return_data 
+        # 准备SQL和批量数据
+        sql = """
+        INSERT INTO searchdata 
+        (typeName, name, showName, picUrl, searchId, searchDescType) 
+        VALUES (%s, %s, %s, %s, %s, %s)
+        """
+        values_list = [
+            (
+                item['typeName'],
+                item['name'],
+                item['showName'],
+                item['picUrl'],
+                item['searchId'],
+                item['searchDescType']
+            )
+            for item in extracted_data
+        ]
+        # 插入数据
+        try:
+            await self.__db.truncate_table("searchdata")
+            await self.__db.executemany(sql, values_list)
+        except FileNotFoundError as e:
+            logger.error(f"数据插入失败: {e}")
+            return_data["msg"] = "数据插入数据库失败"
+            return return_data
+        return_data["msg"] = f"成功批量插入 {len(extracted_data)} 条数据！"
+        return_data["code"] = 200       
+        return return_data
+    
+
+    async def wujia(self,Name: str = "秃盒"):
+        return_data = {
+            "code": 0,
+            "msg": "功能函数未执行",
+            "data": {}
+        }
+        #在配置文件中获取接口配置
+        api_config = self.__api_config["jx3box_exterior"]
+        #更新参数
+        api_config["params"]["keyword"] = Name
+        # 获取查找信息
+        data = await self.__api.get(api_config["url"],api_config["params"],"data")
+        if data["total"] == 0:
+            try:
+                sql = "SELECT showName, searchId FROM searchdata WHERE name = %s OR showName = %s"
+                sqldata = await self.__db.fetch_one(sql, (Name,Name)) 
+                searchId=sqldata["searchId"]
+                showName=sqldata["showName"]
+                return_data["data"]["searchId"]=searchId
+                return_data["data"]["showName"]=showName
+            except Exception as e:
+                logger.error(f"获取外观信息错误: {e}")
+                return_data["msg"] = "未找到该外观信息"
+                return  return_data
+        else:
+            # 查询魔盒获取外观名称
+            try:  
+                showName=data["list"][0]["name"]
+                return_data["data"]["showName"]=showName
+            except Exception as e:
+                logger.error(f"获取外观名称错误: {e}")
+                return_data["msg"] = "未找到该外观信息"
+                return  return_data
+            # 查询爱剑三获取外观ID
+            try:
+                sql = "SELECT searchId FROM searchdata WHERE showName=%s"
+                sqldata = await self.__db.fetch_one(sql, (return_data["data"]["showName"],))   
+                searchId=sqldata["searchId"]
+                return_data["data"]["searchId"]=searchId
+            except Exception as e:
+                logger.error(f"获取外观ID错误: {e}\n{return_data['data']['showName']}")
+                return_data["msg"] = "未找到该外观信息"
+                return  return_data
+
+        #在配置文件中获取接口配置
+        api_config = self.__api_config["aijx3_GoodsDetail"]
+        #更新参数
+        api_config["params"]["goodsName"] = showName
+        # 获取数据外观详细数据
+        data = await self.__api.post(api_config["url"],api_config["params"],"data")
+        if not data:
+            return_data["msg"] = "获取外观详细数据失败"
+            return  return_data
+        # 提取外观详细数据
+        try:
+            imgs = data.get("imgs", [])
+            return_data["data"]["goodsDesc"]=data.get("goodsDesc", "无描述")
+            return_data["data"]["publishTime"]=data.get("publishTime", "无价格")
+            return_data["data"]["priceNum"]=data.get("priceNum", 0)
+            return_data["data"]["goodsId"]=data.get("goodsId", "无数据")
+            return_data["data"]["imgs"]=imgs[0] if imgs else ""
+            return_data["data"]["goodsAlias"]=data.get("goodsAlias", "无别名")
+        except Exception as e:
+            logger.error(f"提取外观详细数据失败: {e}")
+            return_data["msg"] = "提取外观详细数据失败"
+            return  return_data
+
+        # 查询万宝楼数据（公示和在售）
+        wbl_data = await self.__get_wbl_data(searchId)
+        if not wbl_data:
+            return_data["msg"] = "获取万宝楼数据失败"
+            return  return_data
+        if wbl_data:
+            return_data["data"]["wblgs"]=wbl_data["wblgs"]
+            return_data["data"]["wblzs"]=wbl_data["wblzs"]
+            return_data["msg"] = "获取万宝楼数据完成"
+        # 加载模板
+        try:
+            return_data["temp"] = load_template("wujia.html")
+        except FileNotFoundError as e:
+            logger.error(f"加载模板失败: {e}")
+            return_data["msg"] = "系统错误：模板文件不存在"
+            return return_data
+        return_data["code"] = 200   
+        return return_data
+    
+    async def __get_wbl_data(self,search_id):
+        """获取万宝楼数据（公示和在售）"""
+        try:
+            #在配置文件中获取接口配置
+            api_config = self.__api_config["aijx3_wblwg"]
+            #更新参数
+            api_config["params"]["searchId"] = [search_id]
+            # 获取公示数据 
+            api_config["params"]["tradeStatus"] = "3"
+            datawblgs = await self.__api.post(api_config["url"], api_config["params"], "data")
+            # 获取在售数据
+            api_config["params"]["tradeStatus"] = "5"
+            datawblzs = await self.__api.post(api_config["url"], api_config["params"], "data")
+            
+            return {
+                "wblgs": await self.__process_wbl_records(datawblgs.get("records", [])),
+                "wblzs": await self.__process_wbl_records(datawblzs.get("records", []))
+            }
+        except Exception as e:
+            logger.error(f"获取万宝楼数据出错: {e}")
+            return None
+    
+    async def __process_wbl_records(self,records):
+        """处理万宝楼记录数据"""
+        processed = []
+        for record in records:
+            try:
+                # 转换时间戳为可读格式
+                timestamp = record.get("replyTime", 0)
+                dt = datetime.fromtimestamp(timestamp / 1000) if timestamp else datetime.now()
+                
+                processed.append({
+                    "priceNum": record.get("priceNum", 0),
+                    "belongQf2": record.get("belongQf2", "无数据"),
+                    "replyTime": dt.strftime("%Y-%m-%d %H:%M:%S"),
+                    "discountRate": record.get("discountRate", 0.0),
+                })
+            except Exception as e:
+                logger.error(f"处理万宝楼记录出错: {e}")
+                continue
+        
+        return processed

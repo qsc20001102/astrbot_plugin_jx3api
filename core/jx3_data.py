@@ -4,7 +4,6 @@ from urllib.parse import quote
 from datetime import datetime
 
 from .api_data import api_data_get, api_data_post
-from .sql_data import sql_data_searchdata,sql_data_select
 
 
 def fetch_all_pages(base_url, initial_params, max_pages=None):
@@ -204,7 +203,7 @@ def jx3_data_wujia(inname="秃盒"):
     
     try:
         # 1. 获取物品ID和名称
-        idname = sql_data_select(inname)
+        idname = api_data_get(inname)
         if not idname:
             datas.update({"code": 201, "msg": "未找到该外观信息"})
             return datas
