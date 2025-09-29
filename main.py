@@ -11,6 +11,7 @@ from .core.load_template import load_template
 from .core.jx3_data import jx3_data_jiaoyihang,jx3_data_wujia
 from .core.api_data import APIClient,api_data_get, api_data_post
 from .core.sql_data import sql_data_searchdata,sql_data_select
+from .core.jx3_Function import JX3Function
 
 
 @register("astrbot_plugin_jx3api", 
@@ -36,32 +37,43 @@ class Jx3ApiPlugin(Star):
     async def initialize(self):
         """可选择实现异步的插件初始化方法，当实例化该插件类之后会自动调用该方法。"""
         #创建类实例
-        self.api_data = APIClient()
+        self.jx3fun = JX3Function(self.api_config)
         logger.info("jx3api插件创建实例完成")
 
-    async def message_str(self, event: AstrMessageEvent):
-        """可选择实现异步的消息预处理方法，在消息分发到具体命令前会调用该方法。"""
-        # 预处理消息内容
-        message_str = event.message_str.strip()
-        return message_str.split()
+         
+    
+    @filter.command_group("剑三")
+    def jx3(self):
+        pass
 
-    @filter.command("剑三日常")
-    async def jx3_richang(self, event: AstrMessageEvent):
-        """剑三日常"""
-        # 接口URL
-        custom_url = "https://www.jx3api.com/data/active/calendar"  
-        # 接口参数
-        params = {
-            "server": "眉间雪",  # 服务器
-            "num": 0  # 当天
-        }
-        # 获取消息内容
-        parts = await self.message_str(event)
-        # 解析消息内容
-        if len(parts) > 1:
-            params["server"] = parts[1]  
+    @jx3.command("日常")
+    async def jx3_richang(self, event: AstrMessageEvent,server: str = "眉间雪",num: int = 0):
+        """剑三 日常 服务器 天数"""
+        try:
+            data= await self.jx3fun.richang(server,num)
+            if data["code"] == 200:
+                yield event.plain_result(data["data"])
+            else:
+                yield event.plain_result("msg")
+            return
+        except Exception as e:
+            logger.error(f"功能函数执行错误: {e}")
+            yield event.plain_result("猪脑过载，请稍后再试")
+    
+    @jx3.command("沙盘")
+    async def jx3_shapan(self, event: AstrMessageEvent,server: str = "眉间雪"):
+        """剑三 沙盘 服务器"""
+        try:
+            data= await self.jx3fun.shapan(server)
+            if data["code"] == 200:
+                yield event.image_result(data["data"])
+            else:
+                yield event.plain_result(data["msg"])
+            return
+        except Exception as e:
+            logger.error(f"功能函数执行错误: {e}")
+            yield event.plain_result("猪脑过载，请稍后再试")        
 
-<<<<<<< HEAD
 
     @jx3.command("骚话")
     async def jx3_shaohua(self, event: AstrMessageEvent,):
@@ -72,110 +84,25 @@ class Jx3ApiPlugin(Star):
                 yield event.plain_result(data["data"])
             else:
                 yield event.plain_result(data["msg"])
-=======
-        if len(parts) > 2:
-            try:
-                params["num"] = int(parts[2])  
-            except ValueError:
-                params["num"] = 0  
-
-        # 获取数据
-        data = await self.api_data.request(self.api_config["jx3_richang"],"data")
-        
-        if not data:
-            yield event.plain_result("获取获取接口信息失败，请稍后再试")
->>>>>>> ecb573761ec04986a07da4a19511ef52e9f36ec6
             return
-        
-        # 处理返回数据
-        try:
-            # 构建回复消息
-            result_msg = f"{params['server']}-{data.get('date')}-星期{data.get('week')}\n"
-            result_msg += f"大战：{data.get('war')}\n"
-            result_msg += f"战场：{data.get('battle')}\n"
-            result_msg += f"阵营：{data.get('orecar')}\n"
-            result_msg += f"宗门：{data.get('school')}\n"
-            result_msg += f"驰援：{data.get('rescue')}\n"
-            result_msg += f"画像：{data.get('draw')}\n"
-            result_msg += f"宠物福缘：\n{data.get('luck')}\n"
-            result_msg += f"家园声望：\n{data.get('card')}\n"
-            result_msg += f"武林通鉴：\n{data.get('team')}\n"
-
-            yield event.plain_result(result_msg)
-            
         except Exception as e:
-            logger.error(f"处理数据时出错: {e}")
-            yield event.plain_result("处理接口返回信息时出错")
+            logger.error(f"功能函数执行错误: {e}")
+            yield event.plain_result("猪脑过载，请稍后再试") 
 
 
-    @filter.command("剑三骚话")
-    async def jx3_shaohua(self, event: AstrMessageEvent):
-        """剑三骚话"""
-        # 接口URL
-        custom_url = "https://www.jx3api.com/data/saohua/random"  
-        # 接口参数
-        params = {
-            "name": "万花",  # 默认值
-        }
-        
-        # 获取消息内容
-
-        # 解析消息内容
-        
-        # 获取数据
-        data = api_data_get(custom_url, params,"data")
-        
-        if not data:
-            yield event.plain_result("获取获取接口信息失败，请稍后再试")
+    @jx3.command("技改")
+    async def jx3_jigai(self, event: AstrMessageEvent,):
+        """剑三 技改"""
+        try:
+            data= await self.jx3fun.jigai()
+            if data["code"] == 200:
+                yield event.plain_result(data["data"])
+            else:
+                yield event.plain_result(data["msg"])
             return
-        
-        # 处理返回数据
-        try:
-            # 构建回复消息
-            result_msg = f"{data.get('text')}\n"
-
-            yield event.plain_result(result_msg)
-            
         except Exception as e:
-            logger.error(f"处理数据时出错: {e}")
-            yield event.plain_result("处理接口返回信息时出错")
-
-
-    @filter.command("剑三技改")
-    async def jx3_jigai(self, event: AstrMessageEvent):
-        """剑三技改"""
-        # 接口URL
-        custom_url = "https://www.jx3api.com/data/skills/records"  
-        # 接口参数
-        params = {
-            
-        }
-        
-        # 获取消息内容
-
-        # 解析消息内容
-        
-        # 获取数据
-        data = api_data_get(custom_url,params,"data")
-        
-        if not data:
-            yield event.plain_result("获取获取接口信息失败，请稍后再试")
-            return
-        
-        # 处理返回数据
-        try:
-            # 构建回复消息
-            result_msg = f"剑网三最近技改\n"
-            for i, item in enumerate(data[:2], 1):
-                result_msg += f"{i}. {item.get('title', '无标题')}\n"
-                result_msg += f"时间：{item.get('time', '未知时间')}\n"
-                result_msg += f"链接：{item.get('url', '无链接')}\n\n"
-
-            yield event.plain_result(result_msg)
-            
-        except Exception as e:
-            logger.error(f"处理数据时出错: {e}")
-            yield event.plain_result("处理接口返回信息时出错")
+            logger.error(f"功能函数执行错误: {e}")
+            yield event.plain_result("猪脑过载，请稍后再试") 
 
 
     @filter.command("剑三交易行")
@@ -234,38 +161,7 @@ class Jx3ApiPlugin(Star):
             yield event.plain_result("查询交易行数据时出错，请稍后再试")
 
 
-    @filter.command("剑三沙盘")
-    async def jx3_shapan(self, event: AstrMessageEvent):
-        """剑三沙盘 服务器"""
-        # 接口URL
-        custom_url = "https://www.jianxiachaguan.cn/api2/aijx3-jxcg/game/get-sand-table-img"  
-        # 接口参数
-        params = {
-                "serverName": "眉间雪"  # 默认服务器
-        }
-
-        # 获取消息内容
-        message_str = event.message_str.strip()
-        parts = message_str.split()
-        # 解析消息内容
-        if len(parts) > 1:
-            params["serverName"] = parts[1]  # 第二个参数为服务器
-
-        # 获取数据
-        data = api_data_post(custom_url,params,"data")
-        
-        if not data:
-            yield event.plain_result("获取获取接口信息失败，请稍后再试")
-            return
-        
-        # 处理返回数据
-        try:
-            # 构建回复消息
-            yield event.image_result(data.get("picUrl"))
-            
-        except Exception as e:
-            logger.error(f"处理数据时出错: {e}")
-            yield event.plain_result("处理接口返回信息时出错")
+    
 
 
     @filter.command("剑三金价")
