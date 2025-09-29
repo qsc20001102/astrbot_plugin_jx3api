@@ -1,8 +1,9 @@
+from datetime import datetime
+
 from astrbot.api import logger
-from astrbot.api.event import filter, AstrMessageEvent, MessageEventResult
 
 from .api_data import APIClient
-
+from .load_template import load_template
 
 class JX3Function:
     def __init__(self, api_config):
@@ -118,4 +119,84 @@ class JX3Function:
         except Exception as e:
             logger.error(f"处理数据时出错: {e}")
             return_data["msg"] = "处理接口返回信息时出错"
+        return return_data
+    
+
+    async def jinjia(self, server: str = "眉间雪"):
+        return_data = {
+            "code": 0,
+            "msg": "功能函数未执行",
+            "data": {}
+        }
+        #在配置文件中获取接口配置
+        api_config = self.__api_config["aijx3_jinjia"]
+        #更新参数
+        api_config["params"]["serverName"] = server
+        # 获取数据
+        data = await self.__api.post(api_config["url"],api_config["params"],"data")
+        if not data:
+            return_data["msg"] = "获取接口信息失败"
+            return  return_data 
+        # 加载模板
+        try:
+            return_data["temp"] = load_template("jinjia.html")
+        except FileNotFoundError as e:
+            logger.error(f"加载模板失败: {e}")
+            return_data["msg"] = "系统错误：模板文件不存在"
+            return return_data
+        # 准备模板渲染数据
+        try:
+            return_data["data"] = {
+                "items": data,
+                "server": api_config["params"]["serverName"],
+                "update_time": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            } 
+        except Exception as e:
+            logger.error(f"处理数据时出错: {e}")
+            return_data["msg"] = "系统错误：模板渲染数据准备失败"
+            return return_data      
+        return_data["code"] = 200       
+        return return_data
+
+
+    async def qiyu(self, adventureName: str = "阴阳两界", serverName: str = "眉间雪"):
+        return_data = {
+            "code": 0,
+            "msg": "功能函数未执行",
+            "data": {}
+        }
+        #在配置文件中获取接口配置
+        api_config = self.__api_config["aijx3_qiyu"]
+        #更新参数
+        api_config["params"]["adventureName"] = adventureName
+        api_config["params"]["serverName"] = serverName
+        # 获取数据
+        data = await self.__api.post(api_config["url"],api_config["params"],"data")
+        if not data:
+            return_data["msg"] = "获取接口信息失败"
+            return  return_data
+        # 格式化时间
+        for item in data:
+            if "time" in item:
+                item["time"] = datetime.fromtimestamp(item["time"]/1000).strftime("%Y-%m-%d %H:%M:%S")
+        # 加载模板
+        try:
+            return_data["temp"] = load_template("qiyuliebiao.html")
+        except FileNotFoundError as e:
+            logger.error(f"加载模板失败: {e}")
+            return_data["msg"] = "系统错误：模板文件不存在"
+            return return_data
+        # 准备模板渲染数据
+        try:            
+            return_data["data"] = {
+                "items": data,
+                "server": serverName,
+                "update_time": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                ,"qiyuname": adventureName
+            }
+        except Exception as e:
+            logger.error(f"处理数据时出错: {e}")
+            return_data["msg"] = "系统错误：模板渲染数据准备失败"
+            return return_data      
+        return_data["code"] = 200       
         return return_data

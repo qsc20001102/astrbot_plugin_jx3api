@@ -9,7 +9,6 @@ from astrbot.api import AstrBotConfig
 
 from .core.load_template import load_template
 from .core.jx3_data import jx3_data_jiaoyihang,jx3_data_wujia
-from .core.api_data import APIClient,api_data_get, api_data_post
 from .core.sql_data import sql_data_searchdata,sql_data_select
 from .core.jx3_Function import JX3Function
 
@@ -105,6 +104,38 @@ class Jx3ApiPlugin(Star):
             yield event.plain_result("猪脑过载，请稍后再试") 
 
 
+    @jx3.command("金价")
+    async def jx3_jinjia(self, event: AstrMessageEvent,server: str = "眉间雪"):
+        """剑三 金价 服务器"""
+        try:
+            data= await self.jx3fun.jinjia(server)
+            if data["code"] == 200:
+                url = await self.html_render(data["temp"], data["data"], options={})
+                yield event.image_result(url)
+            else:
+                yield event.plain_result(data["msg"])
+            return
+        except Exception as e:
+            logger.error(f"功能函数执行错误: {e}")
+            yield event.plain_result("猪脑过载，请稍后再试") 
+
+
+    @jx3.command("奇遇")
+    async def jx3_qiyu(self, event: AstrMessageEvent,adventureName: str = "阴阳两界", serverName: str = "眉间雪"):
+        """剑三 奇遇 奇遇名称 服务器"""
+        try:
+            data= await self.jx3fun.qiyu(adventureName,serverName)
+            if data["code"] == 200:
+                url = await self.html_render(data["temp"], data["data"], options={})
+                yield event.image_result(url)
+            else:
+                yield event.plain_result(data["msg"])
+            return
+        except Exception as e:
+            logger.error(f"功能函数执行错误: {e}")
+            yield event.plain_result("猪脑过载，请稍后再试") 
+
+
     @filter.command("剑三交易行")
     async def jx3_data_jiaoyihang(self, event: AstrMessageEvent):
         """剑三交易行 物品名称 服务器""" 
@@ -159,116 +190,6 @@ class Jx3ApiPlugin(Star):
         except Exception as e:
             logger.error(f"交易行查询出错: {e}")
             yield event.plain_result("查询交易行数据时出错，请稍后再试")
-
-
-    
-
-
-    @filter.command("剑三金价")
-    async def jx3_jinjia(self, event: AstrMessageEvent):
-        """剑三金价 服务器"""
-        # 接口URL
-        custom_url = "https://www.jianxiachaguan.cn/api2/aijx3-jxcg/game/get-gold"  
-        # 接口参数
-        params = {
-                "serverName": "眉间雪"  # 默认服务器
-        }
-
-        # 获取消息内容
-        message_str = event.message_str.strip()
-        parts = message_str.split()
-        # 解析消息内容
-        if len(parts) > 1:
-            params["serverName"] = parts[1]  # 服务器
-
-        # 获取数据
-        data = api_data_post(custom_url,params,"data")
-        
-        if not data:
-            yield event.plain_result("获取获取接口信息失败，请稍后再试")
-            return
-        
-        # 处理返回数据
-        try:
-            # 加载模板
-            try:
-                template_content = load_template("jinjia.html")
-            except FileNotFoundError as e:
-                logger.error(f"加载模板失败: {e}")
-                yield event.plain_result("系统错误：模板文件不存在")
-                return
-            # 准备模板渲染数据
-            render_data = {
-                "items": data,
-                "server": params["serverName"],
-                "update_time": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            } 
-
-            url = await self.html_render(template_content, render_data, options={})
-            yield event.image_result(url)
-
-        except Exception as e:
-            logger.error(f"处理数据时出错: {e}")
-            yield event.plain_result("处理接口返回信息时出错")
-
-
-    @filter.command("剑三奇遇")
-    async def jx3_qiyu(self, event: AstrMessageEvent):
-        """剑三奇遇 奇遇名称 服务器"""
-        # 接口URL
-        custom_url = "https://www.jianxiachaguan.cn/api2/aijx3-jxcg/game/get-adventure-record"  
-        # 接口参数
-        params = {
-            "adventureName": "阴阳两界",  # 默奇遇
-            "serverName": "眉间雪"  # 默认服务器
-        }
-
-        # 获取消息内容
-        message_str = event.message_str.strip()
-        parts = message_str.split()
-        # 解析消息内容
-        if len(parts) > 1:
-            params["adventureName"] = parts[1]  # 奇遇名称
-        if len(parts) > 2:
-            params["serverName"] = parts[2]  # 第二个参数为服务器
-
-        # 获取数据
-        data = api_data_post(custom_url,params,"data")
-        
-        if not data:
-            yield event.plain_result("获取获取接口信息失败，请稍后再试")
-            return
-        
-        #数据处理
-        for item in data:
-            # 格式化时间
-            if "time" in item:
-                dt = datetime.fromtimestamp(item["time"]/1000)
-                item["time"] = dt.strftime("%Y-%m-%d %H:%M:%S")
-
-        # 传入模板渲染
-        try:
-            # 加载模板
-            try:
-                template_content = load_template("qiyuliebiao.html")
-            except FileNotFoundError as e:
-                logger.error(f"加载模板失败: {e}")
-                yield event.plain_result("系统错误：模板文件不存在")
-                return
-            # 准备模板渲染数据
-            render_data = {
-                "items": data,
-                "server": params["serverName"],
-                "update_time": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                ,"qiyuname": params["adventureName"]
-            }
-
-            url = await self.html_render(template_content, render_data, options={})
-            yield event.image_result(url)
-            
-        except Exception as e:
-            logger.error(f"处理数据时出错: {e}")
-            yield event.plain_result("处理接口返回信息时出错") 
 
 
     @filter.command("剑三外观数据同步")

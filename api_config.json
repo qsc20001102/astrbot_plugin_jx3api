@@ -30,6 +30,23 @@
         "params":{
             "serverName": "眉间雪"
         }
+    },
+    "aijx3_jinjia":{
+        "url":"https://www.jianxiachaguan.cn/api2/aijx3-jxcg/game/get-gold",
+        "method":"POST",
+        "description":"获取剑网三某区服金价",
+        "params":{
+            "serverName": "眉间雪"
+        }
+    },
+    "aijx3_qiyu":{
+        "url":"https://www.jianxiachaguan.cn/api2/aijx3-jxcg/game/get-adventure-record",
+        "method":"POST",
+        "description":"获取剑网三某区服奇遇触发记录",
+        "params":{
+            "adventureName": "阴阳两界",  
+            "serverName": "眉间雪"  
+        }
     }
 
 }
