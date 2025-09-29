@@ -7,29 +7,5 @@
             "server": "眉间雪",  
             "num": 0  
         }
-    },
-    "jx3_shaohua":{
-        "url":"https://www.jx3api.com/data/saohua/random",
-        "method":"GET",
-        "description":"获取剑网三骚话",
-        "params":{
-            "name": "万花" 
-        }
-    },
-    "jx3_jigai":{
-        "url":"https://www.jx3api.com/data/skills/records",
-        "method":"GET",
-        "description":"获取剑网三技能记录",
-        "params":{
-        }
-    },
-    "aijx3_shapan":{
-        "url":"https://www.jianxiachaguan.cn/api2/aijx3-jxcg/game/get-sand-table-img",
-        "method":"POST",
-        "description":"获取剑网三沙盘状态",
-        "params":{
-            "serverName": "眉间雪"
-        }
     }
-
 }
