@@ -168,7 +168,7 @@ class Jx3ApiPlugin(Star):
     @filter.permission_type(filter.PermissionType.ADMIN)
     @jx3.command("外观数据同步")
     async def jx3_SearchData(self, event: AstrMessageEvent):
-        """剑三外观数据同步"""     
+        """剑三 外观数据同步"""     
         try:
             data=await self.jx3fun.SearchData()
             if data["code"] == 200:
@@ -237,45 +237,6 @@ class Jx3ApiPlugin(Star):
             yield event.plain_result("查询交易行数据时出错，请稍后再试")
 
 
-    
-
-
-    @filter.command("剑三物价")
-    async def jx3_wujia11(self, event: AstrMessageEvent):
-        """剑三物价 外观名称"""
-
-        inname = "秃盒"
-
-        # 获取消息内容
-        message_str = event.message_str.strip()
-        parts = message_str.split()
-        # 解析消息内容
-        if len(parts) > 1:
-            inname = parts[1]  # 外观名称
-
-        try:      
-            # 加载模板
-            try:
-                template_content = load_template("wujia.html")
-            except FileNotFoundError as e:
-                logger.error(f"加载模板失败: {e}")
-                yield event.plain_result("系统错误：模板文件不存在")
-                return
-
-            render_data = jx3_data_wujia(inname)
-
-            if render_data.get("code") == 200:
-                url = await self.html_render(template_content, render_data, options={})
-                yield event.image_result(url)
-            else:
-                yield event.plain_result(f"{render_data.get('msg')}")
-                return
-            
-
-            
-        except Exception as e:
-            logger.error(f"处理数据时出错: {e}")
-            yield event.plain_result("处理接口返回信息时出错") 
 
 
     async def terminate(self):
