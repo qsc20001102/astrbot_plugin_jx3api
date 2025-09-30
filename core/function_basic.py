@@ -84,3 +84,23 @@ def extract_field(data_list, field_name):
         list: 提取出来的字段值列表
     """
     return [item[field_name] for item in data_list if field_name in item]
+
+
+def gold_to_string(gold_amount):
+    """
+    将金钱数值转换为字符串表示形式
+
+    Args:
+        gold_amount (int): 金钱数值，单位为铜币
+
+    Returns:
+        str: 格式化后的金钱字符串，例如 "1金2银3铜"
+    """
+    bricks = gold_amount // 100000000 if gold_amount else 0
+    gold = (gold_amount % 100000000) // 10000 if gold_amount else 0
+    silver = (gold_amount % 10000) // 100 if gold_amount else 0
+    copper = gold_amount % 100 if gold_amount else 0
+        
+    gold_str = f"{bricks}砖{gold}金{silver}银{copper}铜" if gold_amount else "无价格"
+
+    return gold_str

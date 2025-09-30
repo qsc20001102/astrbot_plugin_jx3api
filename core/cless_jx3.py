@@ -4,7 +4,7 @@ from astrbot.api import logger
 
 from .class_reqsest import APIClient
 from .cless_mysql import AsyncMySQL
-from .function_basic import load_template, extract_field,flatten_field,extract_fields
+from .function_basic import load_template, extract_field,flatten_field,extract_fields,gold_to_string
 
 class JX3Function:
     def __init__(self, api_config,db: AsyncMySQL ):
@@ -383,7 +383,7 @@ class JX3Function:
         
         return processed
     
-    async def jiaoyihang(self,Name: str = "守缺式",server: str = "眉间雪"):
+    async def jiaoyihang(self,Name: str = "守缺式",server: str = "梦江南"):
         return_data = {
             "code": 0,
             "msg": "功能函数未执行",
@@ -420,6 +420,22 @@ class JX3Function:
         if not data:
             return_data["msg"] = "未找到在售物品"
             return  return_data
-        return_data["data"]=data
+        #提取需要的字段
+        fieldsjyh = ["ItemId", "SampleSize", "LowestPrice", "AvgPrice", "Date"]
+        resultjyh = [{f: v[f] for f in fieldsjyh} for v in data.values()]
+        #合并表格数据
+        # 先建立一个字典映射，加快查找
+        map_result = {item["id"]: {"IconID": item["IconID"], "Name": item["Name"]} for item in result}
+        # 遍历 resultjyh，合并字段
+        for item in resultjyh:
+            if item["ItemId"] in map_result:
+                item.update(map_result[item["ItemId"]])
+        #处理数据
+        for item in resultjyh:
+            item["LowestPrice"] = gold_to_string(item["LowestPrice"])
+            item["AvgPrice"] = gold_to_string(item["AvgPrice"])
+            item["IconID"] = f"https://icon.jx3box.com/icon/{item['IconID']}.png"
+        
+        return_data["data"]=resultjyh
         return_data["code"] = 200
         return return_data
