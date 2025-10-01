@@ -198,63 +198,6 @@ class Jx3ApiPlugin(Star):
             yield event.plain_result("猪脑过载，请稍后再试") 
 
 
-    @filter.command("剑三交易行")
-    async def jx3_data_jiaoyihang(self, event: AstrMessageEvent):
-        """剑三交易行 物品名称 服务器""" 
-
-        # 接口参数
-        params = {
-            "server": "眉间雪",  # 默认服务器
-            "name": "守缺"  # 默认当天
-        }
-
-        # 获取消息内容
-        message_str = event.message_str.strip()
-        parts = message_str.split()
-        
-        # 解析消息内容
-        if len(parts) > 1:
-            params["name"] = parts[1]  
-
-        if len(parts) > 2:
-            params["server"] = parts[2]  
-
-        # 获取交易行数据
-        try:
-            items_data = jx3_data_jiaoyihang(params["server"], params["name"])
-
-            if not items_data or items_data == "无交易行数据":
-                yield event.plain_result(f"在服务器【{params['server']}】未找到物品【{params['name']}】的交易行数据")      
-                return
-
-            if not items_data or items_data == "未找到改物品":
-                yield event.plain_result(f"未找到物品【{params['name']}】")      
-                return
-
-            # 加载模板
-            try:
-                template_content = load_template("jiaoyihang.html")
-            except FileNotFoundError as e:
-                logger.error(f"加载模板失败: {e}")
-                yield event.plain_result("系统错误：模板文件不存在")
-                return
-                
-            # 准备模板渲染数据
-            render_data = {
-                "items": items_data,
-                "server": params["server"],
-                "update_time": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            }      
-
-            url = await self.html_render(template_content, render_data, options={})
-            yield event.image_result(url)
-        
-        except Exception as e:
-            logger.error(f"交易行查询出错: {e}")
-            yield event.plain_result("查询交易行数据时出错，请稍后再试")
-
-
-
 
     async def terminate(self):
         """可选择实现异步的插件销毁方法，当插件被卸载/停用时会调用。"""
