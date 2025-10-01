@@ -435,7 +435,18 @@ class JX3Function:
             item["LowestPrice"] = gold_to_string(item["LowestPrice"])
             item["AvgPrice"] = gold_to_string(item["AvgPrice"])
             item["IconID"] = f"https://icon.jx3box.com/icon/{item['IconID']}.png"
-        
-        return_data["data"]=resultjyh
+        # 准备模板渲染数据
+        return_data["data"] = {
+            "items": resultjyh,
+            "server": server,
+            "update_time": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        } 
+        # 加载模板
+        try:
+            return_data["temp"] = load_template("jiaoyihang.html")
+        except FileNotFoundError as e:
+            logger.error(f"加载模板失败: {e}")
+            return_data["msg"] = "系统错误：模板文件不存在"
+            return return_data 
         return_data["code"] = 200
         return return_data

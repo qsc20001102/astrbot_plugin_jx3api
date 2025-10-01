@@ -166,14 +166,14 @@ class Jx3ApiPlugin(Star):
 
 
     @jx3.command("交易行")
-    async def jx3_jiaoyihang(self, event: AstrMessageEvent,Name: str = "守缺式",server: str = "眉间雪"):
+    async def jx3_jiaoyihang(self, event: AstrMessageEvent,Name: str = "守缺式",server: str = "梦江南"):
         """剑三 外观名称"""     
         try:
             data=await self.jx3fun.jiaoyihang(Name,server)
             if data["code"] == 200:
-                #url = await self.html_render(data["temp"], data["data"], options={})
-                #yield event.image_result(url)
-                yield event.plain_result(f"{data['data']}")
+                url = await self.html_render(data["temp"], data["data"], options={})
+                yield event.image_result(url)
+                
             else:
                 yield event.plain_result(data["msg"])
             return

@@ -96,11 +96,21 @@ def gold_to_string(gold_amount):
     Returns:
         str: 格式化后的金钱字符串，例如 "1金2银3铜"
     """
-    bricks = gold_amount // 100000000 if gold_amount else 0
-    gold = (gold_amount % 100000000) // 10000 if gold_amount else 0
-    silver = (gold_amount % 10000) // 100 if gold_amount else 0
-    copper = gold_amount % 100 if gold_amount else 0
-        
-    gold_str = f"{bricks}砖{gold}金{silver}银{copper}铜" if gold_amount else "无价格"
+    if not gold_amount:
+        return "无价格"
 
-    return gold_str
+    parts = []
+    started = False  # 标记是否已经遇到第一个非零位
+
+    bricks = gold_amount // 100000000
+    gold = (gold_amount % 100000000) // 10000
+    silver = (gold_amount % 10000) // 100
+    copper = gold_amount % 100
+
+    for value, unit in [(bricks, "砖"), (gold, "金"), (silver, "银"), (copper, "铜")]:
+        if value != 0:
+            started = True
+        if started:
+            parts.append(f"{value}{unit}")
+
+    return "".join(parts)
