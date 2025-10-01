@@ -253,7 +253,6 @@ class JX3Function:
         return_data["code"] = 200       
         return return_data
     
-
     async def wujia(self,Name: str = "秃盒"):
         return_data = {
             "code": 0,
