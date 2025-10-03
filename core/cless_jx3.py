@@ -4,7 +4,7 @@ from astrbot.api import logger
 
 from .class_reqsest import APIClient
 from .cless_mysql import AsyncMySQL
-from .function_basic import load_template, extract_field,flatten_field,extract_fields,gold_to_string
+from .function_basic import load_template,extract_field,flatten_field,extract_fields,gold_to_string,plot_line_chart_base64
 
 class JX3Function:
     def __init__(self, api_config,db: AsyncMySQL ):
@@ -141,17 +141,26 @@ class JX3Function:
             return  return_data 
         # 加载模板
         try:
-            return_data["temp"] = load_template("jinjia.html")
+            return_data["temp"] = load_template("temp_test.html")
         except FileNotFoundError as e:
             logger.error(f"加载模板失败: {e}")
             return_data["msg"] = "系统错误：模板文件不存在"
             return return_data
+        try:
+            chart_base64 = plot_line_chart_base64(data, "date", "priceWanbaolou", "万宝楼金价走势",True)
+            logger.info(f"生成折线图成功: {chart_base64}")
+        except Exception as e:
+            logger.error(f"生成折线图失败: {e}")
+            return_data["msg"] = "系统错误：生成折线图失败"
+            return return_data
         # 准备模板渲染数据
         try:
+            
             return_data["data"] = {
                 "items": data,
                 "server": api_config["params"]["serverName"],
-                "update_time": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                "update_time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                "img": chart_base64
             } 
         except Exception as e:
             logger.error(f"处理数据时出错: {e}")
@@ -252,7 +261,8 @@ class JX3Function:
         return_data["msg"] = f"成功批量插入 {len(extracted_data)} 条数据！"
         return_data["code"] = 200       
         return return_data
-    
+
+
     async def wujia(self,Name: str = "秃盒"):
         return_data = {
             "code": 0,
@@ -338,7 +348,8 @@ class JX3Function:
             return return_data
         return_data["code"] = 200   
         return return_data
-    
+
+
     async def __get_wbl_data(self,search_id):
         """获取万宝楼数据（公示和在售）"""
         try:
@@ -360,7 +371,8 @@ class JX3Function:
         except Exception as e:
             logger.error(f"获取万宝楼数据出错: {e}")
             return None
-    
+
+
     async def __process_wbl_records(self,records):
         """处理万宝楼记录数据"""
         processed = []
@@ -381,7 +393,8 @@ class JX3Function:
                 continue
         
         return processed
-    
+
+
     async def jiaoyihang(self,Name: str = "守缺式",server: str = "梦江南"):
         return_data = {
             "code": 0,

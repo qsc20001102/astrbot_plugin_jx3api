@@ -1,5 +1,9 @@
 import os
 from pathlib import Path
+import matplotlib.pyplot as plt
+from matplotlib.font_manager import FontProperties
+from io import BytesIO
+import base64
 
 def load_template(template_name):
     """
@@ -114,3 +118,50 @@ def gold_to_string(gold_amount):
             parts.append(f"{value}{unit}")
 
     return "".join(parts)
+
+
+def plot_line_chart_base64(data, x_field, y_field, title=None, reverse_x=False):
+    """
+    根据列表数据绘制折线图，返回 base64 图片字符串。
+    
+    :param data: list[dict] 数据列表
+    :param x_field: str X轴字段
+    :param y_field: str Y轴字段
+    :param title: str 图表标题（可选）
+    :param reverse_x: bool 是否反转 X 轴方向（默认 False：从左往右；True：从右往左）
+    :return: str base64 图片字符串，可直接放到 <img src="..."> 中
+    """
+    if not data:
+        raise ValueError("数据列表不能为空")
+
+    # 字体设置（支持中文）
+    plt.rcParams['font.sans-serif'] = ['SimHei']
+    plt.rcParams['axes.unicode_minus'] = False
+
+    # 提取 X / Y 数据
+    x_values = [str(item.get(x_field, "")) for item in data]
+    y_values = [float(item.get(y_field, 0)) for item in data]
+
+    # 创建画布
+    plt.figure(figsize=(8, 5))
+    plt.plot(x_values, y_values, marker='o', color='#4a90e2', linewidth=2)
+
+    # 反转 X 轴
+    if reverse_x:
+        plt.gca().invert_xaxis()
+
+    # 标题与标签
+    if title is None:
+        title = f"{y_field} 折线图"
+
+    plt.grid(True, linestyle='--', alpha=0.5)
+    plt.xticks(rotation=30)
+    plt.tight_layout()
+
+    # 转 Base64
+    buffer = BytesIO()
+    plt.savefig(buffer, format='png', dpi=150)
+    plt.close()
+
+    img_base64 = base64.b64encode(buffer.getvalue()).decode('utf-8')
+    return f"data:image/png;base64,{img_base64}"
