@@ -112,7 +112,7 @@ class JX3Function:
         # 处理返回数据
         try:
             result_msg = f"剑网三最近技改\n"
-            for i, item in enumerate(data[:2], 1):
+            for i, item in enumerate(data[:1], 1):
                 result_msg += f"{i}. {item.get('title', '无标题')}\n"
                 result_msg += f"时间：{item.get('time', '未知时间')}\n"
                 result_msg += f"链接：{item.get('url', '无链接')}\n\n"

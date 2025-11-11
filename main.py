@@ -37,7 +37,7 @@ class Jx3ApiPlugin(Star):
         """可选择实现异步的插件初始化方法，当实例化该插件类之后会自动调用该方法。"""
         # 数据库配置
         db_config = {
-            'host': '154.201.70.116',
+            'host': '38.12.28.24',
             'port': 3306,
             'user': 'asrtbot',
             'password': 'qsc123456',
@@ -57,7 +57,7 @@ class Jx3ApiPlugin(Star):
         pass
 
     @jx3.command("日常")
-    async def jx3_richang(self, event: AstrMessageEvent,server: str = "眉间雪",num: int = 0):
+    async def jx3_richang(self, event: AstrMessageEvent,server: str = "梦江南",num: int = 0):
         """剑三 日常 服务器 天数"""
         try:
             data= await self.jx3fun.richang(server,num)
@@ -71,7 +71,7 @@ class Jx3ApiPlugin(Star):
             yield event.plain_result("猪脑过载，请稍后再试")
     
     @jx3.command("沙盘")
-    async def jx3_shapan(self, event: AstrMessageEvent,server: str = "眉间雪"):
+    async def jx3_shapan(self, event: AstrMessageEvent,server: str = "梦江南"):
         """剑三 沙盘 服务器"""
         try:
             data= await self.jx3fun.shapan(server)
@@ -116,7 +116,7 @@ class Jx3ApiPlugin(Star):
 
 
     @jx3.command("金价")
-    async def jx3_jinjia(self, event: AstrMessageEvent,server: str = "眉间雪"):
+    async def jx3_jinjia(self, event: AstrMessageEvent,server: str = "梦江南"):
         """剑三 金价 服务器"""
         try:
             data= await self.jx3fun.jinjia(server)
@@ -132,7 +132,7 @@ class Jx3ApiPlugin(Star):
 
 
     @jx3.command("奇遇")
-    async def jx3_qiyu(self, event: AstrMessageEvent,adventureName: str = "阴阳两界", serverName: str = "眉间雪"):
+    async def jx3_qiyu(self, event: AstrMessageEvent,adventureName: str = "阴阳两界", serverName: str = "梦江南"):
         """剑三 奇遇 奇遇名称 服务器"""
         try:
             data= await self.jx3fun.qiyu(adventureName,serverName)
