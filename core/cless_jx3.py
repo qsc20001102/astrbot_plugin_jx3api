@@ -37,9 +37,7 @@ class JX3Function:
             result_msg += f"宗门：{data.get('school')}\n"
             result_msg += f"驰援：{data.get('rescue')}\n"
             result_msg += f"画像：{data.get('draw')}\n"
-            result_msg += f"宠物福缘：\n{data.get('luck')}\n"
-            result_msg += f"家园声望：\n{data.get('card')}\n"
-            result_msg += f"武林通鉴：\n{data.get('team')}\n"
+            result_msg += f"宠物福缘：{data.get('luck')[0]},{data.get('luck')[1]},{data.get('luck')[2]}\n"
             return_data["data"] = result_msg
             return_data["code"] = 200       
         except Exception as e:
@@ -48,7 +46,7 @@ class JX3Function:
         return return_data
 
 
-    async def shapan(self,server: str = "眉间雪"):
+    async def shapan(self,server: str = "梦江南"):
         return_data = {
             "code": 0,
             "msg": "功能函数未执行",
@@ -71,7 +69,35 @@ class JX3Function:
             logger.error(f"处理数据时出错: {e}")
             return_data["msg"] = "处理接口返回信息时出错"
         return return_data
-
+    
+    async def kaifu(self,server: str = "梦江南"):
+        return_data = {
+            "code": 0,
+            "msg": "功能函数未执行",
+            "data": {}
+        }
+        #在配置文件中获取接口配置
+        api_config = self.__api_config["jx3_kaifu"]
+        #更新参数
+        api_config["params"]["server"] = server
+        # 获取数据
+        data = await self.__api.get(api_config["url"],api_config["params"],"data")         
+        if not data:
+            return_data["msg"] = "获取接口信息失败"
+            return  return_data        
+        # 处理返回数据
+        try:
+            status = data.get("status")
+            if status == "正常" or status == "繁忙" or status == "爆满": 
+                status_str = f"{server}服务器当前{status}，快冲，快冲！"   
+            else:
+                status_str = f"{server}服务器当前维护中，等会再来吧！"
+            return_data["data"] = status_str
+            return_data["code"] = 200       
+        except Exception as e:
+            logger.error(f"处理数据时出错: {e}")
+            return_data["msg"] = "处理接口返回信息时出错"
+        return return_data
 
     async def shaohua(self):
         return_data = {

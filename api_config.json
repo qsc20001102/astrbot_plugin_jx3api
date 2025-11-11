@@ -23,6 +23,14 @@
         "params":{
         }
     },
+    "jx3_kaifu":{
+        "url":"https://www.jx3api.com/data/server/status",
+        "method":"GET",
+        "description":"获取剑网三技能记录",
+        "params":{
+            "server": "梦江南"
+        }
+    },
     "aijx3_shapan":{
         "url":"https://www.jianxiachaguan.cn/api2/aijx3-jxcg/game/get-sand-table-img",
         "method":"POST",

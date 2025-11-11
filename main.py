@@ -70,6 +70,20 @@ class Jx3ApiPlugin(Star):
             logger.error(f"功能函数执行错误: {e}")
             yield event.plain_result("猪脑过载，请稍后再试")
     
+    @jx3.command("开服")
+    async def jx3_kaifu(self, event: AstrMessageEvent,server: str = "梦江南"):
+        """剑三 日常 服务器 天数"""
+        try:
+            data= await self.jx3fun.kaifu(server)
+            if data["code"] == 200:
+                yield event.plain_result(data["data"])
+            else:
+                yield event.plain_result("msg")
+            return
+        except Exception as e:
+            logger.error(f"功能函数执行错误: {e}")
+            yield event.plain_result("猪脑过载，请稍后再试")
+
     @jx3.command("沙盘")
     async def jx3_shapan(self, event: AstrMessageEvent,server: str = "梦江南"):
         """剑三 沙盘 服务器"""
