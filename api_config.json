@@ -24,9 +24,9 @@
         }
     },
     "jx3_kaifu":{
-        "url":"https://www.jx3api.com/data/server/status",
+        "url":"https://www.jx3api.com/data/server/check",
         "method":"GET",
-        "description":"获取剑网三技能记录",
+        "description":"剑网三开服查询",
         "params":{
             "server": "梦江南"
         }

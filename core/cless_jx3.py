@@ -88,10 +88,12 @@ class JX3Function:
         # 处理返回数据
         try:
             status = data.get("status")
-            if status == "正常" or status == "繁忙" or status == "爆满": 
-                status_str = f"{server}服务器当前{status}，快冲，快冲！"   
+            status_time = datetime.fromtimestamp(data.get("time")).strftime("%Y-%m-%d %H:%M:%S")
+            if status == 1: 
+                status_str = f"{server}服务器已开服，快冲，快冲！\n开服时间：{status_time}"   
             else:
-                status_str = f"{server}服务器当前维护中，等会再来吧！"
+                status_str = f"{server}服务器当前维护中，等会再来吧！\n上次开服时间：{status_time}"
+                
             return_data["data"] = status_str
             return_data["code"] = 200       
         except Exception as e:
