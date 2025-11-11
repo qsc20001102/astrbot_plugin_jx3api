@@ -359,7 +359,7 @@ class JX3Function:
             return  return_data
 
         # 查询万宝楼数据（公示和在售）
-        wbl_data = await self.__get_wbl_data(searchId)
+        wbl_data = await self.__get_wbl_data(showName)
         if not wbl_data:
             return_data["msg"] = "获取万宝楼数据失败"
             return  return_data
@@ -378,23 +378,24 @@ class JX3Function:
         return return_data
 
 
-    async def __get_wbl_data(self,search_id):
+    async def __get_wbl_data(self,showName):
         """获取万宝楼数据（公示和在售）"""
         try:
             #在配置文件中获取接口配置
-            api_config = self.__api_config["aijx3_wblwg"]
+            #api_config = self.__api_config["aijx3_wblwg"]
+            api_config = self.__api_config["wbl_waiguan"]
             #更新参数
-            api_config["params"]["searchId"] = [search_id]
+            api_config["params"]["filter[role_appearance]"] = showName
             # 获取公示数据 
-            api_config["params"]["tradeStatus"] = "3"
-            datawblgs = await self.__api.post(api_config["url"], api_config["params"], "data")
+            api_config["params"]["filter[state]"] = "1"
+            datawblgs = await self.__api.get(api_config["url"], api_config["params"], "data")
             # 获取在售数据
-            api_config["params"]["tradeStatus"] = "5"
-            datawblzs = await self.__api.post(api_config["url"], api_config["params"], "data")
+            api_config["params"]["filter[state]"] = "2"
+            datawblzs = await self.__api.get(api_config["url"], api_config["params"], "data")
             
             return {
-                "wblgs": await self.__process_wbl_records(datawblgs.get("records", [])),
-                "wblzs": await self.__process_wbl_records(datawblzs.get("records", []))
+                "wblgs": await self.__process_wbl_records(datawblgs.get("list", [])),
+                "wblzs": await self.__process_wbl_records(datawblzs.get("list", []))
             }
         except Exception as e:
             logger.error(f"获取万宝楼数据出错: {e}")
@@ -407,13 +408,22 @@ class JX3Function:
         for record in records:
             try:
                 # 转换时间戳为可读格式
-                timestamp = record.get("replyTime", 0)
-                dt = datetime.fromtimestamp(timestamp / 1000) if timestamp else datetime.now()
-                
+                timestamp = record.get("remaining_time", 0)
+                days = timestamp // 86400  # 每天有 86400 秒
+                hours = (timestamp % 86400) // 3600  # 每小时有 3600 秒
+                minutes = (timestamp % 3600) // 60  # 每分钟有 60 秒
+                result = ""
+                if days > 0:
+                    result = (f"{days}天")
+                if hours > 0:
+                    result += (f"{hours}时")
+                if minutes > 0:
+                    result += (f"{minutes}分钟")
+                single_unit_price = record.get("single_unit_price", 0)
                 processed.append({
-                    "priceNum": record.get("priceNum", 0),
-                    "belongQf2": record.get("belongQf2", "无数据"),
-                    "replyTime": dt.strftime("%Y-%m-%d %H:%M:%S"),
+                    "priceNum": "{:.2f}".format( single_unit_price / 100),
+                    "belongQf2": record.get("server_name", "无数据"),
+                    "replyTime": result,
                     "discountRate": record.get("discountRate", 0.0),
                 })
             except Exception as e:

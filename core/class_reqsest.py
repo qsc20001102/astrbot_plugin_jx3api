@@ -127,7 +127,7 @@ class APIClient:
         # 检查是否有code字段
         if data and 'code' in data:
             # 有code字段时，检查是否成功
-            if data.get('code') not in [200, "0", 0]:
+            if data.get('code') not in [200, "0", 0, 1]:
                 logger.error(f"API返回错误:{data.get('code', '未知状态')} {data.get('msg', '未知错误')}")
                 return None
         else:

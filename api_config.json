@@ -113,5 +113,19 @@
             "server": "眉间雪",
             "itemIds": ["5_76650"]
         }
+    },
+    "wbl_waiguan":{
+        "url":"https://trade-api.seasunwbl.com/api/buyer/goods/list",
+        "method":"GET",
+        "description":"万宝楼官方交易数据",
+        "params":{
+            "filter[state]": "0",
+            "filter[role_appearance]": "浮屠明音礼盒",
+            "page": "1",
+            "size": "10",
+            "goods_type": "3",
+            "sort[price]": "1"
+        }
     }
+    
 }
