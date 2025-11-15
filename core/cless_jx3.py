@@ -167,6 +167,7 @@ class JX3Function:
         if not data:
             return_data["msg"] = "获取接口信息失败"
             return  return_data 
+        data = data[:7]
         # 加载模板
         try:
             return_data["temp"] = load_template("temp_test.html")
