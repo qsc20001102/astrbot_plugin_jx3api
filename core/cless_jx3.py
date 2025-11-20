@@ -167,10 +167,10 @@ class JX3Function:
         if not data:
             return_data["msg"] = "获取接口信息失败"
             return  return_data 
-        data = data[:7]
+        #data = data[:7]
         # 加载模板
         try:
-            return_data["temp"] = load_template("temp_test.html")
+            return_data["temp"] = load_template("jinjia.html")
         except FileNotFoundError as e:
             logger.error(f"加载模板失败: {e}")
             return_data["msg"] = "系统错误：模板文件不存在"

@@ -1,138 +1,65 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <title>剑网3金价趋势</title>
-    <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-        body {
-            margin: 0;
-            font-family: 'Microsoft YaHei', sans-serif;
-            background-color: #ffffff;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-        }
+<div style="max-width: 800px; margin: 0 auto; font-family: 'Microsoft YaHei', sans-serif; color: #000; text-align: center;">
 
-        .container {
-            width: 100%;
-            max-width: 1000px;
-            border-radius: 0;
-            box-shadow: none;
-        }
-        .header {
-            background: linear-gradient(135deg, #4a90e2 0%, #2a5298 100%);
-            color: white;
-            padding: 25px 30px;
-            text-align: center;
-        }
-        .header h1 {
-            font-size: 32px;
-            margin-bottom: 8px;
-            font-weight: 600;
-            letter-spacing: 1px;
-        }
-        .server-info {
-            font-size: 18px;
-            opacity: 0.9;
-        }
-        .summary {
-            background-color: #f8f9fa;
-            padding: 15px 30px;
-            font-size: 16px;
-            color: #495057;
-            border-bottom: 1px solid #e9ecef;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .table-container {
-            padding: 30px;
-            overflow-x: auto;
-        }
-        table {
-            border-collapse: collapse;
-            width: auto;
-            min-width: 800px;
-            margin: 0 auto;
-        }
-        th, td {
-            border: 1px solid #dee2e6;
-            padding: 12px 18px;
-            text-align: center;
-            font-size: 16px;
-        }
-        th {
-            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
-            color: white;
-            font-weight: 500;
-        }
-        tr:nth-child(even) td {
-            background-color: #f8f9fa;
-        }
-        tr:hover td {
-            background-color: #e9f7fe;
-            transition: background-color 0.2s;
-        }
-        .footer {
-            background-color: #343a40;
-            color: #f8f9fa;
-            padding: 15px 30px;
-            text-align: center;
-            font-size: 14px;
-        }
-        @media (max-width: 768px) {
-            th, td {
-                padding: 8px 12px;
-                font-size: 14px;
-            }
-        }
-    </style>
-</head>
-<body>
+    <!-- 商品基本信息 -->
+    <h1 style="margin-bottom: 5px;">{{ showName }} ({{ goodsAlias }})</h1>
+    <img src="{{ imgs }}" alt="{{ showName }}" style="width: 100%; max-width: 600px; margin-bottom: 8px;">
+    <p style="margin: 4px 0;">{{ goodsDesc }}</p>
+    <p style="margin: 4px 0;"><strong>发布时间:</strong> {{ publishTime.split('T')[0] if publishTime else '未知' }}</p>
+    <p style="margin: 4px 0;"><strong>参考价格:</strong> {{ priceNum }} 元</p>
 
-    <div class="container">
-        <div class="header">
-            <h1>剑网3金价趋势（{{ server }}）</h1>
-            <div class="server-info">数据更新时间: {{ update_time }}</div>
+    <!-- 双列表格 -->
+    <div style="display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap; justify-content: center;">
+
+        <!-- 万宝楼公示 -->
+        <div style="flex: 1; min-width: 300px; border:1px solid #000; overflow:hidden;">
+            <div style="padding:4px; font-weight:bold; text-align:center;">万宝楼公示</div>
+            <div style="overflow-x:auto;">
+                <table style="width:100%; border-collapse:collapse; margin:0 auto; text-align:center; font-size:0.9em;">
+                    <thead>
+                        <tr>
+                            <th style="border:1px solid #000; padding:2px;">剩余时间</th>
+                            <th style="border:1px solid #000; padding:2px;">服务器</th>
+                            <th style="border:1px solid #000; padding:2px;">价格</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in wblgs %}
+                        <tr>
+                            <td style="border:1px solid #000; padding:2px;">{{ item.replyTime }}</td>
+                            <td style="border:1px solid #000; padding:2px;">{{ item.belongQf2 }}</td>
+                            <td style="border:1px solid #000; padding:2px;">{{ item.priceNum }}元</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </div>
 
-        <div class="table-container">
-            <table>
-                <thead>
-                    <tr>
-                        <th>平台 / 时间</th>
-                        {% for item in items %}
-                        <th>{{ item.date }}</th>
+        <!-- 万宝楼在售 -->
+        <div style="flex: 1; min-width: 300px; border:1px solid #000; overflow:hidden;">
+            <div style="padding:4px; font-weight:bold; text-align:center;">万宝楼在售</div>
+            <div style="overflow-x:auto;">
+                <table style="width:100%; border-collapse:collapse; margin:0 auto; text-align:center; font-size:0.9em;">
+                    <thead>
+                        <tr>
+                            <th style="border:1px solid #000; padding:2px;">剩余时间</th>
+                            <th style="border:1px solid #000; padding:2px;">服务器</th>
+                            <th style="border:1px solid #000; padding:2px;">价格</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in wblzs %}
+                        <tr>
+                            <td style="border:1px solid #000; padding:2px;">{{ item.replyTime }}</td>
+                            <td style="border:1px solid #000; padding:2px;">{{ item.belongQf2 }}</td>
+                            <td style="border:1px solid #000; padding:2px;">{{ item.priceNum }}元</td>
+                        </tr>
                         {% endfor %}
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td style="font-weight:600; color:#4a90e2;">贴吧</td>
-                        {% for item in items %}
-                        <td>{{ item.priceTieba }}</td>
-                        {% endfor %}
-                    </tr>
-                    <tr>
-                        <td style="font-weight:600; color:#e67e22;">万宝楼</td>
-                        {% for item in items %}
-                        <td>{{ item.priceWanbaolou }}</td>
-                        {% endfor %}
-                    </tr>
-                </tbody>
-            </table>
+                    </tbody>
+                </table>
+            </div>
         </div>
 
-        <div class="footer">
-            © 2025 剑网3金价查询系统 | 数据仅供参考，以游戏内实际价格为准
-        </div>
     </div>
-
-</body>
-</html>
+    
+</div>
