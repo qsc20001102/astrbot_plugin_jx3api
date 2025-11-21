@@ -13,6 +13,9 @@ class JX3Function:
         self.__api_config = api_config
 
     async def richang(self,server: str = "眉间雪",num: int = 0):
+        """
+        日常活动
+        """
         return_data = {
             "code": 0,
             "msg": "功能函数未执行",
@@ -47,6 +50,9 @@ class JX3Function:
 
 
     async def shapan(self,server: str = "梦江南"):
+        """
+        区服沙盘
+        """
         return_data = {
             "code": 0,
             "msg": "功能函数未执行",
@@ -102,6 +108,9 @@ class JX3Function:
         return return_data
 
     async def shaohua(self):
+        """
+        骚话
+        """
         return_data = {
             "code": 0,
             "msg": "功能函数未执行",
@@ -125,6 +134,9 @@ class JX3Function:
 
 
     async def jigai(self):
+        """
+        技改记录
+        """
         return_data = {
             "code": 0,
             "msg": "功能函数未执行",
@@ -153,6 +165,9 @@ class JX3Function:
     
 
     async def jinjia(self, server: str = "眉间雪"):
+        """
+        区服金价
+        """
         return_data = {
             "code": 0,
             "msg": "功能函数未执行",
@@ -166,8 +181,9 @@ class JX3Function:
         data = await self.__api.post(api_config["url"],api_config["params"],"data")
         if not data:
             return_data["msg"] = "获取接口信息失败"
-            return  return_data 
-        #data = data[:7]
+            return  return_data
+        chart_data = data
+        data = data[:15]
         # 加载模板
         try:
             return_data["temp"] = load_template("jinjia.html")
@@ -175,9 +191,9 @@ class JX3Function:
             logger.error(f"加载模板失败: {e}")
             return_data["msg"] = "系统错误：模板文件不存在"
             return return_data
+        # 生成折线图
         try:
-            chart_base64 = plot_line_chart_base64(data, "date", "priceWanbaolou", "万宝楼金价走势",True)
-            logger.info(f"生成折线图成功: {chart_base64}")
+            chart_base64 = plot_line_chart_base64(chart_data, "date", "priceWanbaolou", "万宝楼金价走势",True)
         except Exception as e:
             logger.error(f"生成折线图失败: {e}")
             return_data["msg"] = "系统错误：生成折线图失败"
@@ -200,6 +216,9 @@ class JX3Function:
 
 
     async def qiyu(self, adventureName: str = "阴阳两界", serverName: str = "眉间雪"):
+        """
+        区服奇遇
+        """
         return_data = {
             "code": 0,
             "msg": "功能函数未执行",
@@ -243,6 +262,9 @@ class JX3Function:
     
 
     async def SearchData(self):
+        """
+        外观数据插入数据库
+        """
         return_data = {
             "code": 0,
             "msg": "功能函数未执行",
@@ -293,6 +315,9 @@ class JX3Function:
 
 
     async def wujia(self,Name: str = "秃盒"):
+        """
+        物价查询
+        """
         return_data = {
             "code": 0,
             "msg": "功能函数未执行",
@@ -435,6 +460,9 @@ class JX3Function:
 
 
     async def jiaoyihang(self,Name: str = "守缺式",server: str = "梦江南"):
+        """
+        区服交易行
+        """
         return_data = {
             "code": 0,
             "msg": "功能函数未执行",
