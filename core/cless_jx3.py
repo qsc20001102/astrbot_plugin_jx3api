@@ -77,6 +77,9 @@ class JX3Function:
         return return_data
     
     async def kaifu(self,server: str = "梦江南"):
+        """
+        开服状态查询
+        """
         return_data = {
             "code": 0,
             "msg": "功能函数未执行",
@@ -96,10 +99,12 @@ class JX3Function:
             status = data.get("status")
             status_time = datetime.fromtimestamp(data.get("time")).strftime("%Y-%m-%d %H:%M:%S")
             if status == 1: 
-                status_str = f"{server}服务器已开服，快冲，快冲！\n开服时间：{status_time}"   
+                status_str = f"{server}服务器已开服，快冲，快冲！\n开服时间：{status_time}" 
+                status_bool = True 
             else:
                 status_str = f"{server}服务器当前维护中，等会再来吧！\n上次开服时间：{status_time}"
-                
+                status_bool = False 
+            return_data["status"] = status_bool  
             return_data["data"] = status_str
             return_data["code"] = 200       
         except Exception as e:

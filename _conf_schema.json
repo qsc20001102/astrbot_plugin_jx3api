@@ -1,8 +1,36 @@
 {
-  "api_token": {
-    "description": "JX3API的token",
+  "jx3_kfjk_en": {
+    "description": "开服监控功能",
+    "type": "bool",
+    "default": true,
+    "hint": "是否启用剑网三开服监控功能。"
+  },
+  "jx3_kfjk_time": {
+    "description": "开服监控循环时间",
+    "type": "int",
+    "default": 10,
+    "hint": "请求服务器状态的循环时间，单位秒。"
+  },
+  "jx3_kfjk_server": {
+    "description": "开服监控服务器",
     "type": "string",
-    "default": "",
-    "hint": "填写购买的JX3API的token，用于访问的付费接口服务"
+    "default": "梦江南",
+    "hint": "请求服务器状态的名称，要官方名称。"
+  },
+  "jx3_kfjk_list": {
+    "description": "开服监控推送列表",
+    "type": "list",
+    "hint": "可以填写多个会话唯一ID。",
+    "items": {
+        "type": "string",
+        "description": "会话唯一ID"
+    },
+    "default": ["default:GroupMessage:768280021"]
+  },
+  "jx3_kfjk_test": {
+    "description": "开服监控功能测试",
+    "type": "bool",
+    "default": false,
+    "hint": "可以手动修改服务器的状态，进行推送测试。"
   }
 }
