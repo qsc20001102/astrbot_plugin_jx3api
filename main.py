@@ -82,7 +82,7 @@ class Jx3ApiPlugin(Star):
                 server_state_new = self.test_server
             else:
                 server_state_new = data["status"]
-            logger.info(f"开服监控功能循环中,上次询问服务器状态{server_state},本次询问的服务器状态{server_state_new}") 
+            # logger.info(f"开服监控功能循环中,上次询问服务器状态{server_state},本次询问的服务器状态{server_state_new}") 
             if server_state != server_state_new:
                 if server_state and not server_state_new:
                     message_chain = MessageChain().message(f"{self.kfjk_servername}服务器关闭")
