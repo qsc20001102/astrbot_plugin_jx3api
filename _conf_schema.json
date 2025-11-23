@@ -8,7 +8,7 @@
   "jx3_kfjk_time": {
     "description": "开服监控循环时间",
     "type": "int",
-    "default": 10,
+    "default": 5,
     "hint": "请求服务器状态的循环时间，单位秒。"
   },
   "jx3_kfjk_server": {
