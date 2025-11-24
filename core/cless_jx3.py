@@ -102,7 +102,7 @@ class JX3Function:
                 status_str = f"{server}服务器已开服，快冲，快冲！\n开服时间：{status_time}" 
                 status_bool = True 
             else:
-                status_str = f"{server}服务器当前维护中，等会再来吧！\n上次开服时间：{status_time}"
+                status_str = f"{server}服务器当前维护中，等会再来吧！\n维护时间：{status_time}"
                 status_bool = False 
             return_data["status"] = status_bool  
             return_data["data"] = status_str

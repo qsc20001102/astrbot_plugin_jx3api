@@ -69,30 +69,30 @@ class Jx3ApiPlugin(Star):
         self.kfjk_en = self.conf.get("jx3_kfjk_en", True)
         self.kfjk_umos = self.conf.get("jx3_kfjk_list", [])
         self.kfjk_servername = self.conf.get("jx3_kfjk_server", "梦江南")
-
         kfjk_test = self.conf.get("jx3_kfjk_test", False)
-        server_state = False    # 上一次查询的状态
-        server_state_new = False  # 最新查询的状态
+
+        self.kfjk_server_state = False    # 上一次查询的状态
+        self.kfjk_server_state_new = False  # 最新查询的状态
 
         if self.kfjk_en:
             logger.info(f"开服监控功能开启")
         while self.kfjk_en:
             data = await self.jx3fun.kaifu(self.kfjk_servername)
             if kfjk_test:
-                server_state_new = self.test_server
+                self.kfjk_server_state_new = self.test_server
             else:
-                server_state_new = data["status"]
-            #logger.info(f"开服监控功能循环中,上次询问服务器状态{server_state},本次询问的服务器状态{server_state_new}") 
-            if server_state != server_state_new:
-                logger.info(f"开服监控功能循环中,上次询问服务器状态{server_state},本次询问的服务器状态{server_state_new}") 
-                if server_state and not server_state_new:
+                self.kfjk_server_state_new = data["status"]
+            logger.info(f"开服监控功能循环中,上次询问服务器状态{self.kfjk_server_state},本次询问的服务器状态{self.kfjk_server_state_new}") 
+            if self.kfjk_server_state != self.kfjk_server_state_new:
+                logger.info(f"开服监控功能循环中,上次询问服务器状态{self.kfjk_server_state},本次询问的服务器状态{self.kfjk_server_state_new}") 
+                if self.kfjk_server_state and not self.kfjk_server_state_new:
                     message_chain = MessageChain().message(f"{self.kfjk_servername}服务器关闭")
-                if server_state_new and not server_state:
+                if self.kfjk_server_state_new and not self.kfjk_server_state:
                     message_chain = MessageChain().message(f"{self.kfjk_servername}服务器开启")
                 if self.kfjk_umos:
                     for umo in self.kfjk_umos:
                         await self.context.send_message(umo, message_chain)
-            server_state = server_state_new
+            self.kfjk_server_state = self.kfjk_server_state_new
             await asyncio.sleep(time_int)
         if not self.kfjk_en: 
             # 销毁进程
@@ -255,7 +255,7 @@ class Jx3ApiPlugin(Star):
             except ValueError as e:
                 yield event.plain_result(f"开服监控已关闭") 
         elif en == "状态":
-            yield event.plain_result(f"开服监控后台状态：{self.kfjk_en}\n监控服务器：{self.kfjk_servername}\n推送会话列表：\n{self.kfjk_umos}") 
+            yield event.plain_result(f"开服监控后台状态：{self.kfjk_en}\n监控服务器：{self.kfjk_servername}\n上次询问服务器状态{self.kfjk_server_state}\n本次询问的服务器状态{self.kfjk_server_state_new}\n推送会话列表：\n{self.kfjk_umos}") 
         else:
             yield event.plain_result("开服监控指令错误，请输入 开启/关闭") 
 
