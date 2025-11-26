@@ -86,9 +86,9 @@ class Jx3ApiPlugin(Star):
             if self.kfjk_server_state != self.kfjk_server_state_new:
                 logger.info(f"开服监控功能循环中,上次询问服务器状态{self.kfjk_server_state},本次询问的服务器状态{self.kfjk_server_state_new}") 
                 if self.kfjk_server_state and not self.kfjk_server_state_new:
-                    message_chain = MessageChain().message(f"{self.kfjk_servername}服务器关闭")
+                    message_chain = MessageChain().message(f"{self.kfjk_servername}服务器已关闭\n休息一会把,开服了喊你！")
                 if self.kfjk_server_state_new and not self.kfjk_server_state:
-                    message_chain = MessageChain().message(f"{self.kfjk_servername}服务器开启")
+                    message_chain = MessageChain().message(f"{self.kfjk_servername}服务器已开启\n快冲！快冲！")
                 if self.kfjk_umos:
                     for umo in self.kfjk_umos:
                         await self.context.send_message(umo, message_chain)
