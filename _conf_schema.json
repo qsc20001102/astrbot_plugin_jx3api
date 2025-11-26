@@ -25,7 +25,7 @@
         "type": "string",
         "description": "会话唯一ID"
     },
-    "default": ["default:GroupMessage:768280021"]
+    "default": ["default:GroupMessage:768280021","default:GroupMessage:690665795"]
   },
   "jx3_kfjk_test": {
     "description": "开服监控功能测试",

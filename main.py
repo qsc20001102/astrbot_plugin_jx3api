@@ -71,7 +71,7 @@ class Jx3ApiPlugin(Star):
         self.kfjk_servername = self.conf.get("jx3_kfjk_server", "梦江南")
         kfjk_test = self.conf.get("jx3_kfjk_test", False)
 
-        self.kfjk_server_state = False    # 上一次查询的状态
+        self.kfjk_server_state = True    # 上一次查询的状态
         self.kfjk_server_state_new = False  # 最新查询的状态
 
         if self.kfjk_en:
