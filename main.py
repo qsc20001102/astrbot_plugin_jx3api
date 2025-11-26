@@ -82,7 +82,7 @@ class Jx3ApiPlugin(Star):
                 self.kfjk_server_state_new = self.test_server
             else:
                 self.kfjk_server_state_new = data["status"]
-            logger.info(f"开服监控功能循环中,上次询问服务器状态{self.kfjk_server_state},本次询问的服务器状态{self.kfjk_server_state_new}") 
+            # logger.info(f"开服监控功能循环中,上次询问服务器状态{self.kfjk_server_state},本次询问的服务器状态{self.kfjk_server_state_new}") 
             if self.kfjk_server_state != self.kfjk_server_state_new:
                 logger.info(f"开服监控功能循环中,上次询问服务器状态{self.kfjk_server_state},本次询问的服务器状态{self.kfjk_server_state_new}") 
                 if self.kfjk_server_state and not self.kfjk_server_state_new:
