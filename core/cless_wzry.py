@@ -1,5 +1,5 @@
 from datetime import datetime
-
+import base64
 from astrbot.api import logger
 
 from .class_reqsest import APIClient
@@ -69,7 +69,7 @@ class WZRYFunction:
             return_data["msg"] = "处理接口返回信息时出错"
         # 加载模板
         try:
-            return_data["temp"] = load_template("temp_test.html")
+            return_data["temp"] = load_template("wangzhezhanji.html")
         except FileNotFoundError as e:
             logger.error(f"加载模板失败: {e}")
             return_data["msg"] = "系统错误：模板文件不存在"
@@ -77,4 +77,38 @@ class WZRYFunction:
         return_data["code"] = 200       
         return return_data
 
-
+    async def ziliao(self,id: str):
+        """
+        资料查询
+        """
+        return_data = {
+            "code": 0,
+            "msg": "功能函数未执行",
+            "data": {}
+        }
+        #在配置文件中获取接口配置
+        api_config = self.__api_config["wzry_ziliao"]
+        #更新参数
+        api_config["params"]["id"] = id
+        # 处理返回数据
+        try:
+            # 获取数据
+            data = await self.__api.get(api_config["url"],api_config["params"])        
+            if not data:
+                return_data["msg"] = "获取接口信息失败"
+                return  return_data   
+            # 数据处理
+            return_data["data"]["img_base64"] = base64.b64encode(data).decode('utf-8')
+               
+        except Exception as e:
+            logger.error(f"处理数据时出错: {e}")
+            return_data["msg"] = "处理接口返回信息时出错"
+        # 加载模板
+        try:
+            return_data["temp"] = load_template("temp_test.html")
+        except FileNotFoundError as e:
+            logger.error(f"加载模板失败: {e}")
+            return_data["msg"] = "系统错误：模板文件不存在"
+            return return_data   
+        return_data["code"] = 200       
+        return return_data

@@ -8,7 +8,7 @@ headers = {
    'Host': 'api.t1qq.com',
    'Connection': 'keep-alive'
 }
-conn.request("GET", "/api/tool/wzrr/morebattle?key=vBpEzoiC9z5A9c9Nn83IhLn6M9&id=489048724&option=1", payload, headers)
+conn.request("GET", "/api/tool/wzrr/ydtp?key=vBpEzoiC9z5A9c9Nn83IhLn6M9&id=489048724", payload, headers)
 res = conn.getresponse()
 data = res.read()
-print(data.decode("utf-8"))
+print(data)

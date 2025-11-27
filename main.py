@@ -294,12 +294,28 @@ class Jx3ApiPlugin(Star):
 
     @wz.command("战绩")
     async def wz_zhanji(self, event: AstrMessageEvent,ID: str = "489048724",option: str = "1"):
-        """王者 战绩 服务器 天数"""
+        """王者 战绩 营地ID 对局类型"""
         try:
             data = await self.wzry.zhanji(ID,option)
             # logger.info(f"王者荣耀战绩查询结果{data}")
             if data["code"] == 200:
                 url = await self.html_render(data["temp"],{"data": data["data"]}, options={})
+                yield event.image_result(url)
+            else:
+                yield event.plain_result(data["msg"])
+            return
+        except Exception as e:
+            logger.error(f"功能函数执行错误: {e}")
+            yield event.plain_result("猪脑过载，请稍后再试") 
+
+    @wz.command("资料")
+    async def wz_ziliao(self, event: AstrMessageEvent,ID: str = "489048724"):
+        """王者 战绩 营地ID 对局类型"""
+        try:
+            data = await self.wzry.ziliao(ID)
+            # logger.info(f"输出结果{data}")
+            if data["code"] == 200:
+                url = await self.html_render(data["temp"], data["data"], options={})
                 yield event.image_result(url)
             else:
                 yield event.plain_result(data["msg"])

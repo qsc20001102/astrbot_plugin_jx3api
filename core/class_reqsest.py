@@ -6,91 +6,56 @@ from astrbot.api import logger
 
 class APIClient:
     """
-    API客户端类，封装GET和POST请求功能
+    API客户端类，支持GET/POST请求，同时兼容JSON和二进制数据
     """
     
     def __init__(self, base_timeout=10, ssl_verify=False):
-        """
-        初始化APIClient
-        
-        Args:
-            base_timeout: 默认超时时间（秒）
-            ssl_verify: SSL证书验证开关
-        """
         self.base_timeout = base_timeout
         self.ssl_verify = ssl_verify
-    
+
     async def _make_request(self, method, url, params_data=None):
-        """
-        内部请求方法，统一处理请求逻辑
-        
-        Args:
-            method: 请求方法 ('GET', 'POST')
-            url: 请求URL
-            params_data: 统一的参数字典，如 {"name": "万花"}
-        
-        Returns:
-            成功时返回解析后的数据，失败返回None
-        """
         timeout = ClientTimeout(total=self.base_timeout)
-        
         try:
-            # 添加请求日志
             logger.debug(f"发起 {method} 请求: {url}")
             logger.debug(f"参数数据: {params_data}")
-            
             async with aiohttp.ClientSession(timeout=timeout) as session:
                 if method.upper() == 'GET':
-                    # GET请求：参数作为查询字符串
-                    async with session.get(
-                        url, 
-                        params=params_data,
-                        ssl=self.ssl_verify
-                    ) as response:
+                    async with session.get(url, params=params_data, ssl=self.ssl_verify) as response:
                         return await self._handle_response(response)
-                
                 elif method.upper() == 'POST':
-                    # POST请求：参数作为JSON数据
                     headers = {'Content-Type': 'application/json'}
-                    async with session.post(
-                        url,
-                        json=params_data,  # 使用json参数而不是data
-                        headers=headers,
-                        ssl=self.ssl_verify
-                    ) as response:
+                    async with session.post(url, json=params_data, headers=headers, ssl=self.ssl_verify) as response:
                         return await self._handle_response(response)
-                
                 else:
                     logger.error(f"不支持的HTTP方法: {method}")
                     return None
-                    
         except aiohttp.ClientError as e:
             logger.error(f"请求出错: {e}")
             return None
         except Exception as e:
             logger.error(f"未知错误: {e}")
             return None
-    
+
     async def _handle_response(self, response):
         """
-        处理HTTP响应（增强版：兼容 text/json 和非标准 JSON）
+        处理响应：支持 JSON 和二进制数据
         """
         try:
             logger.debug(f"响应状态: {response.status}")
             response.raise_for_status()
+            content_type = response.headers.get('Content-Type', '')
 
-            # ----------------------
-            # 强制兼容 text/json 类型
-            # ----------------------
+            if 'image' in content_type or 'octet-stream' in content_type:
+                # 返回二进制数据
+                data = await response.read()
+                return data
+
+            # 尝试解析为 JSON
             try:
-                # content_type=None 忽略 MIME 类型检查
                 data = await response.json(content_type=None)
             except Exception:
-                # 响应不是 JSON，尝试手动解析
                 text = await response.text()
                 logger.debug(f"原始文本响应: {text}")
-
-                # 尝试解析 JSON 字符串
                 try:
                     data = json.loads(text)
                 except json.JSONDecodeError:
@@ -98,9 +63,7 @@ class APIClient:
                     return None
 
             logger.debug(f"响应数据: {data}")
-
             return self._check_response_data(data)
-
         except aiohttp.ClientError as e:
             logger.error(f"HTTP错误: {e}")
             return None
@@ -108,132 +71,80 @@ class APIClient:
             logger.error(f"未知错误: {e}")
             return None
 
-    
     def _check_response_data(self, data):
         """
-        检查API响应数据的通用逻辑
-        
-        Args:
-            data: API返回的数据
-            
-        Returns:
-            检查通过返回数据，否则返回None
+        检查 API 返回 JSON 数据
         """
-        # 如果数据是字符串，尝试解析为JSON
         if isinstance(data, str):
             try:
                 data = json.loads(data)
             except json.JSONDecodeError:
                 logger.error("响应数据是无效的JSON字符串")
                 return None
-        
-        # 检查是否有code字段
-        if data and 'code' in data:
-            # 有code字段时，检查是否成功
+
+        if data and isinstance(data, dict) and 'code' in data:
             if data.get('code') not in [200, "0", 0, 1]:
                 logger.error(f"API返回错误:{data.get('code', '未知状态')} {data.get('msg', '未知错误')}")
                 return None
-        else:
-            # 无code字段时，检查数据是否为空
-            if not data:
-                logger.error("API返回空数据")
-                return None
-        
+        elif not data:
+            logger.error("API返回空数据")
+            return None
+
         return data
-    
+
     async def post(self, api_url, params_data=None, outdata=None):
-        """
-        POST请求方法
-        
-        Args:
-            api_url: API地址
-            params_data: 参数字典，如 {"name": "万花"}
-            outdata: 返回数据中要提取的字段
-        
-        Returns:
-            成功时返回outdata字段的数据，失败返回None
-        """
         data = await self._make_request('POST', api_url, params_data)
-        
         if data is None:
             return None
-            
-        if outdata is None or outdata == "":
+        if isinstance(data, bytes):
+            return data
+        if not outdata:
             return data
         return data.get(outdata, {})
-    
+
     async def get(self, api_url, params_data=None, outdata=None):
-        """
-        GET请求方法
-        
-        Args:
-            api_url: API地址
-            params_data: 参数字典，如 {"name": "万花"}
-            outdata: 返回数据中要提取的字段
-        
-        Returns:
-            成功时返回outdata字段的数据，失败返回None
-        """
         data = await self._make_request('GET', api_url, params_data)
-        
         if data is None:
             return None
-            
-        if outdata is None or outdata == "":
+        if isinstance(data, bytes):
+            return data
+        if not outdata:
             return data
         return data.get(outdata, {})
 
-
-    async def all_pages(self,http, api_url, params_data = None, outdata: str = "",listdata: str = "list", max_pages: int = 10):
-        """
-        分页获取所有数据
-            
-        Args:
-            http: 请求方法 ('GET' 或 'POST')
-            api_url: API地址
-            params_data: 参数字典，如 {"name": "万花"}
-            outdata: 返回数据中要提取的字段
-            max_pages: 最大页数限制，0表示不限制
-            listdata: 返回数据中包含列表数据的字段名，默认为"list"
-        Returns:
-            成功时返回所有页数据的列表，失败返回None
-        """    
+    async def all_pages(self, http, api_url, params_data=None, outdata: str = "", listdata: str = "list", max_pages: int = 10):
         all_data = []
         current_page = 1
-        
         while True:
-            # 设置当前页码
             params = params_data.copy() if params_data else {}
             params["page"] = str(current_page)
-            
-            # 请求数据
+
             if http.upper() == "POST":
                 data = await self.post(api_url, params, outdata)
             else:
                 data = await self.get(api_url, params, outdata)
-            
-            if not data[listdata]:
+
+            if not data or isinstance(data, bytes):
+                # 二进制数据或者空数据，不分页
                 break
-            
-            # 添加当前页数据到总列表
+
+            if not data.get(listdata):
+                break
+
             all_data.extend(data[listdata])
 
-            # 检查是否达到最大页数限制
             if max_pages and current_page >= max_pages:
                 break
-            
+
             current_page += 1
             logger.info(f"已获取第 {current_page} 页数据")
         return all_data
 
-
-# 保持原有函数接口的兼容性
+# 保持原接口兼容
 async def api_data_post(api_url, params_data=None, outdata=None):
-    """兼容原有函数的POST请求"""
     client = APIClient()
     return await client.post(api_url, params_data, outdata)
 
 async def api_data_get(api_url, params_data=None, outdata=None):
-    """兼容原有函数的GET请求"""
     client = APIClient()
     return await client.get(api_url, params_data, outdata)

@@ -130,11 +130,20 @@
     "wzry_zhanji":{
         "url":"https://api.t1qq.com/api/tool/wzrr/morebattle",
         "method":"GET",
-        "description":"魔盒中模糊查找剑网三的物品数据",
+        "description":"王者荣耀战绩查询",
         "params":{
             "key": "vBpEzoiC9z5A9c9Nn83IhLn6M9",
             "id": "489048724",
             "option": "1"
+        }
+    },
+    "wzry_ziliao":{
+        "url":"https://api.t1qq.com/api/tool/wzrr/ydtp",
+        "method":"GET",
+        "description":"王者荣耀资料查询",
+        "params":{
+            "key": "vBpEzoiC9z5A9c9Nn83IhLn6M9",
+            "id": "489048724"
         }
     }
 }
