@@ -1,0 +1,38 @@
+<div style="font-family: 'Microsoft YaHei', Arial, sans-serif; padding:20px; background:#f5f7fa; max-width:900px; margin:0 auto;">
+    <h1 style="text-align:center; font-size:28px; margin-bottom:20px;">王者荣耀 — 对局列表</h1>
+
+    <table style="width:100%; border-collapse: collapse;">
+        <tbody>
+            {% for m in data %}
+            <tr style="background:#fff; border-radius:10px; margin-bottom:12px;">
+                <td style="width:64px; padding:8px; vertical-align:top;">
+                    <img src="{{ m.heroIcon }}" style="width:64px; height:64px; object-fit:cover; border-radius:8px;">
+                </td>
+                <td style="padding:8px; vertical-align:top;">
+                    <!-- 第一行：时间、地图、角色、星数、结果 -->
+                    <div style="margin-bottom:6px;">
+                        <span>{{ m.gametime }} · {{ m.mapName }}</span><br>
+                        <span style="color:#607785;">{{ m.roleJobName }} · ⭐{{ m.stars }}</span><br>
+                        <span style="padding: 2px 6px; border-radius:6px; font-size:13px;">
+                            {{ m.gameresult_label }}
+                        </span>
+                        <span style="font-size:13px; color:#7b8b96; margin-left:6px;">评分 {{ m.gradeGame }}</span>
+                    </div>
+
+                    <!-- 第二行：击杀/死亡/助攻/时长 -->
+                    <div style="margin-bottom:6px; font-size:14px; color:#333;">
+                        击杀 {{ m.killcnt }} &nbsp; 死亡 {{ m.deadcnt }} &nbsp; 助攻 {{ m.assistcnt }} &nbsp; 时长 {{ m.time_str }}
+                    </div>
+
+                    <!-- 第三行：描述/隐分 -->
+                    <div style="font-size:13px; color:#61707a;">
+                        <span>{{ m.desc }}</span>
+                        <span style="float:right;">巅峰赛积分 {{ m.oldMasterMatchScore }} → {{ m.newMasterMatchScore }}</span>
+                    </div>
+                </td>
+            </tr>
+            <tr style="height:12px;"><td colspan="2"></td></tr> <!-- 间距 -->
+            {% endfor %}
+        </tbody>
+    </table>
+</div>

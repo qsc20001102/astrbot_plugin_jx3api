@@ -10,6 +10,7 @@ from astrbot.api import AstrBotConfig
 
 from .core.cless_mysql import AsyncMySQL
 from .core.cless_jx3 import JX3Function
+from .core.cless_wzry import WZRYFunction
 
 
 
@@ -52,6 +53,7 @@ class Jx3ApiPlugin(Star):
         #创建类实例
         self.db = AsyncMySQL(db_config)
         self.jx3fun = JX3Function(self.api_config,self.db)
+        self.wzry = WZRYFunction(self.api_config,self.db)
         # 周期函数调用
     
 
@@ -284,6 +286,28 @@ class Jx3ApiPlugin(Star):
             self.test_server = False
         
         yield event.plain_result(f"测试值:{self.test_server}") 
+
+
+    @filter.command_group("王者")
+    def wz(self):
+        pass
+
+    @wz.command("战绩")
+    async def wz_zhanji(self, event: AstrMessageEvent,ID: str = "489048724",option: str = "1"):
+        """王者 战绩 服务器 天数"""
+        try:
+            data = await self.wzry.zhanji(ID,option)
+            # logger.info(f"王者荣耀战绩查询结果{data}")
+            if data["code"] == 200:
+                url = await self.html_render(data["temp"],{"data": data["data"]}, options={})
+                yield event.image_result(url)
+            else:
+                yield event.plain_result(data["msg"])
+            return
+        except Exception as e:
+            logger.error(f"功能函数执行错误: {e}")
+            yield event.plain_result("猪脑过载，请稍后再试") 
+
 
     async def terminate(self):
         """可选择实现异步的插件销毁方法，当插件被卸载/停用时会调用。"""

@@ -73,38 +73,41 @@ class APIClient:
     
     async def _handle_response(self, response):
         """
-        处理HTTP响应
-        
-        Args:
-            response: aiohttp响应对象
-            
-        Returns:
-            解析后的数据或None
+        处理HTTP响应（增强版：兼容 text/json 和非标准 JSON）
         """
         try:
-            # 添加响应日志
             logger.debug(f"响应状态: {response.status}")
-            
             response.raise_for_status()
-            data = await response.json()
-            
+
+            # ----------------------
+            # 强制兼容 text/json 类型
+            # ----------------------
+            try:
+                # content_type=None 忽略 MIME 类型检查
+                data = await response.json(content_type=None)
+            except Exception:
+                # 响应不是 JSON，尝试手动解析
+                text = await response.text()
+                logger.debug(f"原始文本响应: {text}")
+
+                # 尝试解析 JSON 字符串
+                try:
+                    data = json.loads(text)
+                except json.JSONDecodeError:
+                    logger.error("无法解析为 JSON 数据")
+                    return None
+
             logger.debug(f"响应数据: {data}")
-            
-            # 检查API响应状态
+
             return self._check_response_data(data)
-            
+
         except aiohttp.ClientError as e:
             logger.error(f"HTTP错误: {e}")
             return None
-        except json.JSONDecodeError as e:
-            logger.error(f"JSON解析错误: {e}")
-            # 尝试读取原始文本内容
-            try:
-                text_content = await response.text()
-                logger.error(f"原始响应内容: {text_content}")
-            except:
-                pass
+        except Exception as e:
+            logger.error(f"未知错误: {e}")
             return None
+
     
     def _check_response_data(self, data):
         """

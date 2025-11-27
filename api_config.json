@@ -126,6 +126,15 @@
             "goods_type": "3",
             "sort[price]": "1"
         }
+    },
+    "wzry_zhanji":{
+        "url":"https://api.t1qq.com/api/tool/wzrr/morebattle",
+        "method":"GET",
+        "description":"魔盒中模糊查找剑网三的物品数据",
+        "params":{
+            "key": "vBpEzoiC9z5A9c9Nn83IhLn6M9",
+            "id": "489048724",
+            "option": "1"
+        }
     }
-    
 }
