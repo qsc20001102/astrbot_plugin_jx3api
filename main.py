@@ -324,7 +324,6 @@ class Jx3ApiPlugin(Star):
             logger.error(f"功能函数执行错误: {e}")
             yield event.plain_result("猪脑过载，请稍后再试") 
 
-
     async def terminate(self):
         """可选择实现异步的插件销毁方法，当插件被卸载/停用时会调用。"""
         await self.db.close_pool()
