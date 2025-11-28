@@ -292,11 +292,53 @@ class Jx3ApiPlugin(Star):
     def wz(self):
         pass
 
+
+    @wz.command("用户列表")
+    async def wz_yingdilist(self, event: AstrMessageEvent):
+        """王者 用户列表"""
+        try:
+            data = await self.wzry.all_user()
+            logger.info(f"王者荣耀营地列表查询结果{data}")
+            yield event.plain_result(data)
+        except Exception as e:
+            logger.error(f"功能函数执行错误: {e}")
+            yield event.plain_result("猪脑过载，请稍后再试") 
+
+    @wz.command("添加用户")
+    async def wz_adduesr(self, event: AstrMessageEvent,id: str,name: str):
+        """王者 添加用户"""
+        try:
+            data = await self.wzry.add_user(id,name)
+            yield event.plain_result(data)
+        except Exception as e:
+            logger.error(f"功能函数执行错误: {e}")
+            yield event.plain_result("猪脑过载，请稍后再试") 
+
+    @wz.command("修改用户")
+    async def wz_updateuser(self, event: AstrMessageEvent,id: str,name: str):
+        """王者 修改用户"""
+        try:
+            data = await self.wzry.update_user(id,name)
+            yield event.plain_result(data)
+        except Exception as e:
+            logger.error(f"功能函数执行错误: {e}")
+            yield event.plain_result("猪脑过载，请稍后再试") 
+    
+    @wz.command("删除用户")
+    async def wz_deleteuser(self, event: AstrMessageEvent,id: str):
+        """王者 删除用户"""
+        try:
+            data = await self.wzry.delete_user(id)
+            yield event.plain_result(data)
+        except Exception as e:
+            logger.error(f"功能函数执行错误: {e}")
+            yield event.plain_result("猪脑过载，请稍后再试") 
+
     @wz.command("战绩")
-    async def wz_zhanji(self, event: AstrMessageEvent,ID: str = "489048724",option: str = "1"):
+    async def wz_zhanji(self, event: AstrMessageEvent,name: str = "飞翔大野猪",option: str = "0"):
         """王者 战绩 营地ID 对局类型"""
         try:
-            data = await self.wzry.zhanji(ID,option)
+            data = await self.wzry.zhanji(name,option)
             # logger.info(f"王者荣耀战绩查询结果{data}")
             if data["code"] == 200:
                 url = await self.html_render(data["temp"],{"data": data["data"]}, options={})
@@ -309,10 +351,10 @@ class Jx3ApiPlugin(Star):
             yield event.plain_result("猪脑过载，请稍后再试") 
 
     @wz.command("资料")
-    async def wz_ziliao(self, event: AstrMessageEvent,ID: str = "489048724"):
+    async def wz_ziliao(self, event: AstrMessageEvent,name: str = "489048724"):
         """王者 战绩 营地ID 对局类型"""
         try:
-            data = await self.wzry.ziliao(ID)
+            data = await self.wzry.ziliao(name)
             # logger.info(f"输出结果{data}")
             if data["code"] == 200:
                 url = await self.html_render(data["temp"], data["data"], options={})

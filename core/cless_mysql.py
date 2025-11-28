@@ -35,7 +35,7 @@ class AsyncMySQL:
                 return await cursor.fetchall()
 
     async def execute(self, sql: str, params=None):
-        """执行单条 SQL（insert/update/delete）"""
+        """执行 SQL（insert/update/delete）"""
         await self.init_pool()
         async with self.pool.acquire() as conn:
             async with conn.cursor() as cursor:
@@ -53,7 +53,7 @@ class AsyncMySQL:
                 return cursor.rowcount
 
     async def truncate_table(self, table_name: str):
-        """清空指定表的内容"""
+        """清空指定表"""
         await self.init_pool()
         async with self.pool.acquire() as conn:
             async with conn.cursor() as cursor:
@@ -61,3 +61,30 @@ class AsyncMySQL:
                 await cursor.execute(sql)
                 await conn.commit()
                 return True
+
+    # ----------------------------------------------------------------------
+    # 新增：自动生成 SQL 的增删改功能
+    # ----------------------------------------------------------------------
+
+    async def insert_record(self, table: str, data: dict):
+        """插入记录：data 是 dict"""
+        keys = ", ".join(f"`{k}`" for k in data.keys())
+        placeholders = ", ".join(["%s"] * len(data))
+        sql = f"INSERT INTO `{table}` ({keys}) VALUES ({placeholders})"
+        return await self.execute(sql, tuple(data.values()))
+
+    async def update_record(self, table: str, data: dict, where: dict):
+        """更新记录：data、where 都是 dict"""
+        set_clause = ", ".join(f"`{k}`=%s" for k in data.keys())
+        where_clause = " AND ".join(f"`{k}`=%s" for k in where.keys())
+
+        sql = f"UPDATE `{table}` SET {set_clause} WHERE {where_clause}"
+
+        params = tuple(data.values()) + tuple(where.values())
+        return await self.execute(sql, params)
+
+    async def delete_record(self, table: str, where: dict):
+        """删除记录：where 是 dict"""
+        where_clause = " AND ".join(f"`{k}`=%s" for k in where.keys())
+        sql = f"DELETE FROM `{table}` WHERE {where_clause}"
+        return await self.execute(sql, tuple(where.values()))
