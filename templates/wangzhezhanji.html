@@ -1,57 +1,228 @@
-<div style="font-family: 'Microsoft YaHei', Arial, sans-serif; padding:20px; background:#f5f7fa; max-width:900px; margin:0 auto;">
-    <h1 style="text-align:center; font-size:28px; margin-bottom:20px;">王者荣耀 — 对局列表</h1>
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>王者荣耀 — 对局列表</title>
 
-    <table style="width:100%; border-collapse: collapse; position:relative;">
-        <tbody>
-            {% for m in data %}
-            <tr style="background:#fff; border-radius:10px; margin-bottom:12px; position:relative;">
-                <td style="width:64px; padding:8px; vertical-align:top;">
-                    <img src="{{ m.heroIcon }}" style="width:64px; height:64px; object-fit:cover; border-radius:8px;">
-                    <!-- 对局描述 -->
-                    <div style="margin-top:6px; font-size:16px; color:#444; font-weight:bold; text-align:center;">
-                        {{ m.desc }}
-                    </div>
-                </td>
-                <td style="padding:8px; vertical-align:top; position:relative;">
-                    <!-- 胜负+MVP右上角 -->
-                    <div style="position:absolute; top:8px; right:8px; display:flex; gap:6px; align-items:center;">
-                        <!-- MVP -->
-                        <div style="background:#b69f1c; color:#fff; font-weight:bold; padding:4px 8px; border-radius:6px; font-size:12px; box-shadow:0 2px 4px rgba(0,0,0,0.2);">
-                            {{ m.MVP }}
-                        </div>
-                        <!-- 胜负 -->
-                        <div style="background: {{ m.gameresult_bg }}; 
-                                    color: {{ m.gameresult_color }};
-                                    padding:6px 10px; border-radius:8px; font-weight:bold; font-size:14px;
-                                    box-shadow:0 2px 4px rgba(0,0,0,0.1);">
-                            {{ m.gameresult_label }}
-                        </div>
-                    </div>
+<style>
+    body {
+        font-family: 'Microsoft YaHei', Arial, sans-serif;
+        background: #f1f2f6;
+        margin: 0;
+        padding: 20px;
+    }
 
-                    <!-- 第一行：时间、地图、角色、星数 -->
-                    <div style="margin-bottom:6px; color:#607785;">
-                        {{ m.gametime }} · {{ m.mapName }}<br>
-                        {{ m.roleJobName }} · ⭐{{ m.stars }}
-                    </div>
+    .container {
+        max-width: 900px;
+        margin: 0 auto;
+    }
 
-                    <!-- 第二行：击杀/死亡/助攻/时长 -->
-                    <div style="margin-bottom:6px; font-size:14px; color:#333;">
-                        击杀 {{ m.killcnt }} &nbsp; 死亡 {{ m.deadcnt }} &nbsp; 助攻 {{ m.assistcnt }} &nbsp; 时长 {{ m.time_str }}
-                    </div>
+    h1 {
+        text-align: center;
+        font-size: 32px;
+        margin-bottom: 25px;
+        color: #222;
+        font-weight: 800;
+    }
 
-                    <!-- 第三行：评分 -->
-                    <div style="font-size:15px; color:#000000; font-weight:bold; margin-bottom:6px;">
-                        评分 {{ m.gradeGame }}
-                    </div>
+    /* 卡片基础样式 */
+    .match-card {
+        display: flex;
+        border-radius: 18px;
+        padding: 16px;
+        margin-bottom: 18px;
+        position: relative;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+    }
 
-                    <!-- 隐藏分右下角 -->
-                    <div style="position:absolute; bottom:8px; right:8px; font-size:14px; color:#056a3a; font-weight:bold;">
-                        巅峰赛积分 {{ m.oldMasterMatchScore }} → {{ m.newMasterMatchScore }}
-                    </div>
-                </td>
-            </tr>
-            <tr style="height:12px;"><td colspan="2"></td></tr> <!-- 间距 -->
-            {% endfor %}
-        </tbody>
-    </table>
+    /* 背景色 */
+    .win { background: #e5f4ff; }
+    .lose { background: #ffe9e9; }
+    .draw { background: #f1f2f3; }
+
+    .hero-box img {
+        width: 76px;
+        height: 76px;
+        border-radius: 10px;
+        object-fit: cover;
+    }
+
+    .hero-desc {
+        text-align: center;
+        margin-top: 8px;
+        font-size: 18px;
+        font-weight: bold;
+        color: #333;
+    }
+
+    .content {
+        flex: 1;
+        padding-left: 15px;
+        font-size: 16px;
+        color: #333;
+        position: relative;
+    }
+
+    /* 右上角标签区域 */
+    .tag-area {
+        position: absolute;
+        right: 16px;
+        top: 16px;
+        display: flex;
+        gap: 8px;
+    }
+
+    /* MVP 标签 */
+    .mvp-tag-win {
+        background: #b69f1c;
+        color: white;
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-size: 13px;
+        font-weight: bold;
+    }
+
+    .mvp-tag-lose {
+        background: #888;
+        color: white;
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-size: 13px;
+        font-weight: bold;
+    }
+
+    /* 胜负标签 */
+    .result-tag {
+        padding: 6px 12px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: bold;
+        color: white;
+    }
+    .win-tag { background: #4a90e2; }
+    .lose-tag { background: #d93939; }
+    .draw-tag { background: #777; }
+
+    .info-line {
+        margin-bottom: 8px;
+        color: #555;
+        font-size: 15px;
+    }
+
+    /* 巅峰赛积分 */
+    .master-score {
+        font-size: 16px;
+        font-weight: bold;
+        margin: 8px 0;
+        color: #056a3a;
+    }
+
+    /* 评分显示 */
+    .score-badge {
+        position: absolute;
+        right: 16px;
+        bottom: 16px;
+        background: #ffd700; /* 金黄色背景突出 */
+        color: #222;
+        font-size: 20px;
+        font-weight: 900;
+        padding: 6px 14px;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+
+    /* 新增成就标签 */
+    .achievement-tags {
+        margin-top: 8px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+
+    .achievement-tags span {
+        background: rgba(0,0,0,0.15);
+        color: #fff;
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 13px;
+    }
+
+</style>
+</head>
+<body>
+
+<div class="container">
+    <h1>王者荣耀 — 对局列表</h1>
+
+    {% for m in data %}
+
+    <div class="match-card
+        {% if m.gameresult == 1 %}win
+        {% elif m.gameresult == 2 %}lose
+        {% else %}draw
+        {% endif %}">
+
+        <div class="hero-box">
+            <img src="{{ m.heroIcon }}">
+            <div class="hero-desc">{{ m.desc }}</div>
+        </div>
+
+        <div class="content">
+
+            <!-- 右上角标签（MVP + 胜负） -->
+            <div class="tag-area">
+                {% if m.mvpcnt == 1 %}
+                    <div class="mvp-tag-win">胜方 MVP</div>
+                {% elif m.losemvp == 1 %}
+                    <div class="mvp-tag-lose">败方 MVP</div>
+                {% endif %}
+
+                <div class="result-tag
+                    {% if m.gameresult == 1 %}win-tag
+                    {% elif m.gameresult == 2 %}lose-tag
+                    {% else %}draw-tag
+                    {% endif %}">
+                    {% if m.gameresult == 1 %}胜利
+                    {% elif m.gameresult == 2 %}失败
+                    {% else %}平局
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="info-line">
+                {{ m.gametime }} · {{ m.mapName }}<br>
+                {{ m.roleJobName }} · ⭐{{ m.stars }}
+            </div>
+
+            <div class="info-line">
+                击杀 {{ m.killcnt }}　死亡 {{ m.deadcnt }}　助攻 {{ m.assistcnt }}　时长 {{ m.time_str }}
+            </div>
+
+            <!-- 巅峰赛积分放原评分位置 -->
+            <div class="master-score">
+                巅峰赛积分 {{ m.oldMasterMatchScore }} → {{ m.newMasterMatchScore }}
+            </div>
+
+            <!-- 新增成就显示 -->
+            <div class="achievement-tags">
+                {% if m.godLikeCnt > 0 %}<span>超神 × {{ m.godLikeCnt }}</span>{% endif %}
+                {% if m.firstBlood > 0 %}<span>一血</span>{% endif %}
+                {% if m.hero1TripleKillCnt > 0 %}<span>三杀 × {{ m.hero1TripleKillCnt }}</span>{% endif %}
+                {% if m.hero1UltraKillCnt > 0 %}<span>四杀 × {{ m.hero1UltraKillCnt }}</span>{% endif %}
+                {% if m.hero1RampageCnt > 0 %}<span>五杀 × {{ m.hero1RampageCnt }}</span>{% endif %}
+            </div>
+
+            <!-- 评分放右下角 -->
+            <div class="score-badge">
+                评分 {{ m.gradeGame }}
+            </div>
+
+        </div>
+
+    </div>
+
+    {% endfor %}
 </div>
+
+</body>
+</html>

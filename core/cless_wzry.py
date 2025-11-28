@@ -95,7 +95,7 @@ class WZRYFunction:
         # 需要提取的字段
         fields = ["gametime","killcnt","deadcnt","assistcnt","gameresult","mvpcnt","losemvp","mapName",
                   "oldMasterMatchScore","newMasterMatchScore","usedTime","winNum","failNum","roleJobName","stars","desc",
-                  "gradeGame","heroIcon"]
+                  "gradeGame","heroIcon","godLikeCnt", "firstBlood","hero1TripleKillCnt","hero1UltraKillCnt","hero1RampageCnt"]
         # 处理返回数据
         try:
             # 获取数据
@@ -110,24 +110,6 @@ class WZRYFunction:
                 minutes = m["usedTime"] // 60
                 seconds = m["usedTime"] % 60
                 m["time_str"] = f"{minutes}:{seconds:02d}"
-                    # 可选：提前转义 gameresult
-                if m["gameresult"] == 1:
-                    m["gameresult_label"] = "胜利"
-                    m["gameresult_bg"] = "#e6fbf1"
-                    m["gameresult_color"] = "#056a3a"
-                elif m["gameresult"] == 2:
-                    m["gameresult_label"] = "失败"
-                    m["gameresult_bg"] = "#fff0f0"
-                    m["gameresult_color"] = "#9c1f1f"
-                else:
-                    m["gameresult_label"] = "平局"
-                    m["gameresult_bg"] = "#eee"
-                    m["gameresult_color"] = "#555"
-                m["MVP"] = "混子"
-                if m["mvpcnt"] ==1:
-                    m["MVP"] = "胜方MVP"
-                if m["mvpcnt"] ==1:
-                    m["MVP"] = "败方MVP"
                 
             return_data["data"] = result
                
@@ -136,7 +118,7 @@ class WZRYFunction:
             return_data["msg"] = "处理接口返回信息时出错"
         # 加载模板
         try:
-            return_data["temp"] = load_template("wangzhezhanji.html")
+            return_data["temp"] = load_template("temp_test.html")
         except FileNotFoundError as e:
             logger.error(f"加载模板失败: {e}")
             return_data["msg"] = "系统错误：模板文件不存在"
@@ -175,7 +157,7 @@ class WZRYFunction:
             return_data["msg"] = "处理接口返回信息时出错"
         # 加载模板
         try:
-            return_data["temp"] = load_template("temp_test.html")
+            return_data["temp"] = load_template("wzry_zl.html")
         except FileNotFoundError as e:
             logger.error(f"加载模板失败: {e}")
             return_data["msg"] = "系统错误：模板文件不存在"
