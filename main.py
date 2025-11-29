@@ -337,18 +337,26 @@ class Jx3ApiPlugin(Star):
     @wz.command("战绩")
     async def wz_zhanji(self, event: AstrMessageEvent,name: str = "飞翔大野猪",option: str = "0"):
         """王者 战绩 营地ID 对局类型"""
+        
         try:
             data = await self.wzry.zhanji(name,option)
             # logger.info(f"王者荣耀战绩查询结果{data}")
+            prompt = f"{data['data']}\n"
+            prompt += f"以上数据是获取到的王者荣耀战绩信息，请根据这些数据生成一两句话的战绩总结，突出玩家的优势和特点，语言风格轻松幽默，适合在游戏群内分享。"
             if data["code"] == 200:
                 url = await self.html_render(data["temp"],{"data": data["data"]}, options={})
                 yield event.image_result(url)
             else:
                 yield event.plain_result(data["msg"])
-            return
+                return
+            provider_id = await self.context.get_current_chat_provider_id(umo=event.unified_msg_origin)
+            llm_resp = await self.context.llm_generate(chat_provider_id=provider_id, prompt=prompt,)
+            out = llm_resp.completion_text
+            yield event.plain_result(f"{out}") 
         except Exception as e:
             logger.error(f"功能函数执行错误: {e}")
             yield event.plain_result("猪脑过载，请稍后再试") 
+
 
     @wz.command("资料")
     async def wz_ziliao(self, event: AstrMessageEvent,name: str = "489048724"):
@@ -365,6 +373,19 @@ class Jx3ApiPlugin(Star):
         except Exception as e:
             logger.error(f"功能函数执行错误: {e}")
             yield event.plain_result("猪脑过载，请稍后再试") 
+
+    @wz.command("测试")
+    async def wz_test(self, event: AstrMessageEvent,name: str = "489048724"):
+        """王者 战绩 营地ID 对局类型"""
+        try:
+            provider_id = await self.context.get_current_chat_provider_id(umo=event.unified_msg_origin)
+            llm_resp = await self.context.llm_generate(chat_provider_id=provider_id, prompt="Hello, world!",)
+            out = llm_resp.completion_text
+            yield event.plain_result(f"{out}") 
+        except Exception as e:
+            logger.error(f"功能函数执行错误: {e}")
+            yield event.plain_result("猪脑过载，请稍后再试") 
+
 
     async def terminate(self):
         """可选择实现异步的插件销毁方法，当插件被卸载/停用时会调用。"""
