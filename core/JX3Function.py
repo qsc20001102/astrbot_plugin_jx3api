@@ -2,8 +2,8 @@ from datetime import datetime
 
 from astrbot.api import logger
 
-from .class_reqsest import APIClient
-from .cless_mysql import AsyncMySQL
+from .APIClient import APIClient
+from .AsyncMySQL import AsyncMySQL
 from .function_basic import load_template,extract_field,flatten_field,extract_fields,gold_to_string,plot_line_chart_base64
 
 class JX3Function:

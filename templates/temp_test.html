@@ -72,25 +72,6 @@
         gap: 8px;
     }
 
-    /* MVP 标签 */
-    .mvp-tag-win {
-        background: #b69f1c;
-        color: white;
-        padding: 4px 10px;
-        border-radius: 6px;
-        font-size: 13px;
-        font-weight: bold;
-    }
-
-    .mvp-tag-lose {
-        background: #888;
-        color: white;
-        padding: 4px 10px;
-        border-radius: 6px;
-        font-size: 13px;
-        font-weight: bold;
-    }
-
     /* 胜负标签 */
     .result-tag {
         padding: 6px 12px;
@@ -148,7 +129,7 @@
         box-shadow: 0 2px 8px rgba(0,0,0,0.2);
     }
 
-    /* 新增成就标签 - 优化显示 */
+    /* 新增成就标签 */
     .achievement-tags {
         margin-top: 8px;
         display: flex;
@@ -157,13 +138,13 @@
     }
 
     .achievement-tags span {
-        background: rgba(0, 0, 0, 0.6);  /* 背景更深 */
-        color: #fff;                     /* 白色文字 */
-        font-weight: bold;               /* 加粗文字 */
-        padding: 6px 10px;               /* 内边距更大 */
-        border-radius: 14px;             /* 圆角更明显 */
-        font-size: 14px;                 /* 略大字体 */
-        text-shadow: 0 1px 2px rgba(0,0,0,0.5); /* 文字阴影增强可读性 */
+        background: rgba(0, 0, 0, 0.6);
+        color: #fff;
+        font-weight: bold;
+        padding: 6px 10px;
+        border-radius: 14px;
+        font-size: 14px;
+        text-shadow: 0 1px 2px rgba(0,0,0,0.5);
     }
 
 </style>
@@ -188,12 +169,17 @@
 
         <div class="content">
 
-            <!-- 右上角标签（MVP + 胜负） -->
+            <!-- 右上角标签（evaluate + MVP PNG） -->
             <div class="tag-area">
-                {% if m.mvpcnt == 1 %}
-                    <div class="mvp-tag-win">胜方 MVP</div>
-                {% elif m.losemvp == 1 %}
-                    <div class="mvp-tag-lose">败方 MVP</div>
+
+                {% if m.evaluateUrlV3 %}
+                    <img src="{{ m.evaluateUrlV3 }}"
+                         style="height: 32px; border-radius: 6px;">
+                {% endif %}
+
+                {% if m.mvpUrlV3 %}
+                    <img src="{{ m.mvpUrlV3 }}"
+                         style="height: 32px; border-radius: 6px;">
                 {% endif %}
 
                 <div class="result-tag
@@ -206,6 +192,7 @@
                     {% else %}平局
                     {% endif %}
                 </div>
+
             </div>
 
             <!-- 对局时间 + 对局类型 -->

@@ -72,25 +72,6 @@
         gap: 8px;
     }
 
-    /* MVP 标签 */
-    .mvp-tag-win {
-        background: #b69f1c;
-        color: white;
-        padding: 4px 10px;
-        border-radius: 6px;
-        font-size: 13px;
-        font-weight: bold;
-    }
-
-    .mvp-tag-lose {
-        background: #888;
-        color: white;
-        padding: 4px 10px;
-        border-radius: 6px;
-        font-size: 13px;
-        font-weight: bold;
-    }
-
     /* 胜负标签 */
     .result-tag {
         padding: 6px 12px;
@@ -103,18 +84,35 @@
     .lose-tag { background: #d93939; }
     .draw-tag { background: #777; }
 
-    .info-line {
-        margin-bottom: 8px;
+    /* 对局时间 + 对局类型 */
+    .info-line-time {
+        font-size: 18px;
+        color: #000;
+        margin-bottom: 6px;
+    }
+
+    /* 段位 + 星星 */
+    .rank-stars {
+        font-size: 16px;
+        color: #2ecc71;
+        font-weight: bold;
+        margin-bottom: 6px;
+    }
+
+    /* KDA 信息 */
+    .kda-info {
+        font-size: 16px;
+        font-weight: bold;
         color: #555;
-        font-size: 15px;
+        margin-bottom: 6px;
     }
 
     /* 巅峰赛积分 */
     .master-score {
         font-size: 16px;
         font-weight: bold;
-        margin: 8px 0;
         color: #056a3a;
+        margin-bottom: 6px;
     }
 
     /* 评分显示 */
@@ -122,7 +120,7 @@
         position: absolute;
         right: 16px;
         bottom: 16px;
-        background: #ffd700; /* 金黄色背景突出 */
+        background: #ffd700;
         color: #222;
         font-size: 20px;
         font-weight: 900;
@@ -140,11 +138,13 @@
     }
 
     .achievement-tags span {
-        background: rgba(0,0,0,0.15);
+        background: rgba(0, 0, 0, 0.6);
         color: #fff;
-        padding: 4px 8px;
-        border-radius: 12px;
-        font-size: 13px;
+        font-weight: bold;
+        padding: 6px 10px;
+        border-radius: 14px;
+        font-size: 14px;
+        text-shadow: 0 1px 2px rgba(0,0,0,0.5);
     }
 
 </style>
@@ -169,12 +169,17 @@
 
         <div class="content">
 
-            <!-- 右上角标签（MVP + 胜负） -->
+            <!-- 右上角标签（evaluate + MVP PNG） -->
             <div class="tag-area">
-                {% if m.mvpcnt == 1 %}
-                    <div class="mvp-tag-win">胜方 MVP</div>
-                {% elif m.losemvp == 1 %}
-                    <div class="mvp-tag-lose">败方 MVP</div>
+
+                {% if m.evaluateUrlV3 %}
+                    <img src="{{ m.evaluateUrlV3 }}"
+                         style="height: 32px; border-radius: 6px;">
+                {% endif %}
+
+                {% if m.mvpUrlV3 %}
+                    <img src="{{ m.mvpUrlV3 }}"
+                         style="height: 32px; border-radius: 6px;">
                 {% endif %}
 
                 <div class="result-tag
@@ -187,20 +192,27 @@
                     {% else %}平局
                     {% endif %}
                 </div>
+
             </div>
 
-            <div class="info-line">
-                {{ m.gametime }} · {{ m.mapName }}<br>
+            <!-- 对局时间 + 对局类型 -->
+            <div class="info-line-time">
+                {{ m.gametime }} · {{ m.mapName }}
+            </div>
+
+            <!-- 段位 + 星星 -->
+            <div class="rank-stars">
                 {{ m.roleJobName }} · ⭐{{ m.stars }}
             </div>
 
-            <div class="info-line">
-                击杀 {{ m.killcnt }}　死亡 {{ m.deadcnt }}　助攻 {{ m.assistcnt }}　时长 {{ m.time_str }}
-            </div>
-
-            <!-- 巅峰赛积分放原评分位置 -->
+            <!-- 巅峰赛积分（原 KDA 位置） -->
             <div class="master-score">
                 巅峰赛积分 {{ m.oldMasterMatchScore }} → {{ m.newMasterMatchScore }}
+            </div>
+
+            <!-- KDA 信息（原巅峰赛位置） -->
+            <div class="kda-info">
+                击杀 {{ m.killcnt }}　死亡 {{ m.deadcnt }}　助攻 {{ m.assistcnt }}　时长 {{ m.time_str }}
             </div>
 
             <!-- 新增成就显示 -->

@@ -8,9 +8,9 @@ from astrbot.api.star import Context, Star, register, StarTools
 from astrbot.api import logger
 from astrbot.api import AstrBotConfig
 
-from .core.cless_mysql import AsyncMySQL
-from .core.cless_jx3 import JX3Function
-from .core.cless_wzry import WZRYFunction
+from .core.AsyncMySQL import AsyncMySQL
+from .core.JX3Function import JX3Function
+from .core.WZRYFunction import WZRYFunction
 
 
 
@@ -293,7 +293,7 @@ class Jx3ApiPlugin(Star):
         pass
 
 
-    @wz.command("用户列表")
+    @wz.command("列表")
     async def wz_yingdilist(self, event: AstrMessageEvent):
         """王者 用户列表"""
         try:
@@ -304,7 +304,7 @@ class Jx3ApiPlugin(Star):
             logger.error(f"功能函数执行错误: {e}")
             yield event.plain_result("猪脑过载，请稍后再试") 
 
-    @wz.command("添加用户")
+    @wz.command("添加")
     async def wz_adduesr(self, event: AstrMessageEvent,id: str,name: str):
         """王者 添加用户"""
         try:
@@ -314,7 +314,7 @@ class Jx3ApiPlugin(Star):
             logger.error(f"功能函数执行错误: {e}")
             yield event.plain_result("猪脑过载，请稍后再试") 
 
-    @wz.command("修改用户")
+    @wz.command("修改")
     async def wz_updateuser(self, event: AstrMessageEvent,id: str,name: str):
         """王者 修改用户"""
         try:
@@ -324,7 +324,7 @@ class Jx3ApiPlugin(Star):
             logger.error(f"功能函数执行错误: {e}")
             yield event.plain_result("猪脑过载，请稍后再试") 
     
-    @wz.command("删除用户")
+    @wz.command("删除")
     async def wz_deleteuser(self, event: AstrMessageEvent,id: str):
         """王者 删除用户"""
         try:
@@ -341,18 +341,18 @@ class Jx3ApiPlugin(Star):
         try:
             data = await self.wzry.zhanji(name,option)
             # logger.info(f"王者荣耀战绩查询结果{data}")
-            prompt = f"{data['data']}\n"
-            prompt += f"以上数据是获取到的王者荣耀战绩信息，请根据这些数据生成一两句话的战绩总结，突出玩家的优势和特点，语言风格轻松幽默，适合在游戏群内分享。"
+            #prompt = f"{data['data']}\n"
+            #prompt += f"以上数据是获取到的王者荣耀战绩信息，请根据这些数据生成一两句话的战绩总结，突出玩家的优势和特点，语言风格轻松幽默，适合在游戏群内分享。"
             if data["code"] == 200:
-                url = await self.html_render(data["temp"],{"data": data["data"]}, options={})
+                url = await self.html_render(data["temp"],{"data":data["data"]}, options={})
                 yield event.image_result(url)
             else:
                 yield event.plain_result(data["msg"])
                 return
-            provider_id = await self.context.get_current_chat_provider_id(umo=event.unified_msg_origin)
-            llm_resp = await self.context.llm_generate(chat_provider_id=provider_id, prompt=prompt,)
-            out = llm_resp.completion_text
-            yield event.plain_result(f"{out}") 
+            #provider_id = await self.context.get_current_chat_provider_id(umo=event.unified_msg_origin)
+            #llm_resp = await self.context.llm_generate(chat_provider_id=provider_id, prompt=prompt,)
+            #out = llm_resp.completion_text
+            #yield event.plain_result(f"{out}") 
         except Exception as e:
             logger.error(f"功能函数执行错误: {e}")
             yield event.plain_result("猪脑过载，请稍后再试") 
@@ -363,7 +363,7 @@ class Jx3ApiPlugin(Star):
         """王者 战绩 营地ID 对局类型"""
         try:
             data = await self.wzry.ziliao(name)
-            # logger.info(f"输出结果{data}")
+            logger.info(f"输出结果{data}")
             if data["code"] == 200:
                 url = await self.html_render(data["temp"], data["data"], options={})
                 yield event.image_result(url)
