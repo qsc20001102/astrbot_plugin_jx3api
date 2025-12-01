@@ -374,14 +374,19 @@ class Jx3ApiPlugin(Star):
             logger.error(f"功能函数执行错误: {e}")
             yield event.plain_result("猪脑过载，请稍后再试") 
 
-    @wz.command("测试")
-    async def wz_test(self, event: AstrMessageEvent,name: str = "489048724"):
-        """王者 战绩 营地ID 对局类型"""
+    @filter.command("仇人列表")
+    async def wz_bilei(self, event: AstrMessageEvent,):
+        """仇人列表"""
         try:
-            provider_id = await self.context.get_current_chat_provider_id(umo=event.unified_msg_origin)
-            llm_resp = await self.context.llm_generate(chat_provider_id=provider_id, prompt="Hello, world!",)
-            out = llm_resp.completion_text
-            yield event.plain_result(f"{out}") 
+            data = await self.wzry.bilei_all()
+            if data["code"] == 200:
+                url = await self.html_render(data["temp"], data["data"], options={})
+                yield event.image_result(url)
+            else:
+                yield event.plain_result(data["msg"])
+            return
+            #logger.info(f"输出结果{event.get_sender_name()}\n{out}")
+            #yield event.plain_result(f"{out}") 
         except Exception as e:
             logger.error(f"功能函数执行错误: {e}")
             yield event.plain_result("猪脑过载，请稍后再试") 

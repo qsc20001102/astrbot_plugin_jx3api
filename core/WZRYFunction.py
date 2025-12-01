@@ -160,3 +160,31 @@ class WZRYFunction:
 
         return return_data
 
+    async def bilei_all(self):
+        """
+        查询仇人列表
+        """
+        return_data = {
+            "code": 0,
+            "msg": "功能函数未执行",
+            "data": {}
+        }
+        # 查询所有
+        try:
+            sql = "SELECT * FROM wzrybl"
+            sqlid = await self.__db.fetch_all(sql) 
+        except Exception as e:
+            logger.error(f"处理数据时出错: {e}")
+            return_data["msg"] = "处理数据库信息时出错"
+            return return_data
+        
+        # 加载模板
+        try:
+            return_data["temp"] = load_template("temp_test.html")
+        except FileNotFoundError as e:
+            logger.error(f"加载模板失败: {e}")
+            return_data["msg"] = "系统错误：模板文件不存在"
+            return return_data  
+        return_data["data"]["lists"] = sqlid
+        return_data["code"] = 200
+        return return_data
