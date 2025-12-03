@@ -1,4 +1,4 @@
-# JX3API
+# JX3
 
 AstrBot 插件模板
 
