@@ -13,7 +13,7 @@ from .core.jx3_service import JX3Service
 
 
 
-@register("astrbot_plugin_jx3", 
+@register("剑网三数据查询工具", 
           "fxdyz", 
           "通过接口调用剑网三API接口获取游戏数据", 
           "1.0.0",
