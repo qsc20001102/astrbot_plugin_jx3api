@@ -10,11 +10,10 @@ from astrbot.api import AstrBotConfig
 
 from .core.async_mysql import AsyncMySQL
 from .core.jx3_service import JX3Service
-from .core.WZRYFunction import WZRYFunction
 
 
 
-@register("astrbot_plugin_jx3api", 
+@register("astrbot_plugin_jx3", 
           "fxdyz", 
           "通过接口调用剑网三API接口获取游戏数据", 
           "1.0.0",
@@ -53,7 +52,6 @@ class Jx3ApiPlugin(Star):
         #创建类实例
         self.db = AsyncMySQL(db_config)
         self.jx3fun = JX3Service(self.api_config,self.db)
-        self.wzry = WZRYFunction(self.api_config,self.db)
         # 周期函数调用
     
 
@@ -63,6 +61,7 @@ class Jx3ApiPlugin(Star):
         """数据初始化"""
         self.test_server = False
         logger.info("数据初始化完成")
+
 
     async def cycle_kaifjiankong(self):
         """开服监控后台程序"""
@@ -101,9 +100,11 @@ class Jx3ApiPlugin(Star):
             self.kf_task.cancel()
             logger.info(f"开服监控功能关闭")
     
+
     @filter.command_group("剑三")
     def jx3(self):
         pass
+
 
     @jx3.command("日常")
     async def jx3_richang(self, event: AstrMessageEvent,server: str = "梦江南",num: int = 0):
@@ -119,6 +120,7 @@ class Jx3ApiPlugin(Star):
             logger.error(f"功能函数执行错误: {e}")
             yield event.plain_result("猪脑过载，请稍后再试")
     
+
     @jx3.command("开服")
     async def jx3_kaifu(self, event: AstrMessageEvent,server: str = "梦江南"):
         """剑三 日常 服务器 天数"""
@@ -132,6 +134,7 @@ class Jx3ApiPlugin(Star):
         except Exception as e:
             logger.error(f"功能函数执行错误: {e}")
             yield event.plain_result("猪脑过载，请稍后再试")
+
 
     @jx3.command("沙盘")
     async def jx3_shapan(self, event: AstrMessageEvent,server: str = "梦江南"):
@@ -242,6 +245,7 @@ class Jx3ApiPlugin(Star):
             logger.error(f"功能函数执行错误: {e}")
             yield event.plain_result("猪脑过载，请稍后再试") 
 
+
     @jx3.command("开服监控")
     async def jx3_kaifhujiank(self, event: AstrMessageEvent,en: str = "状态"):
         """剑三 开服监控"""     
@@ -277,6 +281,7 @@ class Jx3ApiPlugin(Star):
             logger.error(f"功能函数执行错误: {e}")
             yield event.plain_result("猪脑过载，请稍后再试") 
 
+
     @filter.command("测试值")
     async def jx3_testvar(self, event: AstrMessageEvent,var: str = "0"):
         """测试程序"""   
@@ -286,110 +291,6 @@ class Jx3ApiPlugin(Star):
             self.test_server = False
         
         yield event.plain_result(f"测试值:{self.test_server}") 
-
-
-    @filter.command_group("王者")
-    def wz(self):
-        pass
-
-
-    @wz.command("列表")
-    async def wz_yingdilist(self, event: AstrMessageEvent):
-        """王者 用户列表"""
-        try:
-            data = await self.wzry.all_user()
-            logger.info(f"王者荣耀营地列表查询结果{data}")
-            yield event.plain_result(data)
-        except Exception as e:
-            logger.error(f"功能函数执行错误: {e}")
-            yield event.plain_result("猪脑过载，请稍后再试") 
-
-    @wz.command("添加")
-    async def wz_adduesr(self, event: AstrMessageEvent,id: str,name: str):
-        """王者 添加用户"""
-        try:
-            data = await self.wzry.add_user(id,name)
-            yield event.plain_result(data)
-        except Exception as e:
-            logger.error(f"功能函数执行错误: {e}")
-            yield event.plain_result("猪脑过载，请稍后再试") 
-
-    @wz.command("修改")
-    async def wz_updateuser(self, event: AstrMessageEvent,id: str,name: str):
-        """王者 修改用户"""
-        try:
-            data = await self.wzry.update_user(id,name)
-            yield event.plain_result(data)
-        except Exception as e:
-            logger.error(f"功能函数执行错误: {e}")
-            yield event.plain_result("猪脑过载，请稍后再试") 
-    
-    @wz.command("删除")
-    async def wz_deleteuser(self, event: AstrMessageEvent,id: str):
-        """王者 删除用户"""
-        try:
-            data = await self.wzry.delete_user(id)
-            yield event.plain_result(data)
-        except Exception as e:
-            logger.error(f"功能函数执行错误: {e}")
-            yield event.plain_result("猪脑过载，请稍后再试") 
-
-    @wz.command("战绩")
-    async def wz_zhanji(self, event: AstrMessageEvent,name: str = "飞翔大野猪",option: str = "0"):
-        """王者 战绩 营地ID 对局类型"""
-        
-        try:
-            data = await self.wzry.zhanji(name,option)
-            # logger.info(f"王者荣耀战绩查询结果{data}")
-            #prompt = f"{data['data']}\n"
-            #prompt += f"以上数据是获取到的王者荣耀战绩信息，请根据这些数据生成一两句话的战绩总结，突出玩家的优势和特点，语言风格轻松幽默，适合在游戏群内分享。"
-            if data["code"] == 200:
-                url = await self.html_render(data["temp"],{"data":data["data"]}, options={})
-                yield event.image_result(url)
-            else:
-                yield event.plain_result(data["msg"])
-                return
-            #provider_id = await self.context.get_current_chat_provider_id(umo=event.unified_msg_origin)
-            #llm_resp = await self.context.llm_generate(chat_provider_id=provider_id, prompt=prompt,)
-            #out = llm_resp.completion_text
-            #yield event.plain_result(f"{out}") 
-        except Exception as e:
-            logger.error(f"功能函数执行错误: {e}")
-            yield event.plain_result("猪脑过载，请稍后再试") 
-
-
-    @wz.command("资料")
-    async def wz_ziliao(self, event: AstrMessageEvent,name: str = "489048724"):
-        """王者 战绩 营地ID 对局类型"""
-        try:
-            data = await self.wzry.ziliao(name)
-            logger.info(f"输出结果{data}")
-            if data["code"] == 200:
-                url = await self.html_render(data["temp"], data["data"], options={})
-                yield event.image_result(url)
-            else:
-                yield event.plain_result(data["msg"])
-            return
-        except Exception as e:
-            logger.error(f"功能函数执行错误: {e}")
-            yield event.plain_result("猪脑过载，请稍后再试") 
-
-    @filter.command("仇人列表")
-    async def wz_bilei(self, event: AstrMessageEvent,):
-        """仇人列表"""
-        try:
-            data = await self.wzry.bilei_all()
-            if data["code"] == 200:
-                url = await self.html_render(data["temp"], data["data"], options={})
-                yield event.image_result(url)
-            else:
-                yield event.plain_result(data["msg"])
-            return
-            #logger.info(f"输出结果{event.get_sender_name()}\n{out}")
-            #yield event.plain_result(f"{out}") 
-        except Exception as e:
-            logger.error(f"功能函数执行错误: {e}")
-            yield event.plain_result("猪脑过载，请稍后再试") 
 
 
     async def terminate(self):
