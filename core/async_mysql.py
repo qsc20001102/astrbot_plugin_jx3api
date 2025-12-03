@@ -21,7 +21,7 @@ class AsyncMySQL:
     async def fetch_one(self, sql: str, params=None):
         """查询单条数据"""
         await self.init_pool()
-        async with self.pool.acquire() as conn:
+        async with self.pool.acquire() as conn: # type: ignore
             async with conn.cursor(aiomysql.DictCursor) as cursor:
                 await cursor.execute(sql, params or ())
                 return await cursor.fetchone()
@@ -29,7 +29,7 @@ class AsyncMySQL:
     async def fetch_all(self, sql: str, params=None):
         """查询多条数据"""
         await self.init_pool()
-        async with self.pool.acquire() as conn:
+        async with self.pool.acquire() as conn: # type: ignore
             async with conn.cursor(aiomysql.DictCursor) as cursor:
                 await cursor.execute(sql, params or ())
                 return await cursor.fetchall()
@@ -37,7 +37,7 @@ class AsyncMySQL:
     async def execute(self, sql: str, params=None):
         """执行 SQL（insert/update/delete）"""
         await self.init_pool()
-        async with self.pool.acquire() as conn:
+        async with self.pool.acquire() as conn: # type: ignore
             async with conn.cursor() as cursor:
                 await cursor.execute(sql, params or ())
                 await conn.commit()
@@ -46,7 +46,7 @@ class AsyncMySQL:
     async def executemany(self, sql: str, params_list):
         """批量执行 SQL"""
         await self.init_pool()
-        async with self.pool.acquire() as conn:
+        async with self.pool.acquire() as conn: # type: ignore
             async with conn.cursor() as cursor:
                 await cursor.executemany(sql, params_list)
                 await conn.commit()
@@ -55,7 +55,7 @@ class AsyncMySQL:
     async def truncate_table(self, table_name: str):
         """清空指定表"""
         await self.init_pool()
-        async with self.pool.acquire() as conn:
+        async with self.pool.acquire() as conn: # type: ignore
             async with conn.cursor() as cursor:
                 sql = f"TRUNCATE TABLE `{table_name}`"
                 await cursor.execute(sql)

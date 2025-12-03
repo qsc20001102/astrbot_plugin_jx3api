@@ -8,8 +8,8 @@ from astrbot.api.star import Context, Star, register, StarTools
 from astrbot.api import logger
 from astrbot.api import AstrBotConfig
 
-from .core.AsyncMySQL import AsyncMySQL
-from .core.JX3Function import JX3Function
+from .core.async_mysql import AsyncMySQL
+from .core.jx3_service import JX3Service
 from .core.WZRYFunction import WZRYFunction
 
 
@@ -52,7 +52,7 @@ class Jx3ApiPlugin(Star):
         }        
         #创建类实例
         self.db = AsyncMySQL(db_config)
-        self.jx3fun = JX3Function(self.api_config,self.db)
+        self.jx3fun = JX3Service(self.api_config,self.db)
         self.wzry = WZRYFunction(self.api_config,self.db)
         # 周期函数调用
     

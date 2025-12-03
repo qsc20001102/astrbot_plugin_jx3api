@@ -1,0 +1,593 @@
+from datetime import datetime
+from typing import Dict, Any, Optional, List, Union
+
+from astrbot.api import logger
+
+from .request import APIClient
+from .AsyncMySQL import AsyncMySQL
+from .function_basic import load_template,flatten_field,extract_fields,gold_to_string
+
+class JX3Service:
+    def __init__(self, api_config,db: AsyncMySQL ):
+        self._api = APIClient()
+        self._db = db
+        self._api_config = api_config
+
+
+    def _init_return_data(self) -> Dict[str, Any]:
+            """初始化标准的返回数据结构"""
+            return {
+                "code": 0,
+                "msg": "功能函数未执行",
+                "data": {}
+            }
+    
+
+    async def _base_request(
+        self, 
+        config_key: str, 
+        method: str, 
+        params: Optional[Dict[str, Any]] = None, 
+        out_key: Optional[str] = "data"
+    ) -> Optional[Any]:
+        """
+        基础请求封装，处理配置获取和API调用。
+        
+        :param config_key: 配置字典中对应 API 的键名。
+        :param method: HTTP方法 ('GET' 或 'POST')。
+        :param params: 请求参数或 Body 数据。
+        :param out_key: 响应数据中需要提取的字段。
+        :return: 成功时返回提取后的数据，失败时返回 None。
+        """
+        try:
+            api_config = self._api_config.get(config_key)
+            if not api_config:
+                logger.error(f"配置文件中未找到 key: {config_key}")
+                return None
+            
+            # 复制 params，避免修改原始配置模板
+            request_params = api_config.get("params", {}).copy()
+            if params:
+                request_params.update(params)
+
+            url = api_config.get("url", "")
+            if not url:
+                logger.error(f"API配置缺少 URL: {config_key}")
+                return None
+                
+            if method.upper() == 'POST':
+                data = await self._api.post(url, data=request_params, out_key=out_key)
+            else: # 默认为 GET
+                data = await self._api.get(url, params=request_params, out_key=out_key)
+            
+            if not data:
+                logger.warning(f"获取接口信息失败或返回空数据: {config_key}")
+            
+            return data
+            
+        except Exception as e:
+            logger.error(f"基础请求调用出错 ({config_key}): {e}")
+            return None
+
+    # --- 业务功能函数 ---
+
+    async def richang(self,server: str, num: int = 0) -> Dict[str, Any]:
+        """日常活动"""
+        return_data = self._init_return_data()
+
+        # 1. 构造请求参数
+        params = {"server": server, "num": num}
+
+        # 2. 调用基础请求
+        data: Optional[Dict[str, Any]] = await self._base_request(
+            "jx3_richang", "GET", params=params
+        )
+
+        if not data:
+            return_data["msg"] = "获取接口信息失败"
+            return return_data
+    
+        # 3. 处理返回数据
+        try:
+            # 格式化字符串，利用字典的 get 方法提供默认值
+            result_msg = (
+                f"{server}\n{data.get('date', '未知日期')}-星期{data.get('week', '未知')}\n"
+                f"大战：{data.get('war', '无')}\n"
+                f"战场：{data.get('battle', '无')}\n"
+                f"阵营：{data.get('orecar', '无')}\n"
+                f"宗门：{data.get('school', '无')}\n"
+                f"驰援：{data.get('rescue', '无')}\n"
+                f"画像：{data.get('draw', '无')}\n"
+            )
+            
+            # 安全地处理列表索引
+            luck = data.get('luck', [None, None, None])
+            luck_msg = f"[宠物福缘]：\n{luck[0] or '无'},{luck[1] or '无'},{luck[2] or '无'}\n"
+            card = data.get('card', [None, None, None])
+            card_msg = f"[家园声望·加倍道具]：\n{card[0] or '无'},{card[1] or '无'},{card[2] or '无'}\n"
+            team = data.get('team', [None, None, None])
+            team_msg = f"[武林通鉴·公共任务]：\n{team[0] or '无'}\n[武林通鉴·团队秘境]：\n{team[2] or '无'}\n"
+
+            return_data["data"] = result_msg + luck_msg + card_msg + team_msg
+            return_data["code"] = 200
+        except Exception as e:
+            logger.error(f"richang 数据处理时出错: {e}")
+            return_data["msg"] = "处理接口返回信息时出错"
+
+        return return_data
+
+
+    async def shapan(self, server: str ) -> Dict[str, Any]:
+        """区服沙盘"""
+        return_data = self._init_return_data()
+        
+        # 1. 构造请求参数
+        params = {"serverName": server}
+        
+        # 2. 调用基础请求
+        data: Optional[Dict[str, Any]] = await self._base_request(
+            "aijx3_shapan", "POST", params=params
+        )
+        
+        if not data:
+            return_data["msg"] = "获取接口信息失败"
+            return return_data
+            
+        # 3. 处理返回数据 (直接提取图片 URL)
+        pic_url = data.get("picUrl")
+        if pic_url:
+            return_data["data"] = pic_url
+            return_data["code"] = 200
+        else:
+            return_data["msg"] = "接口未返回图片URL"
+            
+        return return_data
+    
+    async def kaifu(self, server: str) -> Dict[str, Any]:
+        """开服状态查询"""
+        return_data = self._init_return_data()
+        
+        # 1. 构造请求参数
+        params = {"server": server}
+        
+        # 2. 调用基础请求
+        data: Optional[Dict[str, Union[int, str]]] = await self._base_request(
+            "jx3_kaifu", "GET", params=params
+        )
+        
+        if not data:
+            return_data["msg"] = "获取接口信息失败"
+            return return_data
+            
+        # 3. 处理返回数据
+        try:
+            status = data.get("status", 0)
+            timestamp = data.get("time", 0)
+            
+            status_time = datetime.fromtimestamp(float(timestamp)).strftime("%Y-%m-%d %H:%M:%S")
+            
+            if status == 1:
+                status_str = f"{server}服务器已开服，快冲，快冲！\n开服时间：{status_time}"
+                status_bool = True
+            else:
+                status_str = f"{server}服务器当前维护中，等会再来吧！\n维护时间：{status_time}"
+                status_bool = False
+                
+            return_data["status"] = status_bool
+            return_data["data"] = status_str
+            return_data["code"] = 200
+        except Exception as e:
+            logger.error(f"kaifu 数据处理时出错: {e}")
+            return_data["msg"] = "处理接口返回信息时出错"
+            
+        return return_data
+
+    async def shaohua(self) -> Dict[str, Any]:
+        """骚话"""
+        return_data = self._init_return_data()
+        
+        # 因为没有参数，所以 params=None
+        data: Optional[Dict[str, Any]] = await self._base_request("jx3_shaohua", "GET") 
+        
+        if not data:
+            return_data["msg"] = "获取接口信息失败"
+            return return_data
+            
+        text = data.get("text")
+        if text:
+            return_data["data"] = text
+            return_data["code"] = 200
+        else:
+            return_data["msg"] = "接口未返回文本"
+            
+        return return_data
+
+
+    async def jigai(self) -> Dict[str, Any]:
+        """技改记录"""
+        return_data = self._init_return_data()
+        
+        # 提取字段可能返回列表
+        data: Optional[List[Dict[str, Any]]] = await self._base_request("jx3_jigai", "GET")
+        
+        if not data or not isinstance(data, list):
+            return_data["msg"] = "获取接口信息失败或数据格式错误"
+            return return_data
+        
+        try:
+            result_msg = "剑网三最近技改\n"
+            # 仅展示前1条，避免消息过长
+            for i, item in enumerate(data[:1], 1): 
+                result_msg += f"{i}. {item.get('title', '无标题')}\n"
+                result_msg += f"时间：{item.get('time', '未知时间')}\n"
+                result_msg += f"链接：{item.get('url', '无链接')}\n\n"
+                
+            return_data["data"] = result_msg
+            return_data["code"] = 200
+        except Exception as e:
+            logger.error(f"jigai 数据处理时出错: {e}")
+            return_data["msg"] = "处理接口返回信息时出错"
+            
+        return return_data
+    
+
+    async def jinjia(self, server: str) -> Dict[str, Any]:
+        """区服金价"""
+        return_data = self._init_return_data()
+        
+        params = {"serverName": server}
+        data_list: Optional[List[Dict[str, Any]]] = await self._base_request("aijx3_jinjia", "POST", params=params)
+        
+        if not data_list or not isinstance(data_list, list):
+            return_data["msg"] = "获取接口信息失败或数据格式错误"
+            return return_data
+            
+        # 安全处理列表切片
+        display_data = data_list[:15]
+        
+        # 加载模板
+        try:
+            return_data["temp"] = load_template("jinjia.html")
+        except FileNotFoundError as e:
+            logger.error(f"加载模板失败: {e}")
+            return_data["msg"] = "系统错误：模板文件不存在"
+            return return_data
+            
+        # 准备模板渲染数据
+        try:
+            return_data["data"] = {
+                "items": display_data,
+                "server": server,
+                "update_time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            } 
+            return_data["code"] = 200
+        except Exception as e:
+            logger.error(f"jinjia 模板数据准备失败: {e}")
+            return_data["msg"] = "系统错误：模板渲染数据准备失败"
+            
+        return return_data
+
+
+    async def qiyu(self, adventureName: str = "阴阳两界", serverName: str = "眉间雪") -> Dict[str, Any]:
+        """区服奇遇"""
+        return_data = self._init_return_data()
+        
+        params = {"adventureName": adventureName, "serverName": serverName}
+        data_list: Optional[List[Dict[str, Any]]] = await self._base_request("aijx3_qiyu", "POST", params=params)
+        
+        if not data_list or not isinstance(data_list, list):
+            return_data["msg"] = "获取接口信息失败或数据格式错误"
+            return return_data
+            
+        # 格式化时间
+        for item in data_list:
+            timestamp = item.get("time")
+            if timestamp and isinstance(timestamp, (int, float)):
+                # 修复时间戳：原代码显示这里是毫秒级，除以 1000
+                item["time"] = datetime.fromtimestamp(timestamp / 1000).strftime("%Y-%m-%d %H:%M:%S")
+            else:
+                item["time"] = "未知时间" # 确保即使 time 字段缺失也不会报错
+                
+        # 加载模板
+        try:
+            return_data["temp"] = load_template("qiyuliebiao.html")
+        except FileNotFoundError as e:
+            logger.error(f"加载模板失败: {e}")
+            return_data["msg"] = "系统错误：模板文件不存在"
+            return return_data
+            
+        # 准备模板渲染数据
+        try: 
+            return_data["data"] = {
+                "items": data_list,
+                "server": serverName,
+                "update_time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                "qiyuname": adventureName
+            }
+            return_data["code"] = 200
+        except Exception as e:
+            logger.error(f"qiyu 模板数据准备失败: {e}")
+            return_data["msg"] = "系统错误：模板渲染数据准备失败"
+            
+        return return_data
+    
+
+    async def SearchData(self) -> Dict[str, Any]:
+        """外观数据插入数据库"""
+        return_data = self._init_return_data()
+        
+        # 获取数据
+        data: Optional[List[Dict[str, Any]]] = await self._base_request("aijx3_SearchData", "POST")
+        
+        if not data:
+            return_data["msg"] = "获取接口信息失败"
+            return return_data
+            
+        # 提取数据
+        try:
+            extracted_data = flatten_field(data, "dataModels")
+        except Exception as e:
+            logger.error(f"提取数据失败: {e}")
+            return_data["msg"] = "提取指定数据字段失败"
+            return return_data 
+            
+        # 准备SQL和批量数据
+        sql = """
+        INSERT INTO searchdata 
+        (typeName, name, showName, picUrl, searchId, searchDescType) 
+        VALUES (%s, %s, %s, %s, %s, %s)
+        """
+        # 增强数据提取的安全性
+        values_list = [
+            (
+                item.get('typeName'),
+                item.get('name'),
+                item.get('showName'),
+                item.get('picUrl'),
+                item.get('searchId'),
+                item.get('searchDescType')
+            )
+            for item in extracted_data 
+        ]
+        
+        # 插入数据
+        try:
+            await self._db.truncate_table("searchdata")
+            await self._db.executemany(sql, values_list)
+        except Exception as e:
+            logger.error(f"数据插入失败: {e}")
+            return_data["msg"] = "数据插入数据库失败"
+            return return_data
+            
+        return_data["msg"] = f"成功批量插入 {len(values_list)} 条数据！"
+        return_data["code"] = 200
+        return return_data
+
+
+    async def wujia(self, Name: str) -> Dict[str, Any]:
+        """物价查询"""
+        return_data = self._init_return_data()
+        
+        # 1. 查询魔盒获取外观名称 (jx3box_exterior)
+        params_search = {"keyword": Name}
+        search_data: Optional[Dict[str, Any]] = await self._base_request("jx3box_exterior", "GET", params=params_search)
+        
+        showName = ""
+        searchId = None
+        
+        # 2. 确定外观名称和 ID
+        if search_data and search_data.get("total", 0) > 0 and search_data.get("list"):
+            # 从 API 获取名称
+            showName = search_data["list"][0].get("name", "")
+            
+            # 进一步从 DB 查找 ID
+            try:
+                sql = "SELECT searchId FROM searchdata WHERE showName=%s"
+                sqldata = await self._db.fetch_one(sql, (showName,)) 
+                searchId = sqldata["searchId"] if sqldata else None
+            except Exception as e:
+                logger.warning(f"从 DB 获取外观ID错误: {e}") # 警告而非错误，因为可能数据库同步失败
+                
+        elif search_data and search_data.get("total", 0) == 0:
+            # 从 DB 查找名称和 ID
+            try:
+                sql = "SELECT showName, searchId FROM searchdata WHERE name = %s OR showName = %s"
+                sqldata = await self._db.fetch_one(sql, (Name, Name)) 
+                if sqldata:
+                    showName = sqldata["showName"]
+                    searchId = sqldata["searchId"]
+                else:
+                    raise ValueError("DB did not find data.")
+            except Exception as e:
+                logger.error(f"获取外观信息错误: {e}")
+                return_data["msg"] = "未找到该外观信息"
+                return return_data
+        
+        if not showName or not searchId:
+            return_data["msg"] = "无法确定外观名称或ID"
+            return return_data
+
+        return_data["data"]["showName"] = showName
+        return_data["data"]["searchId"] = searchId
+
+        # 3. 获取外观详细数据 (aijx3_GoodsDetail)
+        params_detail = {"goodsName": showName}
+        detail_data: Optional[Dict[str, Any]] = await self._base_request("aijx3_GoodsDetail", "POST", params=params_detail)
+        
+        if not detail_data:
+            return_data["msg"] = "获取外观详细数据失败"
+            return return_data
+            
+        # 提取外观详细数据
+        try:
+            imgs = detail_data.get("imgs", [])
+            return_data["data"].update({
+                "goodsDesc": detail_data.get("goodsDesc", "无描述"),
+                "publishTime": detail_data.get("publishTime", "无价格"),
+                "priceNum": detail_data.get("priceNum", 0),
+                "goodsId": detail_data.get("goodsId", "无数据"),
+                "imgs": imgs[0] if imgs and isinstance(imgs, list) else "",
+                "goodsAlias": detail_data.get("goodsAlias", "无别名"),
+            })
+        except Exception as e:
+            logger.error(f"提取外观详细数据失败: {e}")
+            return_data["msg"] = "提取外观详细数据失败"
+            return return_data
+
+        # 4. 查询万宝楼数据（公示和在售）
+        wbl_data = await self._get_wbl_data(showName)
+        if wbl_data:
+            return_data["data"]["wblgs"] = wbl_data["wblgs"]
+            return_data["data"]["wblzs"] = wbl_data["wblzs"]
+            return_data["msg"] = "获取万宝楼数据完成"
+        else:
+            logger.warning("万宝楼数据获取失败")
+            
+        # 5. 加载模板
+        try:
+            return_data["temp"] = load_template("wujia.html")
+            return_data["code"] = 200
+        except FileNotFoundError as e:
+            logger.error(f"加载模板失败: {e}")
+            return_data["msg"] = "系统错误：模板文件不存在"
+            return return_data 
+            
+        return return_data
+
+
+    async def _get_wbl_data(self,showName):
+        """获取万宝楼数据（公示和在售）"""
+        try:
+            #在配置文件中获取接口配置
+            #api_config = self._api_config["aijx3_wblwg"]
+            api_config = self._api_config["wbl_waiguan"]
+            #更新参数
+            api_config["params"]["filter[role_appearance]"] = showName
+            # 获取公示数据 
+            api_config["params"]["filter[state]"] = "1"
+            datawblgs = await self._api.get(api_config["url"], api_config["params"], "data")
+            # 获取在售数据
+            api_config["params"]["filter[state]"] = "2"
+            datawblzs = await self._api.get(api_config["url"], api_config["params"], "data")
+            
+            return {
+                "wblgs": await self._process_wbl_records(datawblgs.get("list", [])),
+                "wblzs": await self._process_wbl_records(datawblzs.get("list", []))
+            }
+        except Exception as e:
+            logger.error(f"获取万宝楼数据出错: {e}")
+            return None
+
+
+    async def _process_wbl_records(self,records):
+        """处理万宝楼记录数据"""
+        processed = []
+        for record in records:
+            try:
+                # 转换时间戳为可读格式
+                timestamp = record.get("remaining_time", 0)
+                days = timestamp // 86400  # 每天有 86400 秒
+                hours = (timestamp % 86400) // 3600  # 每小时有 3600 秒
+                minutes = (timestamp % 3600) // 60  # 每分钟有 60 秒
+                result = ""
+                if days > 0:
+                    result = (f"{days}天")
+                if hours > 0:
+                    result += (f"{hours}时")
+                if minutes > 0:
+                    result += (f"{minutes}分钟")
+                single_unit_price = record.get("single_unit_price", 0)
+                processed.append({
+                    "priceNum": "{:.2f}".format( single_unit_price / 100),
+                    "belongQf2": record.get("server_name", "无数据"),
+                    "replyTime": result,
+                    "discountRate": record.get("discountRate", 0.0),
+                })
+            except Exception as e:
+                logger.error(f"处理万宝楼记录出错: {e}")
+                continue
+        
+        return processed
+
+
+    async def jiaoyihang(self, Name: str , server: str) -> Dict[str, Any]:
+        """区服交易行"""
+        return_data = self._init_return_data()
+
+        # 1. 查找物品 ID 列表 (多页)
+        api_config_search = self._api_config["jx3box_item"]
+        search_params = api_config_search.get("params", {}).copy()
+        search_params["keyword"] = Name
+        
+        # 使用 all_pages 获取所有数据
+        all_items: List[Dict[str, Any]] = await self._api.all_pages(
+            "GET", 
+            api_config_search["url"], 
+            params_data=search_params, # 对应到 APIClient.all_pages
+            out_key="data", 
+            list_key="data"
+        )
+        
+        if not all_items:
+            return_data["msg"] = "未找到该物品"
+            return return_data
+            
+        # 2. 提取 ID、IconID 和 Name
+        fields = ["IconID", "Name", "id"]
+        # 安全提取字段，并确保 id 存在且是数字
+        result = [extract_fields([item], fields)[0] for item in all_items if item.get("id") is not None]
+        
+        lists_id = [str(item.get("id")) for item in result if item.get("id") is not None]
+        strlists_id = ",".join(lists_id)
+        
+        if not strlists_id:
+            return_data["msg"] = "未找到有效的物品ID"
+            return return_data
+
+        # 3. 查询物品价格 (jx3box_itemprice)
+        api_config_price = self._api_config["jx3box_itemprice"]
+        price_params = api_config_price.get("params", {}).copy()
+        price_params["itemIds"] = strlists_id
+        price_params["server"] = server
+        
+        price_data: Optional[Dict[str, Dict[str, Any]]] = await self._api.get(
+            api_config_price["url"], params=price_params, out_key="data"
+        )
+        
+        if not price_data:
+            return_data["msg"] = "未找到在售物品"
+            return return_data
+        
+        # 4. 合并数据和格式化
+        fieldsjyh = ["ItemId", "SampleSize", "LowestPrice", "AvgPrice", "Date"]
+        resultjyh = [{f: v[f] for f in fieldsjyh} for v in price_data.values()]
+        #合并表格数据
+        # 先建立一个字典映射，加快查找
+        map_result = {item["id"]: {"IconID": item["IconID"], "Name": item["Name"]} for item in result}
+        # 遍历 resultjyh，合并字段
+        for item in resultjyh:
+            if item["ItemId"] in map_result:
+                item.update(map_result[item["ItemId"]])
+        #处理数据
+        for item in resultjyh:
+            item["LowestPrice"] = gold_to_string(item["LowestPrice"])
+            item["AvgPrice"] = gold_to_string(item["AvgPrice"])
+            item["IconID"] = f"https://icon.jx3box.com/icon/{item['IconID']}.png"
+
+        # 5. 模板渲染
+        try:
+            return_data["temp"] = load_template("jiaoyihang.html")
+            return_data["data"] = {
+                "items": resultjyh,
+                "server": server,
+                "update_time": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            } 
+            return_data["code"] = 200
+        except FileNotFoundError as e:
+            logger.error(f"加载模板失败: {e}")
+            return_data["msg"] = "系统错误：模板文件不存在"
+        except Exception as e:
+            logger.error(f"模板渲染数据准备失败: {e}")
+            return_data["msg"] = "系统错误：数据处理失败"
+
+        return return_data
