@@ -35,6 +35,7 @@ class AsyncMySQL:
                 await cursor.execute(sql, params or ())
                 return await cursor.fetchall()
 
+
     async def execute(self, sql: str, params=None):
         """执行 SQL（insert/update/delete）"""
         await self.init_pool()
