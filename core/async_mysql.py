@@ -1,5 +1,6 @@
 import aiomysql
 
+from astrbot.api import logger
 
 class AsyncMySQL:
     def __init__(self, db_config: dict):
@@ -71,6 +72,7 @@ class AsyncMySQL:
         keys = ", ".join(f"`{k}`" for k in data.keys())
         placeholders = ", ".join(["%s"] * len(data))
         sql = f"INSERT INTO `{table}` ({keys}) VALUES ({placeholders})"
+        logger.info(f"Executing SQL: {sql}")
         return await self.execute(sql, tuple(data.values()))
 
     async def update_record(self, table: str, data: dict, where: dict):
