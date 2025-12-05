@@ -60,6 +60,7 @@ class Jx3ApiPlugin(Star):
         # 周期函数调用
         self.kf_task = asyncio.create_task(self.at.cycle_kfjk())
 
+
         logger.info("jx3api异步插件初始化完成")
 
 
