@@ -13,7 +13,7 @@ from astrbot.api import AstrBotConfig
 
 from .core.aiosqlite import AsyncSQLite
 from .core.jx3_service import JX3Service
-
+from .core.async_task import AsyncTask
 
 
 @register("astrbot_plugin_jx3", 
@@ -42,13 +42,12 @@ class Jx3ApiPlugin(Star):
             # 处理默认文件丢失的严重错误
             logger.critical(f"插件初始化失败：{e}")
             raise # 中断初始化
-        # 读取配置文件
+        # 读取API配置文件
         self.api_file_path = Path(__file__).parent / "data" / "api_config.json"
         with open(self.api_file_path, 'r', encoding='utf-8') as f:
             self.api_config = json.load(f)  
         # 初始化数据
-        self.inidata()
-        self.kf_task = asyncio.create_task(self.cycle_kaifjiankong()) 
+        #self.kf_task = asyncio.create_task(self.cycle_kaifjiankong()) 
         logger.info("jx3api插件初始化完成")
 
 
@@ -57,9 +56,10 @@ class Jx3ApiPlugin(Star):
         #创建类实例
         self.db = AsyncSQLite(str(self.file_local_data))
         self.jx3fun = JX3Service(self.api_config,self.db)
+        self.at = AsyncTask(self.context, self.conf, self.jx3fun)
         # 周期函数调用
-    
-        logger.info("jx3api插件创建实例完成")
+        self.kf_task = asyncio.create_task(self.at.cycle_kaifjiankong())
+        logger.info("jx3api异步插件初始化完成")
 
 
     def check_and_copy_db(self, local_data_dir: Union[str, Path], db_filename: str, default_db_dir: Union[str, Path]) -> pathlib.Path:
@@ -95,51 +95,7 @@ class Jx3ApiPlugin(Star):
             logger.info(f"本地数据库文件 {target_file_path} 已存在，跳过复制。")
         return target_file_path
 
-
-    def inidata(self):
-        """数据初始化"""
-        self.test_server = False
-        logger.info("数据初始化完成")
-
-
-    async def cycle_kaifjiankong(self):
-        """开服监控后台程序"""
-        # 获取配置信息
-        time_int = self.conf.get("jx3_kfjk_time", 10)
-        self.kfjk_en = self.conf.get("jx3_kfjk_en", True)
-        self.kfjk_umos = self.conf.get("jx3_kfjk_list", [])
-        self.kfjk_servername = self.conf.get("jx3_kfjk_server", "梦江南")
-        kfjk_test = self.conf.get("jx3_kfjk_test", False)
-
-        self.kfjk_server_state = True    # 上一次查询的状态
-        self.kfjk_server_state_new = False  # 最新查询的状态
-
-        if self.kfjk_en:
-            logger.info(f"开服监控功能开启")
-        while self.kfjk_en:
-            data = await self.jx3fun.kaifu(self.kfjk_servername)
-            if kfjk_test:
-                self.kfjk_server_state_new = self.test_server
-            else:
-                self.kfjk_server_state_new = data["status"]
-            # logger.info(f"开服监控功能循环中,上次询问服务器状态{self.kfjk_server_state},本次询问的服务器状态{self.kfjk_server_state_new}") 
-            if self.kfjk_server_state != self.kfjk_server_state_new:
-                logger.info(f"开服监控功能循环中,上次询问服务器状态{self.kfjk_server_state},本次询问的服务器状态{self.kfjk_server_state_new}") 
-                if self.kfjk_server_state and not self.kfjk_server_state_new:
-                    message_chain = MessageChain().message(f"{self.kfjk_servername}服务器已关闭\n休息一会把,开服了喊你！")
-                if self.kfjk_server_state_new and not self.kfjk_server_state:
-                    message_chain = MessageChain().message(f"{self.kfjk_servername}服务器已开启\n快冲！快冲！")
-                if self.kfjk_umos:
-                    for umo in self.kfjk_umos:
-                        await self.context.send_message(umo, message_chain)
-            self.kfjk_server_state = self.kfjk_server_state_new
-            await asyncio.sleep(time_int)
-        if not self.kfjk_en: 
-            # 销毁进程
-            self.kf_task.cancel()
-            logger.info(f"开服监控功能关闭")
     
-
     @filter.command_group("剑三")
     def jx3(self):
         pass
@@ -300,7 +256,8 @@ class Jx3ApiPlugin(Star):
             except ValueError as e:
                 yield event.plain_result(f"开服监控已关闭") 
         elif en == "状态":
-            yield event.plain_result(f"开服监控后台状态：{self.kfjk_en}\n监控服务器：{self.kfjk_servername}\n上次询问服务器状态{self.kfjk_server_state}\n本次询问的服务器状态{self.kfjk_server_state_new}\n推送会话列表：\n{self.kfjk_umos}") 
+            #yield event.plain_result(f"开服监控后台状态：{self.kfjk_en}\n监控服务器：{self.kfjk_servername}\n上次询问服务器状态{self.kfjk_server_state}\n本次询问的服务器状态{self.kfjk_server_state_new}\n推送会话列表：\n{self.kfjk_umos}") 
+            yield event.plain_result(f"开服监控后台状态：") 
         else:
             yield event.plain_result("开服监控指令错误，请输入 开启/关闭") 
 
