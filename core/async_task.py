@@ -31,32 +31,40 @@ class AsyncTask:
     async def cycle_kaifjiankong(self):
         """开服监控后台程序"""
         # 获取配置信息
-
-        time_int = self.conf.get("jx3_kfjk_time", 10)
-        self.kfjk_en = self.conf.get("jx3_kfjk_en", True)
-        self.kfjk_umos = self.conf.get("jx3_kfjk_list", [])
-        kfjk_test = self.conf.get("jx3_kfjk_test", False)
+        conf = self.conf.get("kfjk", {})
+        self.kfjk_conf = {
+            "enable": conf.get("enable", True),
+            "time": conf.get("time", 10),
+            "umos": conf.get("umos", []),
+        }
 
         self.kfjk_server_state = True    # 上一次查询的状态
         self.kfjk_server_state_new = False  # 最新查询的状态
 
-        if self.kfjk_en:
+        if self.kfjk_conf["enable"]:
             logger.info(f"开服监控功能开启")
-        while self.kfjk_en:
+        while self.kfjk_conf["enable"]:
+            # 获取最新服务状态
             data = await self.jx3fun.kaifu("梦江南")
-            if kfjk_test:
-                self.kfjk_server_state_new = False
-            else:
-                self.kfjk_server_state_new = data["status"]
-            # logger.info(f"开服监控功能循环中,上次询问服务器状态{self.kfjk_server_state},本次询问的服务器状态{self.kfjk_server_state_new}") 
+            self.kfjk_server_state_new = data["status"]
+            # 判断状态是否变化
             if self.kfjk_server_state != self.kfjk_server_state_new:
                 logger.info(f"开服监控功能循环中,上次询问服务器状态{self.kfjk_server_state},本次询问的服务器状态{self.kfjk_server_state_new}") 
                 if self.kfjk_server_state and not self.kfjk_server_state_new:
                     message_chain = MessageChain().message("剑网三服务器已关闭\n休息一会把,开服了喊你！")
                 if self.kfjk_server_state_new and not self.kfjk_server_state:
                     message_chain = MessageChain().message("剑网三服务器已开启\n快冲！快冲！")
-                if self.kfjk_umos:
-                    for umo in self.kfjk_umos:
+                if self.kfjk_conf["umos"]:
+                    for umo in self.kfjk_conf["umos"]:
                         await self.context.send_message(umo, message_chain)
             self.kfjk_server_state = self.kfjk_server_state_new
-            await asyncio.sleep(time_int)
+            await asyncio.sleep(self.kfjk_conf["time"])  # 休眠指定时间（分钟）
+
+    async def get_kfjk_conf(self) -> str:
+        """获取开服监控配置信息"""
+        return_msg =  f"开服监控后台状态：{self.kfjk_conf['enable']}\n"
+        return_msg += f"周期询问时间：{self.kfjk_conf['time']}秒\n"
+        return_msg += f"上次询问服务器状态{self.kfjk_server_state}\n"
+        return_msg += f"本次询问的服务器状态{self.kfjk_server_state_new}\n"
+        return_msg += f"推送会话列表：\n{self.kfjk_conf['umos']}"
+        return return_msg

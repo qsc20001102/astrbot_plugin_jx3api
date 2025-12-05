@@ -59,6 +59,7 @@ class Jx3ApiPlugin(Star):
         self.at = AsyncTask(self.context, self.conf, self.jx3fun)
         # 周期函数调用
         self.kf_task = asyncio.create_task(self.at.cycle_kaifjiankong())
+
         logger.info("jx3api异步插件初始化完成")
 
 
@@ -242,24 +243,11 @@ class Jx3ApiPlugin(Star):
 
 
     @jx3.command("开服监控")
-    async def jx3_kaifhujiank(self, event: AstrMessageEvent,en: str = "状态"):
+    async def jx3_kaifhujiank(self, event: AstrMessageEvent):
         """剑三 开服监控"""     
-        if en == "开启":
-            umo_set = set(self.kfjk_umos)
-            umo_set.add(event.unified_msg_origin)
-            self.kfjk_umos = list(umo_set)
-            yield event.plain_result(f"开服监控已开启") 
-        elif en =="关闭":
-            try:
-                self.kfjk_umos.remove(event.unified_msg_origin)
-                yield event.plain_result(f"开服监控已关闭")
-            except ValueError as e:
-                yield event.plain_result(f"开服监控已关闭") 
-        elif en == "状态":
-            #yield event.plain_result(f"开服监控后台状态：{self.kfjk_en}\n监控服务器：{self.kfjk_servername}\n上次询问服务器状态{self.kfjk_server_state}\n本次询问的服务器状态{self.kfjk_server_state_new}\n推送会话列表：\n{self.kfjk_umos}") 
-            yield event.plain_result(f"开服监控后台状态：") 
-        else:
-            yield event.plain_result("开服监控指令错误，请输入 开启/关闭") 
+        return_msg = await self.at.get_kfjk_conf()
+        yield event.plain_result(return_msg) 
+
 
 
     @filter.permission_type(filter.PermissionType.ADMIN)
