@@ -4,11 +4,11 @@ from typing import Dict, Any, Optional, List, Union
 from astrbot.api import logger
 
 from .request import APIClient
-from .async_mysql import AsyncMySQL
+from .aiosqlite import AsyncSQLite
 from .function_basic import load_template,flatten_field,extract_fields,gold_to_string
 
 class JX3Service:
-    def __init__(self, api_config,db: AsyncMySQL ):
+    def __init__(self, api_config,db: AsyncSQLite ):
         self._api = APIClient()
         self._db = db
         self._api_config = api_config
@@ -82,7 +82,7 @@ class JX3Service:
         data: Optional[Dict[str, Any]] = await self._base_request(
             "jx3_richang", "GET", params=params
         )
-
+        logger.info(f"richang 接口返回数据: {data}")
         if not data:
             return_data["msg"] = "获取接口信息失败"
             return return_data
@@ -101,10 +101,10 @@ class JX3Service:
             )
             
             # 安全地处理列表索引
-            luck = data.get('luck', [None, None, None])
-            luck_msg = f"[宠物福缘]：\n{luck[0] or '无'},{luck[1] or '无'},{luck[2] or '无'}\n"
-            card = data.get('card', [None, None, None])
-            card_msg = f"[家园声望·加倍道具]：\n{card[0] or '无'},{card[1] or '无'},{card[2] or '无'}\n"
+            luck = data.get('luck', [])
+            luck_msg = f"[宠物福缘]：\n{', '.join(luck)}\n"
+            card = data.get('card', [])
+            card_msg = f"[家园声望·加倍道具]：\n{', '.join(card)}\n"
             team = data.get('team', [None, None, None])
             team_msg = f"[武林通鉴·公共任务]：\n{team[0] or '无'}\n[武林通鉴·团队秘境]：\n{team[2] or '无'}\n"
 
@@ -335,7 +335,7 @@ class JX3Service:
         sql = """
         INSERT INTO searchdata 
         (typeName, name, showName, picUrl, searchId, searchDescType) 
-        VALUES (%s, %s, %s, %s, %s, %s)
+        VALUES (?, ?, ?, ?, ?, ?)
         """
         # 增强数据提取的安全性
         values_list = [
@@ -352,7 +352,7 @@ class JX3Service:
         
         # 插入数据
         try:
-            await self._db.truncate_table("searchdata")
+            await self._db.clear_table("searchdata")
             await self._db.executemany(sql, values_list)
         except Exception as e:
             logger.error(f"数据插入失败: {e}")
@@ -382,7 +382,7 @@ class JX3Service:
             
             # 进一步从 DB 查找 ID
             try:
-                sql = "SELECT searchId FROM searchdata WHERE showName=%s"
+                sql = "SELECT searchId FROM searchdata WHERE showName=?"
                 sqldata = await self._db.fetch_one(sql, (showName,)) 
                 searchId = sqldata["searchId"] if sqldata else None
             except Exception as e:
