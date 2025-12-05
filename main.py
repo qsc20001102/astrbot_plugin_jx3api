@@ -25,7 +25,7 @@ class Jx3ApiPlugin(Star):
         #获取配置
         self.conf = config
         # 本地数据存储路径
-        self.local_data_dir = StarTools.get_data_dir("astrbot_plugin_jx3api")
+        self.local_data_dir = StarTools.get_data_dir("astrbot_plugin_jx3")
         # api数据文件
         self.api_file_path = Path(__file__).parent / "api_config.json"
         # 读取文件内容

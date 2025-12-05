@@ -2,8 +2,8 @@
 import json
 import aiohttp
 from typing import Optional, Dict, Any, Union, List
-
 from aiohttp import ClientTimeout, ClientSession
+
 from astrbot.api import logger
 
 class APIClient:

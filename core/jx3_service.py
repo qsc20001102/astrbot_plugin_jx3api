@@ -4,7 +4,7 @@ from typing import Dict, Any, Optional, List, Union
 from astrbot.api import logger
 
 from .request import APIClient
-from .AsyncMySQL import AsyncMySQL
+from .async_mysql import AsyncMySQL
 from .function_basic import load_template,flatten_field,extract_fields,gold_to_string
 
 class JX3Service:
