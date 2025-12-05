@@ -28,7 +28,7 @@ class AsyncTask:
         self.jx3fun = jx3fun
 
 
-    async def cycle_kaifjiankong(self):
+    async def cycle_kfjk(self):
         """开服监控后台程序"""
         # 获取配置信息
         conf = self.conf.get("kfjk", {})
@@ -39,7 +39,6 @@ class AsyncTask:
         }
 
         self.kfjk_server_state = True    # 上一次查询的状态
-        self.kfjk_server_state_new = False  # 最新查询的状态
 
         if self.kfjk_conf["enable"]:
             logger.info(f"开服监控功能开启")
@@ -58,7 +57,8 @@ class AsyncTask:
                     for umo in self.kfjk_conf["umos"]:
                         await self.context.send_message(umo, message_chain)
             self.kfjk_server_state = self.kfjk_server_state_new
-            await asyncio.sleep(self.kfjk_conf["time"])  # 休眠指定时间（分钟）
+            await asyncio.sleep(self.kfjk_conf["time"])  # 休眠指定时间
+
 
     async def get_kfjk_conf(self) -> str:
         """获取开服监控配置信息"""
