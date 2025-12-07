@@ -120,7 +120,7 @@ class Jx3ApiPlugin(Star):
 
     @jx3.command("开服")
     async def jx3_kaifu(self, event: AstrMessageEvent,server: str = "梦江南"):
-        """剑三 日常 服务器 天数"""
+        """剑三 开服 服务器"""
         try:
             data= await self.jx3fun.kaifu(server)
             if data["code"] == 200:
@@ -212,7 +212,7 @@ class Jx3ApiPlugin(Star):
 
     @jx3.command("物价")
     async def jx3_wujia(self, event: AstrMessageEvent,Name: str = "秃盒"):
-        """剑三 外观名称"""     
+        """剑三 物价 外观名称"""     
         try:
             data=await self.jx3fun.wujia(Name)
             if data["code"] == 200:
@@ -228,7 +228,7 @@ class Jx3ApiPlugin(Star):
 
     @jx3.command("交易行")
     async def jx3_jiaoyihang(self, event: AstrMessageEvent,Name: str = "守缺式",server: str = "梦江南"):
-        """剑三 外观名称"""     
+        """剑三 交易行 物品名称 服务器"""     
         try:
             data=await self.jx3fun.jiaoyihang(Name,server)
             if data["code"] == 200:
@@ -265,17 +265,6 @@ class Jx3ApiPlugin(Star):
         except Exception as e:
             logger.error(f"功能函数执行错误: {e}")
             yield event.plain_result("猪脑过载，请稍后再试") 
-
-
-    @filter.command("测试值")
-    async def jx3_testvar(self, event: AstrMessageEvent,var: str = "0"):
-        """测试程序"""   
-        if var == "1":
-            self.test_server = True
-        if var == "0":
-            self.test_server = False
-        
-        yield event.plain_result(f"测试值:{self.test_server}") 
 
 
     async def terminate(self):
