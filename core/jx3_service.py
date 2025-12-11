@@ -391,7 +391,7 @@ class JX3Service:
         elif search_data and search_data.get("total", 0) == 0:
             # 从 DB 查找名称和 ID
             try:
-                sql = "SELECT showName, searchId FROM searchdata WHERE name = %s OR showName = %s"
+                sql = "SELECT showName, searchId FROM searchdata WHERE name = ? OR showName = ?"
                 sqldata = await self._db.fetch_one(sql, (Name, Name)) 
                 if sqldata:
                     showName = sqldata["showName"]
