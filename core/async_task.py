@@ -42,11 +42,14 @@ class AsyncTask:
 
         if self.kfjk_conf["enable"]:
             logger.info(f"开服监控功能开启")
+        else:
+            logger.info(f"开服监控功能关闭")
+            return
         while self.kfjk_conf["enable"]:
             # 获取最新服务状态
             data = await self.jx3fun.kaifu("梦江南")
             self.kfjk_server_state_new = data["status"]
-            #logger.info(f"开服监控功能循环中,询问的服务器状态{data['status']}")
+            logger.info(f"开服监控功能循环中,上次询问服务器状态{self.kfjk_server_state},本次询问的服务器状态{self.kfjk_server_state_new}") 
             # 判断状态是否变化
             if self.kfjk_server_state != self.kfjk_server_state_new:
                 logger.info(f"开服监控功能循环中,上次询问服务器状态{self.kfjk_server_state},本次询问的服务器状态{self.kfjk_server_state_new}") 
