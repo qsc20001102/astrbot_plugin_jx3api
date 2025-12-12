@@ -376,10 +376,25 @@ class JX3Service:
         searchId = None
         
         # 2. 确定外观名称和 ID
-        if search_data and search_data.get("total", 0) > 0 and search_data.get("list"):
+
+        # 从 DB 查找名称和 ID
+        logger.info("尝试从数据库查询外观信息")
+        try:
+            sql = "SELECT showName, searchId FROM searchdata WHERE name LIKE ? OR showName LIKE ?"
+            sqldata = await self._db.fetch_one(sql, (f"%{Name}%", f"%{Name}%")) 
+            if sqldata:
+                showName = sqldata["showName"]
+                searchId = sqldata["searchId"]
+            else:
+                raise ValueError("DB did not find data.")
+        except Exception as e:
+            logger.error(f"获取外观信息错误: {e}")
+            return_data["msg"] = "数据库未找到该外观信息，尝试从魔盒查询"
+            logger.info("尝试从魔盒查询外观信息")
+            params_search = {"keyword": Name}
+            search_data: Optional[Dict[str, Any]] = await self._base_request("jx3box_exterior", "GET", params=params_search)
             # 从 API 获取名称
             showName = search_data["list"][0].get("name", "")
-            
             # 进一步从 DB 查找 ID
             try:
                 sql = "SELECT searchId FROM searchdata WHERE showName=?"
@@ -387,21 +402,6 @@ class JX3Service:
                 searchId = sqldata["searchId"] if sqldata else None
             except Exception as e:
                 logger.warning(f"从 DB 获取外观ID错误: {e}") # 警告而非错误，因为可能数据库同步失败
-                
-        elif search_data and search_data.get("total", 0) == 0:
-            # 从 DB 查找名称和 ID
-            try:
-                sql = "SELECT showName, searchId FROM searchdata WHERE name = ? OR showName = ?"
-                sqldata = await self._db.fetch_one(sql, (Name, Name)) 
-                if sqldata:
-                    showName = sqldata["showName"]
-                    searchId = sqldata["searchId"]
-                else:
-                    raise ValueError("DB did not find data.")
-            except Exception as e:
-                logger.error(f"获取外观信息错误: {e}")
-                return_data["msg"] = "未找到该外观信息"
-                return return_data
         
         if not showName or not searchId:
             return_data["msg"] = "无法确定外观名称或ID"

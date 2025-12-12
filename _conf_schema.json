@@ -6,13 +6,13 @@
       "enable": {
         "description": "开服监控功能开关",
         "type": "bool",
-        "default": true,
+        "default": false,
         "hint": "是否启用剑网三开服监控功能。"
       },
       "time": {
         "description": "开服监控循环时间",
         "type": "int",
-        "default": 10,
+        "default": 60,
         "hint": "请求服务器状态的循环时间，单位秒。"
       },
       "umos": {
@@ -23,7 +23,7 @@
             "type": "string",
             "description": "会话唯一ID"
         },
-        "default": ["default:GroupMessage:768280021","default:GroupMessage:690665795"]
+        "default": ["QQ:GroupMessage:768280021","QQ:GroupMessage:690665795"]
       }
     }
   }
