@@ -145,5 +145,15 @@
             "key": "vBpEzoiC9z5A9c9Nn83IhLn6M9",
             "id": "489048724"
         }
+    },
+    "jx3_jieshemingpian":{
+        "url":"https://www.jx3api.com/data/show/card",
+        "method":"GET",
+        "description":"此接口用于查询指定角色的名片墙信息，包括角色展示图片和展示数据的唯一标识。",
+        "params":{
+            "server": "眉间雪",
+            "name": "夜温言@长安城",
+            "token":""
+        }
     }
 }

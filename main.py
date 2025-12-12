@@ -55,7 +55,7 @@ class Jx3ApiPlugin(Star):
         """可选择实现异步的插件初始化方法，当实例化该插件类之后会自动调用该方法。"""     
         #创建类实例
         self.db = AsyncSQLite(str(self.file_local_data))
-        self.jx3fun = JX3Service(self.api_config,self.db)
+        self.jx3fun = JX3Service(self.api_config,self.db,self.conf)
         self.at = AsyncTask(self.context, self.conf, self.jx3fun)
         # 周期函数调用
         self.kf_task = asyncio.create_task(self.at.cycle_kfjk())
@@ -265,6 +265,21 @@ class Jx3ApiPlugin(Star):
         except Exception as e:
             logger.error(f"功能函数执行错误: {e}")
             yield event.plain_result("猪脑过载，请稍后再试") 
+
+
+    @jx3.command("名片")
+    async def jx3_jueshemingpian(self, event: AstrMessageEvent,server: str = "梦江南", name: str = "飞翔大野猪"):
+        """剑三 沙盘 服务器"""
+        try:
+            data= await self.jx3fun.jueshemingpian(server,name)
+            if data["code"] == 200:
+                yield event.image_result(data["data"]["showAvatar"])
+            else:
+                yield event.plain_result(data["msg"])
+            return
+        except Exception as e:
+            logger.error(f"功能函数执行错误: {e}")
+            yield event.plain_result("猪脑过载，请稍后再试")  
 
 
     async def terminate(self):

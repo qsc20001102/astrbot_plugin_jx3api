@@ -2,16 +2,18 @@ from datetime import datetime
 from typing import Dict, Any, Optional, List, Union
 
 from astrbot.api import logger
+from astrbot.api import AstrBotConfig
 
 from .request import APIClient
 from .aiosqlite import AsyncSQLite
 from .function_basic import load_template,flatten_field,extract_fields,gold_to_string
 
 class JX3Service:
-    def __init__(self, api_config,db: AsyncSQLite ):
+    def __init__(self, api_config,db: AsyncSQLite,config:AstrBotConfig):
         self._api = APIClient()
         self._db = db
         self._api_config = api_config
+        self._config = config
 
 
     def _init_return_data(self) -> Dict[str, Any]:
@@ -590,4 +592,34 @@ class JX3Service:
             logger.error(f"模板渲染数据准备失败: {e}")
             return_data["msg"] = "系统错误：数据处理失败"
 
+        return return_data
+    
+
+    async def jueshemingpian(self, server: str, name:str ) -> Dict[str, Any]:
+        """区服沙盘"""
+        return_data = self._init_return_data()
+        
+        token = self._config.get("jx3api_token", "")
+        logger.info(f"使用的API Token: {token}")
+
+        if  token == "":
+            return_data["msg"] = "系统未配置API访问Token"
+            return return_data
+        # 1. 构造请求参数
+
+        params = {"server": server, "name": name,"token": token}
+        
+        # 2. 调用基础请求
+        data: Optional[Dict[str, Any]] = await self._base_request(
+            "jx3_jieshemingpian", "GET", params=params
+        )
+        
+        if not data:
+            return_data["msg"] = "获取接口信息失败"
+            return return_data
+            
+        # 3. 处理返回数据 (直接提取图片 URL)
+        return_data["data"] = data
+        return_data["code"] = 200
+        
         return return_data
