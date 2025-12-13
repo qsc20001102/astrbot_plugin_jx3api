@@ -697,3 +697,86 @@ class JX3Service:
         return_data["code"] = 200
         
         return return_data
+
+
+    async def dilujilu(self, server: str) -> Dict[str, Any]:
+        """的卢记录"""
+        return_data = self._init_return_data()
+
+        # 获取配置中的 Token
+        token = self._config.get("jx3api_token", "")
+        if  token == "":
+            return_data["msg"] = "系统未配置API访问Token"
+            return return_data
+        
+        # 1. 构造请求参数
+        params = {"server": server, "token": token}
+        
+        # 2. 调用基础请求
+        data: Optional[Dict[str, Any]] = await self._base_request(
+            "jx3_dilujilu", "GET", params=params
+        )
+        
+        if not data:
+            return_data["msg"] = "获取接口信息失败"
+            return return_data
+            
+        # 3. 处理返回数据 
+        for item in data:
+            item["refresh_time"] = datetime.fromtimestamp(item["refresh_time"]).strftime("%Y-%m-%d %H:%M:%S")
+            item["capture_time"] = datetime.fromtimestamp(item["capture_time"]).strftime("%Y-%m-%d %H:%M:%S")
+            item["auction_time"] = datetime.fromtimestamp(item["auction_time"]).strftime("%Y-%m-%d %H:%M:%S")
+        
+        # 4. 加载模板
+        try:
+            return_data["temp"] = load_template("dilujilu.html")
+        except FileNotFoundError as e:
+            logger.error(f"加载模板失败: {e}")
+            return_data["msg"] = "系统错误：模板文件不存在"
+            return return_data
+        
+        return_data["data"]["list"] = data
+        return_data["code"] = 200
+        
+        return return_data
+    
+
+    async def tuanduizhaomu(self, server: str, keyword: str) -> Dict[str, Any]:
+        """团队招募"""
+        return_data = self._init_return_data()
+
+        # 获取配置中的 Token
+        token = self._config.get("jx3api_token", "")
+        if  token == "":
+            return_data["msg"] = "系统未配置API访问Token"
+            return return_data
+        
+        # 1. 构造请求参数
+        params = {"server": server, "keyword": keyword, "token": token}
+        
+        # 2. 调用基础请求
+        data: Optional[Dict[str, Any]] = await self._base_request(
+            "jx3_tuanduizhaomu", "GET", params=params
+        )
+
+        if not data:
+            return_data["msg"] = "获取接口信息失败"
+            return return_data   
+        
+        # 3. 处理返回数据 
+        for item in data["data"]:
+            item["createTime"] = datetime.fromtimestamp(item["createTime"]).strftime("%Y-%m-%d %H:%M:%S")
+            item["number"] = f"{item['number']}/{item['maxNumber']}"
+
+        # 4. 加载模板
+        try:
+            return_data["temp"] = load_template("tuanduizhaomu.html")
+        except FileNotFoundError as e:
+            logger.error(f"加载模板失败: {e}")
+            return_data["msg"] = "系统错误：模板文件不存在"
+            return return_data
+        
+        return_data["data"]["list"] = data["data"]
+        return_data["code"] = 200
+        
+        return return_data

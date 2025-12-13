@@ -176,5 +176,25 @@
             "name": "萝莉",
             "token":""
         }
+    },
+    "jx3_dilujilu":{
+        "url":"https://www.jx3api.com/data/dilu/records",
+        "method":"GET",
+        "description":"此接口用于查询的卢马的刷新、捕获及拍卖记录，包括捕获者、拍卖价格及相关时间信息",
+        "params":{
+            "server": "唯我独尊",
+            "token":""
+        }
+    },
+    "jx3_tuanduizhaomu":{
+        "url":"https://www.jx3api.com/data/member/recruit",
+        "method":"GET",
+        "description":"此接口用于查询指定区服的团队招募信息，包括活动类型、队长信息及当前队伍状态。",
+        "params":{
+            "server": "梦江南",
+            "keyword": "25人普通会战弓月城",
+            "table": 1,
+            "token":""
+        }
     }
 }
