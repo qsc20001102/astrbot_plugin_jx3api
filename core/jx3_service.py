@@ -596,22 +596,50 @@ class JX3Service:
     
 
     async def jueshemingpian(self, server: str, name:str ) -> Dict[str, Any]:
-        """区服沙盘"""
+        """角色名片"""
         return_data = self._init_return_data()
-        
-        token = self._config.get("jx3api_token", "")
-        logger.info(f"使用的API Token: {token}")
 
+        # 获取配置中的 Token
+        token = self._config.get("jx3api_token", "")
         if  token == "":
             return_data["msg"] = "系统未配置API访问Token"
             return return_data
+        
         # 1. 构造请求参数
-
         params = {"server": server, "name": name,"token": token}
         
         # 2. 调用基础请求
         data: Optional[Dict[str, Any]] = await self._base_request(
             "jx3_jieshemingpian", "GET", params=params
+        )
+        
+        if not data:
+            return_data["msg"] = "获取接口信息失败"
+            return return_data
+            
+        # 3. 处理返回数据 (直接提取图片 URL)
+        return_data["data"] = data
+        return_data["code"] = 200
+        
+        return return_data
+    
+
+    async def shuijimingpian(self, force: str, body:str, server:str) -> Dict[str, Any]:
+        """角色名片"""
+        return_data = self._init_return_data()
+
+        # 获取配置中的 Token
+        token = self._config.get("jx3api_token", "")
+        if  token == "":
+            return_data["msg"] = "系统未配置API访问Token"
+            return return_data
+        
+        # 1. 构造请求参数
+        params = {"server": server, "body": body, "force":force, "token": token}
+        
+        # 2. 调用基础请求
+        data: Optional[Dict[str, Any]] = await self._base_request(
+            "jx3_shuijimingpian", "GET", params=params
         )
         
         if not data:

@@ -10,6 +10,7 @@ from astrbot.api.event import filter, AstrMessageEvent, MessageEventResult, Mess
 from astrbot.api.star import Context, Star, register, StarTools
 from astrbot.api import logger
 from astrbot.api import AstrBotConfig
+import astrbot.api.message_components as Comp
 
 from .core.aiosqlite import AsyncSQLite
 from .core.jx3_service import JX3Service
@@ -269,11 +270,34 @@ class Jx3ApiPlugin(Star):
 
     @jx3.command("名片")
     async def jx3_jueshemingpian(self, event: AstrMessageEvent,server: str = "梦江南", name: str = "飞翔大野猪"):
-        """剑三 沙盘 服务器"""
+        """剑三 名片 服务器 角色"""
         try:
             data= await self.jx3fun.jueshemingpian(server,name)
             if data["code"] == 200:
-                yield event.image_result(data["data"]["showAvatar"])
+                chain = [
+                    Comp.Plain(f"{data['data']['serverName']}--{data['data']['roleName']} \n"),
+                    Comp.Image.fromURL(f"{data['data']['showAvatar']}")
+                ]
+                yield event.chain_result(chain)
+            else:
+                yield event.plain_result(data["msg"])
+            return
+        except Exception as e:
+            logger.error(f"功能函数执行错误: {e}")
+            yield event.plain_result("猪脑过载，请稍后再试")  
+
+
+    @jx3.command("随机名片")
+    async def jx3_shuijimingpian(self, event: AstrMessageEvent,force: str = "万花", body: str = "萝莉", server: str = "梦江南"):
+        """剑三 随机名片 服务器 角色"""
+        try:
+            data= await self.jx3fun.shuijimingpian(force,body,server)
+            if data["code"] == 200:
+                chain = [
+                    Comp.Plain(f"{data['data']['serverName']}--{data['data']['roleName']} \n"),
+                    Comp.Image.fromURL(f"{data['data']['showAvatar']}")
+                ]
+                yield event.chain_result(chain)
             else:
                 yield event.plain_result(data["msg"])
             return

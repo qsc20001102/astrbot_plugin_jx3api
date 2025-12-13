@@ -155,5 +155,16 @@
             "name": "夜温言@长安城",
             "token":""
         }
+    },
+    "jx3_shuijimingpian":{
+        "url":"https://www.jx3api.com/data/show/random",
+        "method":"GET",
+        "description":"此接口用于随机读取一张符合条件的角色名片。",
+        "params":{
+            "server": "唯我独尊",
+            "body": "萝莉",
+            "force":"万花",
+            "token":""
+        }
     }
 }
