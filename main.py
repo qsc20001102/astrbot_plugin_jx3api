@@ -294,8 +294,10 @@ class Jx3ApiPlugin(Star):
             data= await self.jx3fun.shuijimingpian(force,body,server)
             if data["code"] == 200:
                 chain = [
+                    
                     Comp.Plain(f"{data['data']['serverName']}--{data['data']['roleName']} \n"),
-                    Comp.Image.fromURL(f"{data['data']['showAvatar']}")
+                    Comp.Image.fromURL(f"{data['data']['showAvatar']}"),
+                    Comp.Plain(f"{force}--{body} \n")
                 ]
                 yield event.chain_result(chain)
             else:
