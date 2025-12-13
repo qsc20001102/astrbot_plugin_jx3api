@@ -166,5 +166,15 @@
             "force":"万花",
             "token":""
         }
+    },
+    "jx3_yanhuachaxun":{
+        "url":"https://www.jx3api.com/data/fireworks/records",
+        "method":"GET",
+        "description":"此接口用于查询烟花赠送与接收的历史记录，数据可能存在遗漏",
+        "params":{
+            "server": "唯我独尊",
+            "name": "萝莉",
+            "token":""
+        }
     }
 }

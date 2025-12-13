@@ -308,6 +308,22 @@ class Jx3ApiPlugin(Star):
             yield event.plain_result("猪脑过载，请稍后再试")  
 
 
+    @jx3.command("烟花")
+    async def jx3_yanhuachaxun(self, event: AstrMessageEvent,server: str = "梦江南", name: str = "飞翔大野猪"):
+        """剑三 烟花 服务器 角色"""
+        try:
+            data= await self.jx3fun.yanhuachaxun(server,name)
+            if data["code"] == 200:
+                url = await self.html_render(data["temp"], data["data"], options={})
+                yield event.image_result(url)
+            else:
+                yield event.plain_result(data["msg"])
+            return
+        except Exception as e:
+            logger.error(f"功能函数执行错误: {e}")
+            yield event.plain_result("猪脑过载，请稍后再试")  
+
+
     async def terminate(self):
         """可选择实现异步的插件销毁方法，当插件被卸载/停用时会调用。"""
         # 关闭数据库连接

@@ -625,7 +625,7 @@ class JX3Service:
     
 
     async def shuijimingpian(self, force: str, body:str, server:str) -> Dict[str, Any]:
-        """角色名片"""
+        """随机名片"""
         return_data = self._init_return_data()
 
         # 获取配置中的 Token
@@ -648,6 +648,52 @@ class JX3Service:
             
         # 3. 处理返回数据 (直接提取图片 URL)
         return_data["data"] = data
+        return_data["code"] = 200
+        
+        return return_data
+
+
+    async def yanhuachaxun(self, server: str, name:str ) -> Dict[str, Any]:
+        """烟花查询"""
+        return_data = self._init_return_data()
+
+        # 获取配置中的 Token
+        token = self._config.get("jx3api_token", "")
+        if  token == "":
+            return_data["msg"] = "系统未配置API访问Token"
+            return return_data
+        
+        # 1. 构造请求参数
+        params = {"server": server, "name": name,"token": token}
+        
+        # 2. 调用基础请求
+        data: Optional[Dict[str, Any]] = await self._base_request(
+            "jx3_yanhuachaxun", "GET", params=params
+        )
+        
+        if not data:
+            return_data["msg"] = "获取接口信息失败"
+            return return_data
+            
+        # 3. 处理返回数据 (直接提取图片 URL)
+                # 格式化时间
+        for item in data:
+            timestamp = item.get("time")
+            if timestamp and isinstance(timestamp, (int, float)):
+                # 修复时间戳：原代码显示这里是毫秒级，除以 1000
+                item["time"] = datetime.fromtimestamp(timestamp).strftime("%Y-%m-%d %H:%M:%S")
+            else:
+                item["time"] = "未知时间" # 确保即使 time 字段缺失也不会报错
+        
+        # 4. 加载模板
+        try:
+            return_data["temp"] = load_template("yanhuan.html")
+        except FileNotFoundError as e:
+            logger.error(f"加载模板失败: {e}")
+            return_data["msg"] = "系统错误：模板文件不存在"
+            return return_data
+        
+        return_data["data"]["list"] = data
         return_data["code"] = 200
         
         return return_data
