@@ -58,9 +58,13 @@ class Jx3ApiPlugin(Star):
         self.db = AsyncSQLite(str(self.file_local_data))
         self.jx3fun = JX3Service(self.api_config,self.db,self.conf)
         self.at = AsyncTask(self.context, self.conf, self.jx3fun)
+
         # 周期函数调用
         self.kf_task = asyncio.create_task(self.at.cycle_kfjk())
-
+        
+        # 初始化函数
+        data=await self.jx3fun.SearchData()
+        logger.info(data["msg"])
 
         logger.info("jx3api异步插件初始化完成")
 
