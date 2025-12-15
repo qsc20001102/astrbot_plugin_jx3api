@@ -168,12 +168,13 @@ class JX3Service:
             
             status_time = datetime.fromtimestamp(float(timestamp)).strftime("%Y-%m-%d %H:%M:%S")
             
-            if status == 1:
-                status_str = f"{server}服务器已开服，快冲，快冲！\n开服时间：{status_time}"
-                status_bool = True
-            else:
+            if status == 0:
                 status_str = f"{server}服务器当前维护中，等会再来吧！\n维护时间：{status_time}"
                 status_bool = False
+            else:
+                status_str = f"{server}服务器已开服，快冲，快冲！\n开服时间：{status_time}"
+                status_bool = True
+
                 
             return_data["status"] = status_bool
             return_data["data"] = status_str
