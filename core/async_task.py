@@ -46,21 +46,24 @@ class AsyncTask:
             logger.info(f"开服监控功能关闭")
             return
         while self.kfjk_conf["enable"]:
-            # 获取最新服务状态
-            data = await self.jx3fun.kaifu("梦江南")
-            self.kfjk_server_state_new = data["status"]
-            logger.debug(f"开服监控功能循环中,上次询问服务器状态{self.kfjk_server_state},本次询问的服务器状态{self.kfjk_server_state_new}") 
-            # 判断状态是否变化
-            if self.kfjk_server_state != self.kfjk_server_state_new:
-                logger.info(f"开服监控功能循环中,上次询问服务器状态{self.kfjk_server_state},本次询问的服务器状态{self.kfjk_server_state_new}") 
-                if self.kfjk_server_state and not self.kfjk_server_state_new:
-                    message_chain = MessageChain().message("剑网三服务器已关闭\n休息一会把,开服了喊你！")
-                if self.kfjk_server_state_new and not self.kfjk_server_state:
-                    message_chain = MessageChain().message("剑网三服务器已开启\n快冲！快冲！")
-                if self.kfjk_conf["umos"]:
-                    for umo in self.kfjk_conf["umos"]:
-                        await self.context.send_message(umo, message_chain)
-            self.kfjk_server_state = self.kfjk_server_state_new
+            try:
+                # 获取最新服务状态
+                data = await self.jx3fun.kaifu("梦江南")
+                self.kfjk_server_state_new = data["status"]
+                logger.debug(f"开服监控功能循环中,上次询问服务器状态{self.kfjk_server_state},本次询问的服务器状态{self.kfjk_server_state_new}") 
+                # 判断状态是否变化
+                if self.kfjk_server_state != self.kfjk_server_state_new:
+                    logger.info(f"开服监控功能循环中,上次询问服务器状态{self.kfjk_server_state},本次询问的服务器状态{self.kfjk_server_state_new}") 
+                    if self.kfjk_server_state and not self.kfjk_server_state_new:
+                        message_chain = MessageChain().message("剑网三服务器已关闭\n休息一会把,开服了喊你！")
+                    if self.kfjk_server_state_new and not self.kfjk_server_state:
+                        message_chain = MessageChain().message("剑网三服务器已开启\n快冲！快冲！")
+                    if self.kfjk_conf["umos"]:
+                        for umo in self.kfjk_conf["umos"]:
+                            await self.context.send_message(umo, message_chain)
+                self.kfjk_server_state = self.kfjk_server_state_new
+            except Exception as e:
+                logger.error(f"开服监控循环异常: {e}")
             await asyncio.sleep(self.kfjk_conf["time"])  # 休眠指定时间
 
 
