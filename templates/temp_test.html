@@ -2,98 +2,313 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<title>王者荣耀 — 仇人列表</title>
+<title>{{ name }} - 万宝楼行情</title>
 
 <style>
     body {
-        font-family: 'Microsoft YaHei', Arial, sans-serif;
+        font-family: "Microsoft YaHei", Arial, sans-serif;
         background: #f1f2f6;
         margin: 0;
         padding: 20px;
     }
 
     .container {
-        max-width: 1000px;
+        max-width: 1400px;
         margin: 0 auto;
-        text-align: center; /* ★ 让容器内标题更自然居中 */
+        color: #222;
+        text-align: center;
     }
 
     h1 {
         font-size: 32px;
-        margin-bottom: 25px;
-        color: #222;
         font-weight: 800;
-        text-align: center; /* ★ 强制居中 */
+        margin-bottom: 12px;
+    }
+
+    .goods-image {
+        width: 100%;
+        border-radius: 16px;
+        box-shadow: 0 6px 24px rgba(0,0,0,0.12);
+        margin-bottom: 14px;
+    }
+
+    .goods-desc {
+        font-size: 16px;
+        color: #444;
+        margin-bottom: 10px;
+    }
+
+    .meta-row {
+        display: flex;
+        justify-content: center;
+        gap: 40px;
+        font-size: 18px;
+        margin-bottom: 30px;
+    }
+
+    .meta-row .price {
+        color: #d93939;
+        font-weight: 800;
+    }
+
+    .table-wrapper {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 20px;
+    }
+
+    .table-card {
+        width: 100%;
+    }
+
+    .table-title {
+        font-size: 20px;
+        font-weight: 700;
+        margin-bottom: 8px;
+        text-align: center;
     }
 
     table {
         width: 100%;
         border-collapse: collapse;
-        background: white;
+        background: #ffffff;
         border-radius: 12px;
         overflow: hidden;
         box-shadow: 0 4px 16px rgba(0,0,0,0.08);
-        margin-top: 10px;
-        text-align: left;  /* 不影响表格内容 */
+        text-align: left;
     }
 
     thead {
         background: #d93939;
-        color: white;
-        font-size: 18px;
+        color: #ffffff;
+        font-size: 16px;
     }
 
     th, td {
-        padding: 14px 12px;
+        padding: 12px 10px;
         border-bottom: 1px solid #eee;
-        font-size: 16px;
+        font-size: 15px;
     }
 
     tbody tr:hover {
         background: #fff2f2;
     }
 
-    .text-col {
-        max-width: 360px;
-        line-height: 1.5em;
-        word-break: break-word;
+    .server-col {
         font-weight: 600;
-        color: #333;
+    }
+
+    .price-col {
+        color: #d93939;
+        font-weight: 700;
     }
 </style>
 </head>
+
 <body>
 
 <div class="container">
-    <h1>王者荣耀 — 仇人列表</h1>
 
-    <table>
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>名称</th>
-                <th>英雄</th>
-                <th>分路</th>
-                <th>记录者</th>
-                <th>时间</th>
-                <th>描述</th>
-            </tr>
-        </thead>
+    <h1>{{ name }} ({{ alias }})</h1>
 
-        <tbody>
-        {% for m in lists %}
-            <tr>
-                <td>{{ m.id }}</td>
-                <td>{{ m.name }}</td>
-                <td>{{ m.hero }}</td>
-                <td>{{ m.fenglu }}</td>
-                <td>{{ m.user }}</td>
-                <td>{{ m.time }}</td>
-                <td class="text-col">{{ m.text }}</td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+    <img src="{{ view }}" alt="{{ name }}" class="goods-image">
+
+    <p class="goods-desc">{{ desc }}</p>
+
+    <div class="meta-row">
+        <span>发布时间：{{ date }}</span>
+        <span class="price">参考价格：{{ cost }} 元</span>
+    </div>
+
+    <div class="table-wrapper">
+
+        <!-- 1 万宝楼公示 -->
+        <div class="table-card">
+            <div class="table-title">万宝楼公示</div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>时间</th>
+                        <th>服务器</th>
+                        <th>价格</th>
+                        <th>状态</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in list[3] %}
+                    <tr>
+                        <td class="server-col">{{ item.date }}</td>
+                        <td class="server-col">{{ item.server }}</td>
+                        <td class="price-col">{{ item.value }}</td>
+                        <td class="server-col"> 公示 </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 2 万宝楼在售 -->
+        <div class="table-card">
+            <div class="table-title">万宝楼在售</div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>时间</th>
+                        <th>服务器</th>
+                        <th>价格</th>
+                        <th>状态</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in list[4] %}
+                    <tr>
+                        <td class="server-col">{{ item.date }}</td>
+                        <td class="server-col">{{ item.server }}</td>
+                        <td class="price-col">{{ item.value }}</td>
+                        <td class="server-col"> 在售 </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 3 查询区服 -->
+        <div class="table-card">
+            <div class="table-title">查询区服</div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>时间</th>
+                        <th>服务器</th>
+                        <th>价格</th>
+                        <th>状态</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in list[5] %}
+                    <tr>
+                        <td class="server-col">{{ item.date }}</td>
+                        <td class="server-col">{{ item.server }}</td>
+                        <td class="price-col">{{ item.value }}</td>
+                        <td class="server-col">
+                            {% if item.source == 1 %}出售
+                            {% elif item.source == 2 %}收购
+                            {% elif item.source == 3 %}想出
+                            {% elif item.source == 4 %}想收
+                            {% elif item.source == 5 %}成交
+                            {% elif item.source == 6 %}正出
+                            {% else %}未知
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 4 电信区 -->
+        <div class="table-card">
+            <div class="table-title">电信区</div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>时间</th>
+                        <th>服务器</th>
+                        <th>价格</th>
+                        <th>状态</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in list[0] %}
+                    <tr>
+                        <td class="server-col">{{ item.date }}</td>
+                        <td class="server-col">{{ item.server }}</td>
+                        <td class="price-col">{{ item.value }}</td>
+                        <td class="server-col">
+                            {% if item.source == 1 %}出售
+                            {% elif item.source == 2 %}收购
+                            {% elif item.source == 3 %}想出
+                            {% elif item.source == 4 %}想收
+                            {% elif item.source == 5 %}成交
+                            {% elif item.source == 6 %}正出
+                            {% else %}未知
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 5 双线区 -->
+        <div class="table-card">
+            <div class="table-title">双线区</div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>时间</th>
+                        <th>服务器</th>
+                        <th>价格</th>
+                        <th>状态</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in list[1] %}
+                    <tr>
+                        <td class="server-col">{{ item.date }}</td>
+                        <td class="server-col">{{ item.server }}</td>
+                        <td class="price-col">{{ item.value }}</td>
+                        <td class="server-col">
+                            {% if item.source == 1 %}出售
+                            {% elif item.source == 2 %}收购
+                            {% elif item.source == 3 %}想出
+                            {% elif item.source == 4 %}想收
+                            {% elif item.source == 5 %}成交
+                            {% elif item.source == 6 %}正出
+                            {% else %}未知
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 6 无界区 -->
+        <div class="table-card">
+            <div class="table-title">无界区</div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>时间</th>
+                        <th>服务器</th>
+                        <th>价格</th>
+                        <th>状态</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in list[2] %}
+                    <tr>
+                        <td class="server-col">{{ item.date }}</td>
+                        <td class="server-col">{{ item.server }}</td>
+                        <td class="price-col">{{ item.value }}</td>
+                        <td class="server-col">
+                            {% if item.source == 1 %}出售
+                            {% elif item.source == 2 %}收购
+                            {% elif item.source == 3 %}想出
+                            {% elif item.source == 4 %}想收
+                            {% elif item.source == 5 %}成交
+                            {% elif item.source == 6 %}正出
+                            {% else %}未知
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+    </div>
 
 </div>
 

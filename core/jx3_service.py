@@ -372,79 +372,26 @@ class JX3Service:
         return_data = self._init_return_data()
         
         # 1. 查询魔盒获取外观名称 (jx3box_exterior)
-        params_search = {"keyword": Name}
-        search_data: Optional[Dict[str, Any]] = await self._base_request("jx3box_exterior", "GET", params=params_search)
-        
-        showName = ""
-        searchId = None
-        
+
+        # 获取配置中的 Token
+        token = self._config.get("jx3api_token", "")
+        if  token == "":
+            return_data["msg"] = "系统未配置API访问Token"
+            return return_data
+
         # 2. 确定外观名称和 ID
-
-        # 从 DB 查找名称和 ID
-        logger.info("尝试从数据库查询外观信息")
-        try:
-            sql = "SELECT showName, searchId FROM searchdata WHERE name LIKE ? OR showName LIKE ?"
-            sqldata = await self._db.fetch_one(sql, (f"%{Name}%", f"%{Name}%")) 
-            if sqldata:
-                showName = sqldata["showName"]
-                searchId = sqldata["searchId"]
-            else:
-                raise ValueError("DB did not find data.")
-        except Exception as e:
-            logger.error(f"获取外观信息错误: {e}")
-            return_data["msg"] = "数据库未找到该外观信息，尝试从魔盒查询"
-            logger.info("尝试从魔盒查询外观信息")
-            params_search = {"keyword": Name}
-            search_data: Optional[Dict[str, Any]] = await self._base_request("jx3box_exterior", "GET", params=params_search)
-            # 从 API 获取名称
-            showName = search_data["list"][0].get("name", "")
-            # 进一步从 DB 查找 ID
-            try:
-                sql = "SELECT searchId FROM searchdata WHERE showName=?"
-                sqldata = await self._db.fetch_one(sql, (showName,)) 
-                searchId = sqldata["searchId"] if sqldata else None
-            except Exception as e:
-                logger.warning(f"从 DB 获取外观ID错误: {e}") # 警告而非错误，因为可能数据库同步失败
         
-        if not showName or not searchId:
-            return_data["msg"] = "无法确定外观名称或ID"
+        params_search = {"name": Name,"token": token}
+        search_data: Optional[Dict[str, Any]] = await self._base_request("jx3_wujia", "GET", params=params_search)
+
+        if not search_data:
+            return_data["msg"] = "未找到改外观"
             return return_data
-
-        return_data["data"]["showName"] = showName
-        return_data["data"]["searchId"] = searchId
-
-        # 3. 获取外观详细数据 (aijx3_GoodsDetail)
-        params_detail = {"goodsName": showName}
-        detail_data: Optional[Dict[str, Any]] = await self._base_request("aijx3_GoodsDetail", "POST", params=params_detail)
         
-        if not detail_data:
-            return_data["msg"] = "获取外观详细数据失败"
-            return return_data
-            
-        # 提取外观详细数据
-        try:
-            imgs = detail_data.get("imgs", [])
-            return_data["data"].update({
-                "goodsDesc": detail_data.get("goodsDesc", "无描述"),
-                "publishTime": detail_data.get("publishTime", "无价格"),
-                "priceNum": detail_data.get("priceNum", 0),
-                "goodsId": detail_data.get("goodsId", "无数据"),
-                "imgs": imgs[0] if imgs and isinstance(imgs, list) else "",
-                "goodsAlias": detail_data.get("goodsAlias", "无别名"),
-            })
-        except Exception as e:
-            logger.error(f"提取外观详细数据失败: {e}")
-            return_data["msg"] = "提取外观详细数据失败"
-            return return_data
+        showName = search_data.get("name", "")   
+        logger.info(showName)
 
-        # 4. 查询万宝楼数据（公示和在售）
-        wbl_data = await self._get_wbl_data(showName)
-        if wbl_data:
-            return_data["data"]["wblgs"] = wbl_data["wblgs"]
-            return_data["data"]["wblzs"] = wbl_data["wblzs"]
-            return_data["msg"] = "获取万宝楼数据完成"
-        else:
-            logger.warning("万宝楼数据获取失败")
+        return_data["data"] = search_data
             
         # 5. 加载模板
         try:

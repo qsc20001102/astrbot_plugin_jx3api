@@ -206,5 +206,15 @@
             "limit": "10",
             "token":""
         }
+    },
+    "jx3_wujia":{
+        "url":"https://www.jx3api.com/data/trade/records",
+        "method":"GET",
+        "description":"此接口用于统计指定物品的黑市价格信息，包括成交、出售、收购等详细记录。",
+        "params":{
+            "server": "梦江南",
+            "name": "秃盒",
+            "token":""
+        }
     }
 }
