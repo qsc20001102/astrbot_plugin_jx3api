@@ -211,9 +211,9 @@ class Jx3ApiPlugin(Star):
             yield event.plain_result("猪脑过载，请稍后再试") 
 
 
-    @jx3.command("奇遇")
+    @jx3.command("区服奇遇")
     async def jx3_qiyu(self, event: AstrMessageEvent,adventureName: str = "阴阳两界", server: str = None):
-        """剑三 奇遇 奇遇名称 服务器"""
+        """剑三 区服奇遇 奇遇名称 服务器"""
         try:
             data= await self.jx3fun.qiyu(adventureName,await self.serverdefault(server))
             if data["code"] == 200:

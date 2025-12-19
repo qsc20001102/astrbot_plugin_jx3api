@@ -1,30 +1,121 @@
-<div style="width: 1220px; margin: 0 auto;">
-    <h1 style="text-align: center;">剑网3交易行价格查询</h1>
-    <p style="text-align: center;">服务器: {{ server }}</p>
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>剑网3交易行价格查询</title>
 
-    <div style="overflow-x: auto; overflow-y: hidden;">
-        <table style="width: 100%; border-collapse: collapse; margin: 0 auto;">
+<style>
+    body {
+        font-family: "Microsoft YaHei", Arial, sans-serif;
+        background: #f1f2f6;
+        margin: 0;
+        padding: 20px;
+    }
+
+    .container {
+        max-width: 1220px;
+        margin: 0 auto;
+        text-align: center;
+    }
+
+    h1 {
+        font-size: 32px;
+        margin-bottom: 10px;
+        color: #222;
+        font-weight: 800;
+    }
+
+    .server-info {
+        font-size: 16px;
+        color: #555;
+        margin-bottom: 25px;
+    }
+
+    /* ===== 表格样式 ===== */
+    .table-wrapper {
+        overflow-x: auto;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        background: #ffffff;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+        text-align: left;
+    }
+
+    thead {
+        background: #d93939;
+        color: #ffffff;
+        font-size: 18px;
+    }
+
+    th, td {
+        padding: 14px 12px;
+        border-bottom: 1px solid #eee;
+        font-size: 16px;
+        text-align: center;
+        white-space: nowrap;
+    }
+
+    tbody tr:hover {
+        background: #fff2f2;
+    }
+
+    /* ===== 物品列 ===== */
+    .item-col {
+        text-align: left;
+        font-weight: 600;
+        color: #333;
+    }
+
+    .item-col img {
+        width: 22px;
+        height: 22px;
+        vertical-align: middle;
+        border-radius: 4px;
+        margin-right: 8px;
+    }
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>剑网3交易行价格查询</h1>
+    <div class="server-info">服务器：{{ server }}</div>
+
+    <div class="table-wrapper">
+        <table>
             <thead>
-                <tr style="height: 50px; text-align: center;">
-                    <th style="border:1px solid #000; padding:4px;">物品名称</th>
-                    <th style="border:1px solid #000; padding:4px;">最低价</th>
-                    <th style="border:1px solid #000; padding:4px;">总数量</th>
-                    <th style="border:1px solid #000; padding:4px;">数据更新时间</th>
+                <tr>
+                    <th>物品名称</th>
+                    <th>最低价</th>
+                    <th>总数量</th>
+                    <th>数据更新时间</th>
                 </tr>
             </thead>
+
             <tbody>
                 {% for item in items %}
-                <tr style="height: 45px; text-align: center;">
-                    <td style="border:1px solid #000; padding:4px; text-align: left;">
-                        <img src="{{ item.IconID }}" alt="icon" style="width:20px; height:20px; vertical-align:middle; border-radius:4px; margin-right:6px;">
+                <tr>
+                    <td class="item-col">
+                        <img src="{{ item.IconID }}" alt="icon">
                         {{ item.Name }}
                     </td>
-                    <td style="border:1px solid #000; padding:4px;">{{ item.AvgPrice }}</td>
-                    <td style="border:1px solid #000; padding:4px;">{{ item.SampleSize }}</td>
-                    <td style="border:1px solid #000; padding:4px;">{{ item.Date }}</td>
+                    <td>{{ item.AvgPrice }}</td>
+                    <td>{{ item.SampleSize }}</td>
+                    <td>{{ item.Date }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
+
 </div>
+
+</body>
+</html>

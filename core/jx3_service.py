@@ -251,7 +251,6 @@ class JX3Service:
         if not data_list or not isinstance(data_list, list):
             return_data["msg"] = "获取接口信息失败或数据格式错误"
             return return_data
-        
         # 加载模板
         try:
             return_data["temp"] = load_template("jinjia.html")
