@@ -184,10 +184,10 @@ class Jx3ApiPlugin(Star):
 
 
     @jx3.command("金价")
-    async def jx3_jinjia(self, event: AstrMessageEvent,server: str = "梦江南"):
+    async def jx3_jinjia(self, event: AstrMessageEvent,server: str = "梦江南", limit:str = "15"):
         """剑三 金价 服务器"""
         try:
-            data= await self.jx3fun.jinjia(server)
+            data= await self.jx3fun.jinjia(server,limit)
             if data["code"] == 200:
                 url = await self.html_render(data["temp"], data["data"], options={})
                 yield event.image_result(url)

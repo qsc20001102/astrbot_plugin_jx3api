@@ -1,33 +1,103 @@
-<div style="width: 1220px; margin: 0 auto;">
-    <h1 style="text-align: center" id="剑网三金价">剑网三金价</h1>
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>区服各平台金价</title>
 
-    <div style="overflow-x: auto; overflow-y: hidden;">
-        <table style="width: 100%; border-collapse: collapse; margin: 0 auto;">
-            <thead>
-                <tr style="height: 60px; text-align: center;">
-                    <th style="border:1px solid #000; padding:2px;">时间</th>
-                    {% for item in items %}
-                        <th style="border:1px solid #000; padding:2px;">{{ item.date }}</th>
-                    {% endfor %}
-                </tr>
-            </thead>
+<style>
+    body {
+        font-family: 'Microsoft YaHei', Arial, sans-serif;
+        background: #f1f2f6;
+        margin: 0;
+        padding: 20px;
+    }
 
-            <tbody>
-                <tr style="height: 50px; text-align: center;">
-                    <td style="border:1px solid #000; padding:2px;">万宝楼</td>
-                    {% for item in items %}
-                        <td style="border:1px solid #000; padding:2px;">{{ item.priceWanbaolou }}</td>
-                    {% endfor %}
-                </tr>
+    .container {
+        max-width: 1300px;
+        margin: 0 auto;
+        text-align: center; /* ★ 让容器内标题更自然居中 */
+    }
 
-                <tr style="height: 50px; text-align: center;">
-                    <td style="border:1px solid #000; padding:2px;">贴吧</td>
-                    {% for item in items %}
-                        <td style="border:1px solid #000; padding:2px;">{{ item.priceTieba }}</td>
-                    {% endfor %}
-                </tr>
-            </tbody>
-        </table>
-    </div>
+    h1 {
+        font-size: 32px;
+        margin-bottom: 25px;
+        color: #222;
+        font-weight: 800;
+        text-align: center; /* ★ 强制居中 */
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+        margin-top: 10px;
+        text-align: left;  /* 不影响表格内容 */
+    }
+
+    thead {
+        background: #d93939;
+        color: white;
+        font-size: 18px;
+    }
+
+    th, td {
+        padding: 14px 12px;
+        border-bottom: 1px solid #eee;
+        font-size: 16px;
+    }
+
+    tbody tr:hover {
+        background: #fff2f2;
+    }
+
+    .text-col {
+        max-width: 360px;
+        line-height: 1.5em;
+        word-break: break-word;
+        font-weight: 600;
+        color: #333;
+    }
+</style>
+</head>
+<body>
+
+<div class="container">
+    <h1>区服各平台金价</h1>
+
+    <table>
+        <thead>
+            <tr>
+                <th>服务器</th>
+                <th>贴吧</th>
+                <th>万宝楼</th>
+                <th>dd373</th>
+                <th>uu898</th>
+                <th>5173</th>
+                <th>7881</th>
+                <th>时间</th>
+            </tr>
+        </thead>
+
+        <tbody>
+        {% for m in items %}
+            <tr>
+                <td>{{ m.server }}</td>
+                <td>{{ m.tieba }}</td>
+                <td>{{ m.wanbaolou }}</td>
+                <td>{{ m.dd373 }}</td>
+                <td>{{ m.uu898 }}</td>
+                <td>{{ m.5173 }}</td>
+                <td>{{ m.7881 }}</td>
+                <td>{{ m.date }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
 
 </div>
+
+</body>
+</html>

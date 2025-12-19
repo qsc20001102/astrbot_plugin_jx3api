@@ -235,19 +235,22 @@ class JX3Service:
         return return_data
     
 
-    async def jinjia(self, server: str) -> Dict[str, Any]:
+    async def jinjia(self, server: str, limit:str) -> Dict[str, Any]:
         """区服金价"""
         return_data = self._init_return_data()
         
-        params = {"serverName": server}
-        data_list: Optional[List[Dict[str, Any]]] = await self._base_request("aijx3_jinjia", "POST", params=params)
+        # 获取配置中的 Token
+        token = self._config.get("jx3api_token", "")
+        if  token == "":
+            return_data["msg"] = "系统未配置API访问Token"
+            return return_data
+
+        params = {"server": server, "limit": limit, "token": token}
+        data_list: Optional[List[Dict[str, Any]]] = await self._base_request("jx3_jinjia", "GET", params=params)
         
         if not data_list or not isinstance(data_list, list):
             return_data["msg"] = "获取接口信息失败或数据格式错误"
             return return_data
-            
-        # 安全处理列表切片
-        display_data = data_list[:15]
         
         # 加载模板
         try:
@@ -259,11 +262,7 @@ class JX3Service:
             
         # 准备模板渲染数据
         try:
-            return_data["data"] = {
-                "items": display_data,
-                "server": server,
-                "update_time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-            } 
+            return_data["data"]["items"] = data_list
             return_data["code"] = 200
         except Exception as e:
             logger.error(f"jinjia 模板数据准备失败: {e}")

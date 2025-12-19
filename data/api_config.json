@@ -196,5 +196,15 @@
             "table": 1,
             "token":""
         }
+    },
+    "jx3_jinjia":{
+        "url":"https://www.jx3api.com/data/trade/demon",
+        "method":"GET",
+        "description":"金价比例信息",
+        "params":{
+            "server": "梦江南",
+            "limit": "10",
+            "token":""
+        }
     }
 }
