@@ -15,7 +15,7 @@
     .container {
         max-width: 1300px;
         margin: 0 auto;
-        text-align: center; /* ★ 让容器内标题更自然居中 */
+        text-align: center;
     }
 
     h1 {
@@ -23,7 +23,7 @@
         margin-bottom: 25px;
         color: #222;
         font-weight: 800;
-        text-align: center; /* ★ 强制居中 */
+        text-align: center;
     }
 
     table {
@@ -34,7 +34,7 @@
         overflow: hidden;
         box-shadow: 0 4px 16px rgba(0,0,0,0.08);
         margin-top: 10px;
-        text-align: left;  /* 不影响表格内容 */
+        text-align: left;
     }
 
     thead {
@@ -60,6 +60,15 @@
         font-weight: 600;
         color: #333;
     }
+
+    /* ===== 阵营整行着色 ===== */
+    tr.camp-haoqi {
+        color: #1e6bd6; /* 浩气盟 */
+    }
+
+    tr.camp-eren {
+        color: #d93939; /* 恶人谷 */
+    }
 </style>
 </head>
 <body>
@@ -84,7 +93,13 @@
 
         <tbody>
         {% for m in list %}
-            <tr>
+            <tr
+                {% if m.capture_camp_name == '浩气盟' %}
+                    class="camp-haoqi"
+                {% elif m.capture_camp_name == '恶人谷' %}
+                    class="camp-eren"
+                {% endif %}
+            >
                 <td>{{ m.server }}</td>
                 <td>{{ m.refresh_time }}</td>
                 <td>{{ m.capture_time }}</td>
