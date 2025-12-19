@@ -271,7 +271,7 @@ class JX3Service:
         return return_data
 
 
-    async def qiyu(self, adventureName: str = "阴阳两界", serverName: str = "眉间雪") -> Dict[str, Any]:
+    async def qiyu(self, adventureName: str, serverName: str) -> Dict[str, Any]:
         """区服奇遇"""
         return_data = self._init_return_data()
         
@@ -367,12 +367,10 @@ class JX3Service:
         return return_data
 
 
-    async def wujia(self, Name: str) -> Dict[str, Any]:
+    async def wujia(self, Name: str, server:str) -> Dict[str, Any]:
         """物价查询"""
         return_data = self._init_return_data()
         
-        # 1. 查询魔盒获取外观名称 (jx3box_exterior)
-
         # 获取配置中的 Token
         token = self._config.get("jx3api_token", "")
         if  token == "":
@@ -381,16 +379,13 @@ class JX3Service:
 
         # 2. 确定外观名称和 ID
         
-        params_search = {"name": Name,"token": token}
+        params_search = {"name": Name,"token": token, "server": server}
         search_data: Optional[Dict[str, Any]] = await self._base_request("jx3_wujia", "GET", params=params_search)
 
         if not search_data:
             return_data["msg"] = "未找到改外观"
             return return_data
         
-        showName = search_data.get("name", "")   
-        logger.info(showName)
-
         return_data["data"] = search_data
             
         # 5. 加载模板
@@ -403,61 +398,6 @@ class JX3Service:
             return return_data 
             
         return return_data
-
-
-    async def _get_wbl_data(self,showName):
-        """获取万宝楼数据（公示和在售）"""
-        try:
-            #在配置文件中获取接口配置
-            #api_config = self._api_config["aijx3_wblwg"]
-            api_config = self._api_config["wbl_waiguan"]
-            #更新参数
-            api_config["params"]["filter[role_appearance]"] = showName
-            # 获取公示数据 
-            api_config["params"]["filter[state]"] = "1"
-            datawblgs = await self._api.get(api_config["url"], api_config["params"], "data")
-            # 获取在售数据
-            api_config["params"]["filter[state]"] = "2"
-            datawblzs = await self._api.get(api_config["url"], api_config["params"], "data")
-            
-            return {
-                "wblgs": await self._process_wbl_records(datawblgs.get("list", [])),
-                "wblzs": await self._process_wbl_records(datawblzs.get("list", []))
-            }
-        except Exception as e:
-            logger.error(f"获取万宝楼数据出错: {e}")
-            return None
-
-
-    async def _process_wbl_records(self,records):
-        """处理万宝楼记录数据"""
-        processed = []
-        for record in records:
-            try:
-                # 转换时间戳为可读格式
-                timestamp = record.get("remaining_time", 0)
-                days = timestamp // 86400  # 每天有 86400 秒
-                hours = (timestamp % 86400) // 3600  # 每小时有 3600 秒
-                minutes = (timestamp % 3600) // 60  # 每分钟有 60 秒
-                result = ""
-                if days > 0:
-                    result = (f"{days}天")
-                if hours > 0:
-                    result += (f"{hours}时")
-                if minutes > 0:
-                    result += (f"{minutes}分钟")
-                single_unit_price = record.get("single_unit_price", 0)
-                processed.append({
-                    "priceNum": "{:.2f}".format( single_unit_price / 100),
-                    "belongQf2": record.get("server_name", "无数据"),
-                    "replyTime": result,
-                    "discountRate": record.get("discountRate", 0.0),
-                })
-            except Exception as e:
-                logger.error(f"处理万宝楼记录出错: {e}")
-                continue
-        
-        return processed
 
 
     async def jiaoyihang(self, Name: str , server: str) -> Dict[str, Any]:
@@ -562,7 +502,7 @@ class JX3Service:
         )
         
         if not data:
-            return_data["msg"] = "获取接口信息失败"
+            return_data["msg"] = "未找到该角色"
             return return_data
             
         # 3. 处理返回数据 (直接提取图片 URL)

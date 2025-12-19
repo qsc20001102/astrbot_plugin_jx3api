@@ -28,10 +28,13 @@ class Jx3ApiPlugin(Star):
         super().__init__(context)
         #获取配置
         self.conf = config
+
         # 本地数据存储路径
         local_data_dir = StarTools.get_data_dir("astrbot_plugin_jx3")
+
         # 插件数据文件路径
         data_file_path = Path(__file__).parent / "data"
+
         # --- 调用函数完成检查和复制 ---
         try:
             self.file_local_data = self.check_and_copy_db(
@@ -43,12 +46,15 @@ class Jx3ApiPlugin(Star):
             # 处理默认文件丢失的严重错误
             logger.critical(f"插件初始化失败：{e}")
             raise # 中断初始化
+
         # 读取API配置文件
         self.api_file_path = Path(__file__).parent / "data" / "api_config.json"
         with open(self.api_file_path, 'r', encoding='utf-8') as f:
-            self.api_config = json.load(f)  
+            self.api_config = json.load(f) 
+
         # 初始化数据
-        #self.kf_task = asyncio.create_task(self.cycle_kaifjiankong()) 
+        self.server = self.conf.get("server", "梦江南")
+        logger.info(f"配置加载默认服务器：{self.server}")
         logger.info("jx3api插件初始化完成")
 
 
@@ -103,16 +109,22 @@ class Jx3ApiPlugin(Star):
         return target_file_path
 
     
+    async def serverdefault(self,server):
+        if server == None:
+            return self.server
+        return server
+
+
     @filter.command_group("剑三")
     def jx3(self):
         pass
 
 
     @jx3.command("日常")
-    async def jx3_richang(self, event: AstrMessageEvent,server: str = "梦江南",num: int = 0):
+    async def jx3_richang(self, event: AstrMessageEvent,server: str = None ,num: int = 0):
         """剑三 日常 服务器 天数"""
         try:
-            data= await self.jx3fun.richang(server,num)
+            data= await self.jx3fun.richang(await self.serverdefault(server),num)
             if data["code"] == 200:
                 yield event.plain_result(data["data"])
             else:
@@ -124,10 +136,10 @@ class Jx3ApiPlugin(Star):
     
 
     @jx3.command("开服")
-    async def jx3_kaifu(self, event: AstrMessageEvent,server: str = "梦江南"):
+    async def jx3_kaifu(self, event: AstrMessageEvent,server: str = None):
         """剑三 开服 服务器"""
         try:
-            data= await self.jx3fun.kaifu(server)
+            data= await self.jx3fun.kaifu(await self.serverdefault(server))
             if data["code"] == 200:
                 yield event.plain_result(data["data"])
             else:
@@ -139,10 +151,10 @@ class Jx3ApiPlugin(Star):
 
 
     @jx3.command("沙盘")
-    async def jx3_shapan(self, event: AstrMessageEvent,server: str = "梦江南"):
+    async def jx3_shapan(self, event: AstrMessageEvent,server: str = None):
         """剑三 沙盘 服务器"""
         try:
-            data= await self.jx3fun.shapan(server)
+            data= await self.jx3fun.shapan(await self.serverdefault(server))
             if data["code"] == 200:
                 yield event.image_result(data["data"])
             else:
@@ -184,10 +196,10 @@ class Jx3ApiPlugin(Star):
 
 
     @jx3.command("金价")
-    async def jx3_jinjia(self, event: AstrMessageEvent,server: str = "梦江南", limit:str = "15"):
+    async def jx3_jinjia(self, event: AstrMessageEvent,server: str = None, limit:str = "15"):
         """剑三 金价 服务器"""
         try:
-            data= await self.jx3fun.jinjia(server,limit)
+            data= await self.jx3fun.jinjia(await self.serverdefault(server),limit)
             if data["code"] == 200:
                 url = await self.html_render(data["temp"], data["data"], options={})
                 yield event.image_result(url)
@@ -200,10 +212,10 @@ class Jx3ApiPlugin(Star):
 
 
     @jx3.command("奇遇")
-    async def jx3_qiyu(self, event: AstrMessageEvent,adventureName: str = "阴阳两界", serverName: str = "梦江南"):
+    async def jx3_qiyu(self, event: AstrMessageEvent,adventureName: str = "阴阳两界", server: str = None):
         """剑三 奇遇 奇遇名称 服务器"""
         try:
-            data= await self.jx3fun.qiyu(adventureName,serverName)
+            data= await self.jx3fun.qiyu(adventureName,await self.serverdefault(server))
             if data["code"] == 200:
                 url = await self.html_render(data["temp"], data["data"], options={})
                 yield event.image_result(url)
@@ -216,10 +228,10 @@ class Jx3ApiPlugin(Star):
 
 
     @jx3.command("物价")
-    async def jx3_wujia(self, event: AstrMessageEvent,Name: str = "秃盒"):
+    async def jx3_wujia(self, event: AstrMessageEvent,Name: str = "秃盒", server: str = None):
         """剑三 物价 外观名称"""     
         try:
-            data=await self.jx3fun.wujia(Name)
+            data=await self.jx3fun.wujia(Name,await self.serverdefault(server))
             if data["code"] == 200:
                 url = await self.html_render(data["temp"], data["data"], options={})
                 yield event.image_result(url)
@@ -232,10 +244,10 @@ class Jx3ApiPlugin(Star):
 
 
     @jx3.command("交易行")
-    async def jx3_jiaoyihang(self, event: AstrMessageEvent,Name: str = "守缺式",server: str = "梦江南"):
+    async def jx3_jiaoyihang(self, event: AstrMessageEvent,Name: str = "守缺式",server: str = None):
         """剑三 交易行 物品名称 服务器"""     
         try:
-            data=await self.jx3fun.jiaoyihang(Name,server)
+            data=await self.jx3fun.jiaoyihang(Name,await self.serverdefault(server))
             if data["code"] == 200:
                 url = await self.html_render(data["temp"], data["data"], options={})
                 yield event.image_result(url)
@@ -273,10 +285,10 @@ class Jx3ApiPlugin(Star):
 
 
     @jx3.command("名片")
-    async def jx3_jueshemingpian(self, event: AstrMessageEvent,server: str = "梦江南", name: str = "飞翔大野猪"):
-        """剑三 名片 服务器 角色"""
+    async def jx3_jueshemingpian(self, event: AstrMessageEvent, name: str = "飞翔大野猪", server: str = None):
+        """剑三 名片 角色 服务器"""
         try:
-            data= await self.jx3fun.jueshemingpian(server,name)
+            data= await self.jx3fun.jueshemingpian(await self.serverdefault(server),name)
             if data["code"] == 200:
                 chain = [
                     Comp.Plain(f"{data['data']['serverName']}--{data['data']['roleName']} \n"),
@@ -292,10 +304,10 @@ class Jx3ApiPlugin(Star):
 
 
     @jx3.command("随机名片")
-    async def jx3_shuijimingpian(self, event: AstrMessageEvent,force: str = "万花", body: str = "萝莉", server: str = "梦江南"):
-        """剑三 随机名片 服务器 角色"""
+    async def jx3_shuijimingpian(self, event: AstrMessageEvent,force: str = "万花", body: str = "萝莉", server: str = None):
+        """剑三 随机名片 职业 体型 服务器"""
         try:
-            data= await self.jx3fun.shuijimingpian(force,body,server)
+            data= await self.jx3fun.shuijimingpian(force,body,await self.serverdefault(server))
             if data["code"] == 200:
                 chain = [
                     
@@ -313,10 +325,10 @@ class Jx3ApiPlugin(Star):
 
 
     @jx3.command("烟花")
-    async def jx3_yanhuachaxun(self, event: AstrMessageEvent,server: str = "梦江南", name: str = "飞翔大野猪"):
-        """剑三 烟花 服务器 角色"""
+    async def jx3_yanhuachaxun(self, event: AstrMessageEvent,name: str = "飞翔大野猪", server: str = None):
+        """剑三 烟花 角色 服务器"""
         try:
-            data= await self.jx3fun.yanhuachaxun(server,name)
+            data= await self.jx3fun.yanhuachaxun(await self.serverdefault(server),name)
             if data["code"] == 200:
                 url = await self.html_render(data["temp"], data["data"], options={})
                 yield event.image_result(url)
@@ -329,10 +341,10 @@ class Jx3ApiPlugin(Star):
 
 
     @jx3.command("的卢")
-    async def jx3_dilujilu(self, event: AstrMessageEvent,server: str = "梦江南"):
+    async def jx3_dilujilu(self, event: AstrMessageEvent,server: str = None):
         """剑三 的卢 服务器"""
         try:
-            data= await self.jx3fun.dilujilu(server)
+            data= await self.jx3fun.dilujilu(await self.serverdefault(server))
             if data["code"] == 200:
                 url = await self.html_render(data["temp"], data["data"], options={})
                 yield event.image_result(url)
@@ -345,10 +357,10 @@ class Jx3ApiPlugin(Star):
 
 
     @jx3.command("招募")
-    async def jx3_tuanduizhaomu(self, event: AstrMessageEvent,keyword: str = "25人普通会战弓月城", server: str = "梦江南"):
+    async def jx3_tuanduizhaomu(self, event: AstrMessageEvent,keyword: str = "25人普通会战弓月城", server: str = None):
         """剑三 招募 副本 服务器"""
         try:
-            data= await self.jx3fun.tuanduizhaomu(server,keyword)
+            data= await self.jx3fun.tuanduizhaomu(await self.serverdefault(server),keyword)
             if data["code"] == 200:
                 url = await self.html_render(data["temp"], data["data"], options={})
                 yield event.image_result(url)

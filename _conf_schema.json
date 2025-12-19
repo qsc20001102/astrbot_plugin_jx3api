@@ -1,4 +1,16 @@
 {
+  "server": {
+    "description": "默认服务器",
+    "type": "string",
+    "default": "梦江南",
+    "hint": "在指令中未输入服务器时，默认查询的服务器"
+  },
+  "jx3api_token": {
+    "description": "JX3API Token",
+    "type": "string",
+    "default": "v2aa6e74d48abb7b9",
+    "hint": "前往https://www.jx3api.com/注册并购买Token。"
+  },
   "kfjk": {
     "description": "开服监控配置",
     "type": "object",
@@ -26,11 +38,5 @@
         "default": ["QQ:GroupMessage:768280021","QQ:GroupMessage:690665795"]
       }
     }
-  },
-  "jx3api_token": {
-    "description": "JX3API Token",
-    "type": "string",
-    "default": "v2aa6e74d48abb7b9",
-    "hint": "前往https://www.jx3api.com/注册并获取Token。"
   }
 }
