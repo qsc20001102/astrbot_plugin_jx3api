@@ -228,5 +228,15 @@
             "ticket": "a7fd656a52d747d7830cfa6d686e6030:qsc20001102:kingsoft::sVpKi7nFKzFlbTwtBMTg2w==",
             "token":""
         }
+    },
+    "jx3_qiyu":{
+        "url":"https://www.jx3api.com/data/luck/adventure",
+        "method":"GET",
+        "description":"此接口用于查询指定角色的奇遇触发记录，包括奇遇事件、状态及触发时间。注意，数据可能存在遗漏",
+        "params":{
+            "server": "梦江南",
+            "name": "飞翔大野猪",
+            "token":""
+        }
     }
 }

@@ -212,7 +212,7 @@ class Jx3ApiPlugin(Star):
 
 
     @jx3.command("区服奇遇")
-    async def jx3_qiyu(self, event: AstrMessageEvent,adventureName: str = "阴阳两界", server: str = None):
+    async def jx3_qufuqiyu(self, event: AstrMessageEvent,adventureName: str = "阴阳两界", server: str = None):
         """剑三 区服奇遇 奇遇名称 服务器"""
         try:
             data= await self.jx3fun.qiyu(adventureName,await self.serverdefault(server))
@@ -377,6 +377,23 @@ class Jx3ApiPlugin(Star):
         """剑三 战绩 角色 服务器 类型"""
         try:
             data= await self.jx3fun.zhanji(name,await self.serverdefault(server),mode)
+            if data["code"] == 200:
+                url = await self.html_render(data["temp"], data["data"], options={})
+                yield event.image_result(url)
+            else:
+                yield event.plain_result(data["msg"])
+            return
+        except Exception as e:
+            logger.error(f"功能函数执行错误: {e}")
+            yield event.plain_result("猪脑过载，请稍后再试") 
+
+
+    @jx3.command("奇遇")
+    async def jx3_qiyu(self, event: AstrMessageEvent,name: str = "飞翔大野猪", server: str = None):
+        """剑三 奇遇 角色名称 服务器"""
+        try:
+            data= await self.jx3fun.juesheqiyu(name,await self.serverdefault(server))
+            logger.info(f"数据打印: {data}")
             if data["code"] == 200:
                 url = await self.html_render(data["temp"], data["data"], options={})
                 yield event.image_result(url)
