@@ -120,6 +120,22 @@ class Jx3ApiPlugin(Star):
         pass
 
 
+    @jx3.command("帮助")
+    async def jx3_helps(self, event: AstrMessageEvent):
+        """剑三 帮助"""
+        try:
+            data= await self.jx3fun.helps()
+            if data["code"] == 200:
+                url = await self.html_render(data["temp"], data["data"], options={})
+                yield event.image_result(url)
+            else:
+                yield event.plain_result(data["msg"])
+            return
+        except Exception as e:
+            logger.error(f"功能函数执行错误: {e}")
+            yield event.plain_result("猪脑过载，请稍后再试") 
+
+
     @jx3.command("日常")
     async def jx3_richang(self, event: AstrMessageEvent,server: str = None ,num: int = 0):
         """剑三 日常 服务器 天数"""
@@ -268,20 +284,20 @@ class Jx3ApiPlugin(Star):
 
 
 
-    @filter.permission_type(filter.PermissionType.ADMIN)
-    @jx3.command("外观数据同步")
-    async def jx3_SearchData(self, event: AstrMessageEvent):
-        """剑三 外观数据同步"""     
-        try:
-            data=await self.jx3fun.SearchData()
-            if data["code"] == 200:
-                yield event.plain_result(data["msg"])
-            else:
-                yield event.plain_result(data["msg"])
-            return
-        except Exception as e:
-            logger.error(f"功能函数执行错误: {e}")
-            yield event.plain_result("猪脑过载，请稍后再试") 
+    #@filter.permission_type(filter.PermissionType.ADMIN)
+    #@jx3.command("外观数据同步")
+    #async def jx3_SearchData(self, event: AstrMessageEvent):
+    #    """剑三 外观数据同步"""     
+    #    try:
+    #        data=await self.jx3fun.SearchData()
+    #        if data["code"] == 200:
+    #            yield event.plain_result(data["msg"])
+    #        else:
+    #            yield event.plain_result(data["msg"])
+    #        return
+    #    except Exception as e:
+    #        logger.error(f"功能函数执行错误: {e}")
+    #        yield event.plain_result("猪脑过载，请稍后再试") 
 
 
     @jx3.command("名片")

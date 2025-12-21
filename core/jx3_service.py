@@ -72,6 +72,21 @@ class JX3Service:
             return None
 
     # --- 业务功能函数 ---
+    async def helps(self) -> Dict[str, Any]:
+        """帮助"""
+        return_data = self._init_return_data()
+        
+        # 加载模板
+        try:
+            return_data["temp"] = load_template("helps.html")
+        except FileNotFoundError as e:
+            logger.error(f"加载模板失败: {e}")
+            return_data["msg"] = "系统错误：模板文件不存在"
+            return return_data
+            
+        return_data["code"] = 200
+   
+        return return_data
 
     async def richang(self,server: str, num: int = 0) -> Dict[str, Any]:
         """日常活动"""
