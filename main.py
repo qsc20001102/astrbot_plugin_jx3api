@@ -39,7 +39,7 @@ class Jx3ApiPlugin(Star):
         try:
             self.file_local_data = self.check_and_copy_db(
                 local_data_dir=local_data_dir,
-                db_filename="local_data.db",
+                db_filename="local_async.json",
                 default_db_dir=data_file_path
             )
         except FileNotFoundError as e:

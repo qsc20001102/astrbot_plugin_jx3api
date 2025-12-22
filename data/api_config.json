@@ -238,5 +238,21 @@
             "name": "飞翔大野猪",
             "token":""
         }
+    },
+    "jx3_xinweng":{
+        "url":"https://www.jx3api.com/data/news/allnews",
+        "method":"GET",
+        "description":"此接口用于获取官方最新公告及新闻内容，包括新闻分类、标题及链接等信息。",
+        "params":{
+            "limit": 1
+        }
+    },
+    "jx3_weihu":{
+        "url":"https://www.jx3api.com/data/news/announce",
+        "method":"GET",
+        "description":"此接口用于获取官方最新维护公告，包括公告标题、发布日期及链接等信息。",
+        "params":{
+            "limit": 1
+        }
     }
 }
