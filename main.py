@@ -283,6 +283,12 @@ class Jx3ApiPlugin(Star):
         yield event.plain_result(return_msg) 
 
 
+    @jx3.command("新闻推送")
+    async def jx3_xinwenzhixun(self, event: AstrMessageEvent):
+        """剑三 新闻推送"""     
+        return_msg = await self.at.get_xwzx_conf()
+        yield event.plain_result(return_msg) 
+
 
     #@filter.permission_type(filter.PermissionType.ADMIN)
     #@jx3.command("外观数据同步")
