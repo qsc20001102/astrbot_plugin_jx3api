@@ -67,7 +67,7 @@ class Jx3ApiPlugin(Star):
 
         # 周期函数调用
         self.kf_task = asyncio.create_task(self.at.cycle_kfjk())
-
+        self.xw_task = asyncio.create_task(self.at.cycle_xwzx())
         # 初始化函数
         #data=await self.jx3fun.SearchData()
         #logger.info(data["msg"])
@@ -427,4 +427,5 @@ class Jx3ApiPlugin(Star):
         await self.db.close()
         # 后台z周期进程销毁
         self.kf_task.cancel()
+        self.xw_task.cancel()
         logger.info("jx3api插件已卸载/停用")

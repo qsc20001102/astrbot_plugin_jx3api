@@ -33,9 +33,37 @@
         "hint": "可以填写多个会话唯一ID。",
         "items": {
             "type": "string",
-            "description": "会话唯一ID"
+            "description": "会话唯一ID，可通过/std获取"
         },
-        "default": ["QQ:GroupMessage:768280021","QQ:GroupMessage:690665795"]
+        "default": []
+      }
+    }
+  },
+  "xwzx": {
+    "description": "新闻资讯推送",
+    "type": "object",
+    "items": {
+      "enable": {
+        "description": "新闻资讯推送功能开关",
+        "type": "bool",
+        "default": false,
+        "hint": "是否启用剑网三开新闻资讯推送功能。"
+      },
+      "time": {
+        "description": "获取最新资讯循环时间",
+        "type": "int",
+        "default": 280,
+        "hint": "请求最新资讯的循环时间，单位秒。"
+      },
+      "umos": {
+        "description": "推送列表",
+        "type": "list",
+        "hint": "可以填写多个会话唯一ID。",
+        "items": {
+            "type": "string",
+            "description": "会话唯一ID，可通过/std获取"
+        },
+        "default": []
       }
     }
   }

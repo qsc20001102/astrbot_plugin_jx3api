@@ -255,19 +255,23 @@ class JX3Service:
         return_data = self._init_return_data()
         
         # 提取字段可能返回列表
-        data: Optional[List[Dict[str, Any]]] = await self._base_request("jx3_jigai", "GET")
+        data: Optional[List[Dict[str, Any]]] = await self._base_request("jx3_xinweng", "GET")
         
         if not data or not isinstance(data, list):
             return_data["msg"] = "获取接口信息失败或数据格式错误"
             return return_data
         
         try:
-            result_msg = "剑网三最近技改\n"
+            # 
+            result = data[0]
+            return_data["status"] = result.get('id')
+
+            result_msg = "新闻资讯推送\n"
             # 仅展示前1条，避免消息过长
             for i, item in enumerate(data[:1], 1): 
                 result_msg += f"{i}. {item.get('title', '无标题')}\n"
-                result_msg += f"时间：{item.get('time', '未知时间')}\n"
-                result_msg += f"链接：{item.get('url', '无链接')}\n\n"
+                result_msg += f"时间：{item.get('date', '未知时间')}\n"
+                result_msg += f"链接：{item.get('url', '无链接')}\n"
                 
             return_data["data"] = result_msg
             return_data["code"] = 200

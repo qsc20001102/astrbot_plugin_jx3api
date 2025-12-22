@@ -85,8 +85,13 @@ class AsyncTask:
             "time": conf.get("time", 10),
             "umos": conf.get("umos", []),
         }
+        # 状态记录
+        self.kfjk = {
+            "state": False,
+            "state_new": False
+        }
         try:
-            self.kfjk_server_state = await self.get_local_data("kfjk")    # 上一次查询的状态
+            self.kfjk["state"] = await self.get_local_data("kfjk")    # 上一次查询的状态
         except Exception as e:
             logger.error(f"获取本地缓存数据失败: {e}")
 
@@ -95,39 +100,88 @@ class AsyncTask:
         else:
             logger.info(f"开服监控功能关闭")
             return
+        
         while self.kfjk_conf["enable"]:
             try:
                 # 获取最新服务状态
                 data = await self.jx3fun.kaifu("梦江南")
-                self.kfjk_server_state_new = data["status"]
-                logger.debug(f"开服监控功能循环中,上次询问服务器状态{self.kfjk_server_state},本次询问的服务器状态{self.kfjk_server_state_new}") 
+                self.kfjk["state_new"] = data["status"]
+                logger.debug(f"开服监控功能循环中,上次询问服务器状态{self.kfjk['state']},本次询问的服务器状态{self.kfjk['state_new']}") 
                 # 判断状态是否变化
-                if self.kfjk_server_state != self.kfjk_server_state_new:
-                    logger.info(f"开服监控功能循环中,上次询问服务器状态{self.kfjk_server_state},本次询问的服务器状态{self.kfjk_server_state_new}") 
+                if self.kfjk["state"] != self.kfjk["state_new"]:
+                    logger.info(f"开服监控功能循环中,上次询问服务器状态{self.kfjk['state']},本次询问的服务器状态{self.kfjk['state_new']}") 
                     # 构建不同的推送小时
-                    if self.kfjk_server_state and not self.kfjk_server_state_new:
-                        message_chain = MessageChain().message("剑网三服务器已关闭\n休息一会把,开服了喊你！")
-                    if self.kfjk_server_state_new and not self.kfjk_server_state:
-                        message_chain = MessageChain().message("剑网三服务器已开启\n快冲！快冲！")
+                    message_chain = MessageChain().message(data.get("data"))
                     # 推送消息
                     if self.kfjk_conf["umos"]:
                         for umo in self.kfjk_conf["umos"]:
                             await self.context.send_message(umo, message_chain)
 
-                    await self.set_local_data("kfjk", self.kfjk_server_state_new)
+                    await self.set_local_data("kfjk", self.kfjk["state_new"])
 
-                self.kfjk_server_state = self.kfjk_server_state_new
+                self.kfjk["state"] = self.kfjk["state_new"]
                 
             except Exception as e:
                 logger.error(f"开服监控循环异常: {e}")
-            await asyncio.sleep(self.kfjk_conf["time"])  # 休眠指定时间
+            await asyncio.sleep(self.kfjk_conf["time"])  
 
 
     async def get_kfjk_conf(self) -> str:
         """获取开服监控配置信息"""
         return_msg =  f"开服监控后台状态：{self.kfjk_conf['enable']}\n"
         return_msg += f"周期询问时间：{self.kfjk_conf['time']}秒\n"
-        return_msg += f"上次询问服务器状态{self.kfjk_server_state}\n"
-        return_msg += f"本次询问的服务器状态{self.kfjk_server_state_new}\n"
+        return_msg += f"上次询问服务器状态{self.kfjk['state']}\n"
+        return_msg += f"本次询问的服务器状态{self.kfjk['state_new']}\n"
         return_msg += f"推送会话列表：\n{self.kfjk_conf['umos']}"
         return return_msg
+    
+
+    async def cycle_xwzx(self):
+        """最新新闻资讯后台程序"""
+        # 获取配置信息
+        conf = self.conf.get("xwzx", {})
+        self.xwzx_conf = {
+            "enable": conf.get("enable", True),
+            "time": conf.get("time", 280),
+            "umos": conf.get("umos", []),
+        }
+        # 状态记录
+        self.xwzx = {
+            "state": 0,
+            "state_new": 0
+        }
+
+        try:
+            self.xwzx["state"] = await self.get_local_data("xwzx")    # 上一次查询的状态
+        except Exception as e:
+            logger.error(f"获取本地缓存数据失败: {e}")
+
+        if self.xwzx_conf["enable"]:
+            logger.info(f"新闻资讯推送功能开启")
+        else:
+            logger.info(f"新闻资讯推送功能关闭")
+            return
+        
+        while self.xwzx_conf["enable"]:
+            try:
+                # 获取最新服务状态
+                data = await self.jx3fun.xinwei()
+                self.xwzx["state_new"] = data["status"]
+                logger.debug(f"新闻资讯推送功能循环中,上次最新资讯ID{self.xwzx['state']},本次最新资讯ID{self.xwzx['state_new']}") 
+                # 判断状态是否变化
+                if self.xwzx["state"] != self.xwzx["state_new"]:
+                    logger.info(f"新闻资讯推送功能循环中,上次最新资讯ID{self.xwzx['state']},本次最新资讯ID{self.xwzx['state_new']}") 
+                    # 构建不同的推送小时
+                    message_chain = MessageChain().message(data.get("data"))
+                    # 推送消息
+                    if self.xwzx_conf["umos"]:
+                        for umo in self.xwzx_conf["umos"]:
+                            await self.context.send_message(umo, message_chain)
+
+                    await self.set_local_data("xwzx", self.xwzx["state_new"])
+
+                self.xwzx["state"] = self.xwzx["state_new"]
+                
+            except Exception as e:
+                logger.error(f"开服监控循环异常: {e}")
+            await asyncio.sleep(self.xwzx_conf["time"])  
