@@ -813,3 +813,43 @@ class JX3Service:
         return_data["code"] = 200
         
         return return_data
+
+
+    async def zhengyingpaimai(self, server: str, name: str) -> Dict[str, Any]:
+        """阵营拍卖"""
+        return_data = self._init_return_data()
+
+        # 获取配置中的 Token
+        token = self._config.get("jx3api_token", "")
+        if  token == "":
+            return_data["msg"] = "系统未配置API访问Token"
+            return return_data
+        
+        # 1. 构造请求参数
+        params = {"server": server, "name": name, "token": token}
+        
+        # 2. 调用基础请求
+        data: Optional[Dict[str, Any]] = await self._base_request(
+            "jx3_zhengyingpaimai", "GET", params=params
+        )
+        
+        if not data:
+            return_data["msg"] = "获取接口信息失败"
+            return return_data
+            
+        # 3. 处理返回数据 
+        for item in data:
+            item["time"] = datetime.fromtimestamp(item["time"]).strftime("%Y-%m-%d %H:%M:%S")
+        
+        # 4. 加载模板
+        try:
+            return_data["temp"] = load_template("zhengyingpaimai.html")
+        except FileNotFoundError as e:
+            logger.error(f"加载模板失败: {e}")
+            return_data["msg"] = "系统错误：模板文件不存在"
+            return return_data
+        
+        return_data["data"]["list"] = data
+        return_data["code"] = 200
+        
+        return return_data
