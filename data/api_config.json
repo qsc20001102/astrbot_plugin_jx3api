@@ -39,14 +39,6 @@
             "serverName": "眉间雪"
         }
     },
-    "aijx3_jinjia":{
-        "url":"https://www.jianxiachaguan.cn/api2/aijx3-jxcg/game/get-gold",
-        "method":"POST",
-        "description":"获取剑网三某区服金价",
-        "params":{
-            "serverName": "眉间雪"
-        }
-    },
     "aijx3_qiyu":{
         "url":"https://www.jianxiachaguan.cn/api2/aijx3-jxcg/game/get-adventure-record",
         "method":"POST",
@@ -54,96 +46,6 @@
         "params":{
             "adventureName": "阴阳两界",  
             "serverName": "眉间雪"  
-        }
-    },
-    "aijx3_SearchData":{
-        "url":"https://www.aijx3.cn/api2/aijx3-wblwg/basedata/getSearchData",
-        "method":"POST",
-        "description":"获取爱剑网三所有外观数据",
-        "params":{
-        }
-    },
-    "jx3box_exterior":{
-        "url":"https://node.jx3box.com/api/node/v2/exterior/list",
-        "method":"GET",
-        "description":"魔盒中模糊查找剑网三的外观数据",
-        "params":{
-            "keyword": "秃盒",
-            "tradable": "0",
-            "list_type": "0"
-        }
-    },
-    "aijx3_GoodsDetail":{
-        "url":"https://www.aijx3.cn/api2/aijx3-wj/goods/getGoodsDetail",
-        "method":"POST",
-        "description":"在爱剑网三中获取外观详细数据",
-        "params":{
-            "goodsName": "秃盒"
-        }
-    },
-    "aijx3_wblwg":{
-        "url":"https://www.aijx3.cn/api2/aijx3-wblwg/record/queryByCondition",
-        "method":"POST",
-        "description":"在爱剑网三中获取外观详细数据",
-        "params":{
-            "accoSeq": "",
-            "orderMode": 1,
-            "orderBy": "price_num",
-            "searchId": [48356],
-            "current": 1,
-            "size": 10,
-            "tradeStatus": ""
-        }
-    },
-    "jx3box_item":{
-        "url":"https://node.jx3box.com/api/node/item/search",
-        "method":"GET",
-        "description":"魔盒中模糊查找剑网三的物品数据",
-        "params":{
-            "keyword": "守缺式",
-            "page": "1",
-            "per": "50"
-        }
-    },
-    "jx3box_itemprice":{
-        "url":"https://next2.jx3box.com/api/item-price/list",
-        "method":"GET",
-        "description":"交易行中在售物品数据",
-        "params":{
-            "server": "眉间雪",
-            "itemIds": ["5_76650"]
-        }
-    },
-    "wbl_waiguan":{
-        "url":"https://trade-api.seasunwbl.com/api/buyer/goods/list",
-        "method":"GET",
-        "description":"万宝楼官方交易数据",
-        "params":{
-            "filter[state]": "0",
-            "filter[role_appearance]": "浮屠明音礼盒",
-            "page": "1",
-            "size": "10",
-            "goods_type": "3",
-            "sort[price]": "1"
-        }
-    },
-    "wzry_zhanji":{
-        "url":"https://api.t1qq.com/api/tool/wzrr/morebattle",
-        "method":"GET",
-        "description":"王者荣耀战绩查询",
-        "params":{
-            "key": "vBpEzoiC9z5A9c9Nn83IhLn6M9",
-            "id": "489048724",
-            "option": "1"
-        }
-    },
-    "wzry_ziliao":{
-        "url":"https://api.t1qq.com/api/tool/wzrr/ydtp",
-        "method":"GET",
-        "description":"王者荣耀资料查询",
-        "params":{
-            "key": "vBpEzoiC9z5A9c9Nn83IhLn6M9",
-            "id": "489048724"
         }
     },
     "jx3_jieshemingpian":{
@@ -225,7 +127,7 @@
             "server": "梦江南",
             "name": "飞翔大野猪",
             "mode": "33",
-            "ticket": "a7fd656a52d747d7830cfa6d686e6030:qsc20001102:kingsoft::sVpKi7nFKzFlbTwtBMTg2w==",
+            "ticket": "",
             "token":""
         }
     },
@@ -273,6 +175,24 @@
         "params":{
             "server": "梦江南",
             "name": "玄晶",
+            "token": ""
+        }
+    },
+    "jx3_fuyaojiutian":{
+        "url":"https://www.jx3api.com/data/active/next/event",
+        "method":"GET",
+        "description":"获取某区服扶摇九天的下次开启时间",
+        "params":{
+            "server": "梦江南",
+            "token": ""
+        }
+    },
+    "jx3_shuama":{
+        "url":"https://www.jx3api.com/data/horse/ranch",
+        "method":"GET",
+        "description":"获取某区服坐骑刷新时间",
+        "params":{
+            "server": "梦江南",
             "token": ""
         }
     }

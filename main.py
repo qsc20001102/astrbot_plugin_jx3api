@@ -61,16 +61,17 @@ class Jx3ApiPlugin(Star):
     async def initialize(self):
         """可选择实现异步的插件初始化方法，当实例化该插件类之后会自动调用该方法。"""     
         #创建类实例
-        self.db = AsyncSQLite(str(self.file_local_data))
-        self.jx3fun = JX3Service(self.api_config,self.db,self.conf)
-        self.at = AsyncTask(self.context, self.conf, self.jx3fun)
-
+        # self.db = AsyncSQLite(str(self.file_local_data))
+        try:
+            self.jx3fun = JX3Service(self.api_config,self.conf)
+            self.at = AsyncTask(self.context, self.conf, self.jx3fun)
+        except Exception as e:
+            logger.error(f"功能示例初始化失败: {e}")
+            return
         # 周期函数调用
         self.kf_task = asyncio.create_task(self.at.cycle_kfjk())
         self.xw_task = asyncio.create_task(self.at.cycle_xwzx())
         # 初始化函数
-        #data=await self.jx3fun.SearchData()
-        #logger.info(data["msg"])
 
         logger.info("jx3api异步插件初始化完成")
 
@@ -290,22 +291,6 @@ class Jx3ApiPlugin(Star):
         yield event.plain_result(return_msg) 
 
 
-    #@filter.permission_type(filter.PermissionType.ADMIN)
-    #@jx3.command("外观数据同步")
-    #async def jx3_SearchData(self, event: AstrMessageEvent):
-    #    """剑三 外观数据同步"""     
-    #    try:
-    #        data=await self.jx3fun.SearchData()
-    #        if data["code"] == 200:
-    #            yield event.plain_result(data["msg"])
-    #        else:
-    #            yield event.plain_result(data["msg"])
-    #        return
-    #    except Exception as e:
-    #        logger.error(f"功能函数执行错误: {e}")
-    #        yield event.plain_result("猪脑过载，请稍后再试") 
-
-
     @jx3.command("名片")
     async def jx3_jueshemingpian(self, event: AstrMessageEvent, name: str = "飞翔大野猪", server: str = None):
         """剑三 名片 角色 服务器"""
@@ -440,6 +425,36 @@ class Jx3ApiPlugin(Star):
         except Exception as e:
             logger.error(f"功能函数执行错误: {e}")
             yield event.plain_result("猪脑过载，请稍后再试") 
+
+
+    @jx3.command("扶摇九天")
+    async def jx3_fuyaojjiutian(self, event: AstrMessageEvent,server: str = None):
+        """剑三 日常 服务器 天数"""
+        try:
+            data= await self.jx3fun.fuyaojjiutian(await self.serverdefault(server))
+            if data["code"] == 200:
+                yield event.plain_result(data["data"])
+            else:
+                yield event.plain_result(data["msg"])
+            return
+        except Exception as e:
+            logger.error(f"功能函数执行错误: {e}")
+            yield event.plain_result("猪脑过载，请稍后再试")
+
+
+    @jx3.command("刷马")
+    async def jx3_shuma(self, event: AstrMessageEvent,server: str = None):
+        """剑三 日常 服务器 天数"""
+        try:
+            data= await self.jx3fun.shuma(await self.serverdefault(server))
+            if data["code"] == 200:
+                yield event.plain_result(data["data"])
+            else:
+                yield event.plain_result(data["msg"])
+            return
+        except Exception as e:
+            logger.error(f"功能函数执行错误: {e}")
+            yield event.plain_result("猪脑过载，请稍后再试")
 
 
     async def terminate(self):

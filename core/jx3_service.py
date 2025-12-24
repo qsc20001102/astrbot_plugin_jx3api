@@ -9,9 +9,8 @@ from .aiosqlite import AsyncSQLite
 from .function_basic import load_template,flatten_field,extract_fields,gold_to_string
 
 class JX3Service:
-    def __init__(self, api_config,db: AsyncSQLite,config:AstrBotConfig):
+    def __init__(self, api_config, config:AstrBotConfig):
         self._api = APIClient()
-        self._db = db
         # 获取API配置文件
         self._api_config = api_config
         # 获取插件配置文件
@@ -176,6 +175,7 @@ class JX3Service:
             
         return return_data
     
+
     async def kaifu(self, server: str) -> Dict[str, Any]:
         """开服状态查询"""
         return_data = self._init_return_data()
@@ -214,6 +214,7 @@ class JX3Service:
             return_data["msg"] = "处理接口返回信息时出错"
             
         return return_data
+
 
     async def shaohua(self) -> Dict[str, Any]:
         """骚话"""
@@ -372,58 +373,6 @@ class JX3Service:
             logger.error(f"qiyu 模板数据准备失败: {e}")
             return_data["msg"] = "系统错误：模板渲染数据准备失败"
             
-        return return_data
-    
-
-    async def SearchData(self) -> Dict[str, Any]:
-        """外观数据插入数据库"""
-        return_data = self._init_return_data()
-        
-        # 获取数据
-        data: Optional[List[Dict[str, Any]]] = await self._base_request("aijx3_SearchData", "POST")
-        
-        if not data:
-            return_data["msg"] = "获取接口信息失败"
-            return return_data
-            
-        # 提取数据
-        try:
-            extracted_data = flatten_field(data, "dataModels")
-        except Exception as e:
-            logger.error(f"提取数据失败: {e}")
-            return_data["msg"] = "提取指定数据字段失败"
-            return return_data 
-            
-        # 准备SQL和批量数据
-        sql = """
-        INSERT INTO searchdata 
-        (typeName, name, showName, picUrl, searchId, searchDescType) 
-        VALUES (?, ?, ?, ?, ?, ?)
-        """
-        # 增强数据提取的安全性
-        values_list = [
-            (
-                item.get('typeName'),
-                item.get('name'),
-                item.get('showName'),
-                item.get('picUrl'),
-                item.get('searchId'),
-                item.get('searchDescType')
-            )
-            for item in extracted_data 
-        ]
-        
-        # 插入数据
-        try:
-            await self._db.clear_table("searchdata")
-            await self._db.executemany(sql, values_list)
-        except Exception as e:
-            logger.error(f"数据插入失败: {e}")
-            return_data["msg"] = "数据插入数据库失败"
-            return return_data
-            
-        return_data["msg"] = f"成功批量插入 {len(values_list)} 条数据！"
-        return_data["code"] = 200
         return return_data
 
 
@@ -776,6 +725,74 @@ class JX3Service:
             return return_data
         
         return_data["data"]["list"] = data
+        return_data["code"] = 200
+        
+        return return_data
+    
+
+    async def fuyaojjiutian(self, server: str) -> Dict[str, Any]:
+        """扶摇九天"""
+        return_data = self._init_return_data()
+        
+        # 1. 构造请求参数
+        params = {"server": server, "token": self.token}
+        
+        # 2. 调用基础请求
+        data: Optional[Dict[str, Any]] = await self._base_request(
+            "jx3_fuyaojiutian", "GET", params=params
+        )
+        
+        if not data:
+            return_data["msg"] = "获取接口信息失败"
+            return return_data
+            
+        # 3. 处理返回数据
+        try:
+            data_new =  data[0]
+            data_old =  data[1]
+            result_msg = f"{server}\n"
+            result_msg += f"上次[扶摇九天]开启时间：\n{datetime.fromtimestamp(data_old['time']).strftime('%Y-%m-%d %H:%M:%S')}\n"
+            result_msg += f"下次[扶摇九天]开启时间：\n{datetime.fromtimestamp(data_new['time']).strftime('%Y-%m-%d %H:%M:%S')}"
+        except Exception as e:
+            logger.error(f"处理返回数据失败: {e}")
+            return_data["msg"] = "处理返回数据失败"
+        
+        return_data["data"] = result_msg
+        return_data["code"] = 200
+        
+        return return_data
+    
+
+    async def shuma(self, server: str) -> Dict[str, Any]:
+        """刷马"""
+        return_data = self._init_return_data()
+        
+        # 1. 构造请求参数
+        params = {"server": server, "token": self.token}
+        
+        # 2. 调用基础请求
+        data: Optional[Dict[str, Any]] = await self._base_request(
+            "jx3_shuama", "GET", params=params, out_key=""
+        )
+        
+        if not data:
+            return_data["msg"] = "获取接口信息失败"
+            return return_data
+            
+        # 3. 处理返回数据
+        try:
+            _data =  data["data"]["data"]
+            result_msg = f"{server}\n"
+            result_msg += f"黑戈壁：\n{_data['黑戈壁'][0]}\n"
+            result_msg += f"阴山大草原：\n{_data['阴山大草原'][0]}\n"
+            result_msg += f"鲲鹏岛：\n{_data['鲲鹏岛'][0]}\n"
+            result_msg += f"的卢:\n{_data['龙泉府 / 进图（21:10）'][0]}\n"
+            result_msg += f"赤兔:\n{data['data']['note']}"
+        except Exception as e:
+            logger.error(f"处理返回数据失败: {e}")
+            return_data["msg"] = "处理返回数据失败"
+        
+        return_data["data"] = result_msg
         return_data["code"] = 200
         
         return return_data
