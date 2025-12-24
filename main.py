@@ -415,7 +415,6 @@ class Jx3ApiPlugin(Star):
         """剑三 奇遇 角色名称 服务器"""
         try:
             data= await self.jx3fun.juesheqiyu(name,await self.serverdefault(server))
-            logger.info(f"数据打印: {data}")
             if data["code"] == 200:
                 url = await self.html_render(data["temp"], data["data"], options={})
                 yield event.image_result(url)

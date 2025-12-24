@@ -763,7 +763,7 @@ class JX3Service:
 
 
     async def juesheqiyu(self, name: str, server: str) -> Dict[str, Any]:
-        """团队招募"""
+        """角色奇遇"""
         return_data = self._init_return_data()
 
         # 获取配置中的 Token
