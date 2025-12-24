@@ -12,9 +12,23 @@ class JX3Service:
     def __init__(self, api_config,db: AsyncSQLite,config:AstrBotConfig):
         self._api = APIClient()
         self._db = db
+        # 获取API配置文件
         self._api_config = api_config
+        # 获取插件配置文件
         self._config = config
-
+        # 获取配置中的 Token
+        self.token = self._config.get("jx3api_token", "")
+        if  self.token == "":
+            logger.info("获取配置token失败，请正确填写token,否则部分功能无法正常使用")
+        else:
+            logger.info(f"获取配置token成功。{self.token}")
+        # 获取配置中的 ticket
+        self.ticket = self._config.get("jx3api_ticket", "")
+        if  self.ticket == "":
+            logger.info("获取配置ticket失败，请正确填写ticket,否则部分功能无法正常使用")
+        else:
+            logger.info(f"获取配置ticket成功。{self.ticket}")
+        
 
     def _init_return_data(self) -> Dict[str, Any]:
             """初始化标准的返回数据结构"""
@@ -71,6 +85,7 @@ class JX3Service:
             logger.error(f"基础请求调用出错 ({config_key}): {e}")
             return None
 
+
     # --- 业务功能函数 ---
     async def helps(self) -> Dict[str, Any]:
         """帮助"""
@@ -87,6 +102,7 @@ class JX3Service:
         return_data["code"] = 200
    
         return return_data
+
 
     async def richang(self,server: str, num: int = 0) -> Dict[str, Any]:
         """日常活动"""
@@ -190,8 +206,6 @@ class JX3Service:
                 status_str = f"{server}服务器当前维护中，等会再来吧！\n维护时间：{status_time}"
                 status_bool = False
 
-
-                
             return_data["status"] = status_bool
             return_data["data"] = status_str
             return_data["code"] = 200
@@ -417,15 +431,9 @@ class JX3Service:
         """物价查询"""
         return_data = self._init_return_data()
         
-        # 获取配置中的 Token
-        token = self._config.get("jx3api_token", "")
-        if  token == "":
-            return_data["msg"] = "系统未配置API访问Token"
-            return return_data
-
         # 2. 确定外观名称和 ID
         
-        params_search = {"name": Name,"token": token, "server": server}
+        params_search = {"name": Name,"token": self.token, "server": server}
         search_data: Optional[Dict[str, Any]] = await self._base_request("jx3_wujia", "GET", params=params_search)
 
         if not search_data:
@@ -446,85 +454,51 @@ class JX3Service:
         return return_data
 
 
-    async def jiaoyihang(self, Name: str , server: str) -> Dict[str, Any]:
+    async def jiaoyihang(self, name: str , server: str) -> Dict[str, Any]:
         """区服交易行"""
         return_data = self._init_return_data()
 
-        # 1. 查找物品 ID 列表 (多页)
-        api_config_search = self._api_config["jx3box_item"]
-        search_params = api_config_search.get("params", {}).copy()
-        search_params["keyword"] = Name
-        
-        # 使用 all_pages 获取所有数据
-        all_items: List[Dict[str, Any]] = await self._api.all_pages(
-            "GET", 
-            api_config_search["url"], 
-            params_data=search_params, # 对应到 APIClient.all_pages
-            out_key="data", 
-            list_key="data"
+        # 1. 构造请求参数
+        params = {"server": server, "name": name,"token": self.token}
+
+        # 2. 调用基础请求
+        data: Optional[Dict[str, Any]] = await self._base_request(
+            "jx3_jiaoyihang", "GET", params=params
         )
-        
-        if not all_items:
+
+        if not data:
             return_data["msg"] = "未找到该物品"
             return return_data
+        
+        # 2. 数据处理
+        result = []
+        
+        try:
+            for item in data:
+                inner_list = item.get("data", [])
+                first = inner_list[0] if inner_list else {}
+                new_item = {
+                    "name": item.get("name"),
+                    "icon": f"https://icon.jx3box.com/icon/{item.get('icon')}.png",
+                    "sever": first.get("server"),
+                    "count": len(inner_list),
+                    "unit_price": gold_to_string(first.get("unit_price")),
+                    "created": datetime.fromtimestamp(first.get("created")).strftime("%Y-%m-%d %H:%M:%S"),
+                }
+                result.append(new_item)
+        except Exception as e:
+            logger.error(f"处理交易行数据失败: {e}")
+            return_data["msg"] = "处理交易行数据失败"
             
-        # 2. 提取 ID、IconID 和 Name
-        fields = ["IconID", "Name", "id"]
-        # 安全提取字段，并确保 id 存在且是数字
-        result = [extract_fields([item], fields)[0] for item in all_items if item.get("id") is not None]
-        
-        lists_id = [str(item.get("id")) for item in result if item.get("id") is not None]
-        strlists_id = ",".join(lists_id)
-        
-        if not strlists_id:
-            return_data["msg"] = "未找到有效的物品ID"
-            return return_data
-
-        # 3. 查询物品价格 (jx3box_itemprice)
-        api_config_price = self._api_config["jx3box_itemprice"]
-        price_params = api_config_price.get("params", {}).copy()
-        price_params["itemIds"] = strlists_id
-        price_params["server"] = server
-        
-        price_data: Optional[Dict[str, Dict[str, Any]]] = await self._api.get(
-            api_config_price["url"], params=price_params, out_key="data"
-        )
-        
-        if not price_data:
-            return_data["msg"] = "未找到在售物品"
-            return return_data
-        
-        # 4. 合并数据和格式化
-        fieldsjyh = ["ItemId", "SampleSize", "LowestPrice", "AvgPrice", "Date"]
-        resultjyh = [{f: v[f] for f in fieldsjyh} for v in price_data.values()]
-        #合并表格数据
-        # 先建立一个字典映射，加快查找
-        map_result = {item["id"]: {"IconID": item["IconID"], "Name": item["Name"]} for item in result}
-        # 遍历 resultjyh，合并字段
-        for item in resultjyh:
-            if item["ItemId"] in map_result:
-                item.update(map_result[item["ItemId"]])
-        #处理数据
-        for item in resultjyh:
-            item["LowestPrice"] = gold_to_string(item["LowestPrice"])
-            item["AvgPrice"] = gold_to_string(item["AvgPrice"])
-            item["IconID"] = f"https://icon.jx3box.com/icon/{item['IconID']}.png"
+        return_data["data"]["list"] = result
 
         # 5. 模板渲染
         try:
             return_data["temp"] = load_template("jiaoyihang.html")
-            return_data["data"] = {
-                "items": resultjyh,
-                "server": server,
-                "update_time": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            } 
             return_data["code"] = 200
         except FileNotFoundError as e:
             logger.error(f"加载模板失败: {e}")
             return_data["msg"] = "系统错误：模板文件不存在"
-        except Exception as e:
-            logger.error(f"模板渲染数据准备失败: {e}")
-            return_data["msg"] = "系统错误：数据处理失败"
 
         return return_data
     
@@ -532,15 +506,9 @@ class JX3Service:
     async def jueshemingpian(self, server: str, name:str ) -> Dict[str, Any]:
         """角色名片"""
         return_data = self._init_return_data()
-
-        # 获取配置中的 Token
-        token = self._config.get("jx3api_token", "")
-        if  token == "":
-            return_data["msg"] = "系统未配置API访问Token"
-            return return_data
         
         # 1. 构造请求参数
-        params = {"server": server, "name": name,"token": token}
+        params = {"server": server, "name": name,"token": self.token}
         
         # 2. 调用基础请求
         data: Optional[Dict[str, Any]] = await self._base_request(
@@ -562,14 +530,8 @@ class JX3Service:
         """随机名片"""
         return_data = self._init_return_data()
 
-        # 获取配置中的 Token
-        token = self._config.get("jx3api_token", "")
-        if  token == "":
-            return_data["msg"] = "系统未配置API访问Token"
-            return return_data
-        
         # 1. 构造请求参数
-        params = {"server": server, "body": body, "force":force, "token": token}
+        params = {"server": server, "body": body, "force":force, "token": self.token}
         
         # 2. 调用基础请求
         data: Optional[Dict[str, Any]] = await self._base_request(
@@ -590,15 +552,9 @@ class JX3Service:
     async def yanhuachaxun(self, server: str, name:str ) -> Dict[str, Any]:
         """烟花查询"""
         return_data = self._init_return_data()
-
-        # 获取配置中的 Token
-        token = self._config.get("jx3api_token", "")
-        if  token == "":
-            return_data["msg"] = "系统未配置API访问Token"
-            return return_data
         
         # 1. 构造请求参数
-        params = {"server": server, "name": name,"token": token}
+        params = {"server": server, "name": name,"token": self.token}
         
         # 2. 调用基础请求
         data: Optional[Dict[str, Any]] = await self._base_request(
@@ -636,15 +592,9 @@ class JX3Service:
     async def dilujilu(self, server: str) -> Dict[str, Any]:
         """的卢记录"""
         return_data = self._init_return_data()
-
-        # 获取配置中的 Token
-        token = self._config.get("jx3api_token", "")
-        if  token == "":
-            return_data["msg"] = "系统未配置API访问Token"
-            return return_data
         
         # 1. 构造请求参数
-        params = {"server": server, "token": token}
+        params = {"server": server, "token": self.token}
         
         # 2. 调用基础请求
         data: Optional[Dict[str, Any]] = await self._base_request(
@@ -678,15 +628,9 @@ class JX3Service:
     async def tuanduizhaomu(self, server: str, keyword: str) -> Dict[str, Any]:
         """团队招募"""
         return_data = self._init_return_data()
-
-        # 获取配置中的 Token
-        token = self._config.get("jx3api_token", "")
-        if  token == "":
-            return_data["msg"] = "系统未配置API访问Token"
-            return return_data
         
         # 1. 构造请求参数
-        params = {"server": server, "keyword": keyword, "token": token}
+        params = {"server": server, "keyword": keyword, "token": self.token}
         
         # 2. 调用基础请求
         data: Optional[Dict[str, Any]] = await self._base_request(
@@ -719,15 +663,9 @@ class JX3Service:
     async def zhanji(self, name: str, server:str, mode:str) -> Dict[str, Any]:
         """战绩+名片"""
         return_data = self._init_return_data()
-
-        # 获取配置中的 Token
-        token = self._config.get("jx3api_token", "")
-        if  token == "":
-            return_data["msg"] = "系统未配置API访问Token"
-            return return_data
         
         # 1. 构造请求参数
-        params = {"server": server, "name":name, "mode":mode, "token": token}
+        params = {"server": server, "name":name, "mode":mode, "token": self.token, "ticket": self.ticket}
         
         # 2. 调用基础请求
         data: Optional[Dict[str, Any]] = await self._base_request(
@@ -765,15 +703,9 @@ class JX3Service:
     async def juesheqiyu(self, name: str, server: str) -> Dict[str, Any]:
         """角色奇遇"""
         return_data = self._init_return_data()
-
-        # 获取配置中的 Token
-        token = self._config.get("jx3api_token", "")
-        if  token == "":
-            return_data["msg"] = "系统未配置API访问Token"
-            return return_data
         
         # 1. 构造请求参数
-        params = {"server": server, "name": name, "token": token}
+        params = {"server": server, "name": name, "token": self.token}
         
         # 2. 调用基础请求
         data: Optional[Dict[str, Any]] = await self._base_request(
@@ -818,15 +750,9 @@ class JX3Service:
     async def zhengyingpaimai(self, server: str, name: str) -> Dict[str, Any]:
         """阵营拍卖"""
         return_data = self._init_return_data()
-
-        # 获取配置中的 Token
-        token = self._config.get("jx3api_token", "")
-        if  token == "":
-            return_data["msg"] = "系统未配置API访问Token"
-            return return_data
         
         # 1. 构造请求参数
-        params = {"server": server, "name": name, "token": token}
+        params = {"server": server, "name": name, "token": self.token}
         
         # 2. 调用基础请求
         data: Optional[Dict[str, Any]] = await self._base_request(

@@ -8,8 +8,14 @@
   "jx3api_token": {
     "description": "JX3API Token",
     "type": "string",
-    "default": "v2aa6e74d48abb7b9",
+    "default": "",
     "hint": "前往https://www.jx3api.com/注册并购买Token。"
+  },
+  "jx3api_ticket": {
+    "description": "推栏标识",
+    "type": "string",
+    "default": "",
+    "hint": "通过抓包推栏APP账号登录信息获取推栏标识"
   },
   "kfjk": {
     "description": "开服监控配置",

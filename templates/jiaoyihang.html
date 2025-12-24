@@ -86,29 +86,31 @@
 <div class="container">
 
     <h1>剑网3交易行价格查询</h1>
-    <div class="server-info">服务器：{{ server }}</div>
 
     <div class="table-wrapper">
         <table>
             <thead>
                 <tr>
+                    <th>服务器</th>
+                    <th>图标</th>
                     <th>物品名称</th>
-                    <th>最低价</th>
-                    <th>总数量</th>
-                    <th>数据更新时间</th>
+                    <th>价格</th>
+                    <th>数量</th>
+                    <th>时间</th>
                 </tr>
             </thead>
 
             <tbody>
-                {% for item in items %}
+                {% for item in list %}
                 <tr>
+                    <td>{{ item.sever }}</td>
                     <td class="item-col">
-                        <img src="{{ item.IconID }}" alt="icon">
-                        {{ item.Name }}
+                        <img src="{{ item.icon }}" alt="icon">
                     </td>
-                    <td>{{ item.AvgPrice }}</td>
-                    <td>{{ item.SampleSize }}</td>
-                    <td>{{ item.Date }}</td>
+                    <td>{{ item.name }}</td>
+                    <td>{{ item.unit_price }}</td>
+                    <td>{{ item.count }}</td>
+                    <td>{{ item.created }}</td>
                 </tr>
                 {% endfor %}
             </tbody>

@@ -265,5 +265,15 @@
             "limit": 20,
             "token": ""
         }
+    },
+    "jx3_jiaoyihang":{
+        "url":"https://www.jx3api.com/data/trade/market",
+        "method":"GET",
+        "description":"获取剑网三区服交易行数据",
+        "params":{
+            "server": "梦江南",
+            "name": "玄晶",
+            "token": ""
+        }
     }
 }
