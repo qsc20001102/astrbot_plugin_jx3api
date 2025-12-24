@@ -78,6 +78,7 @@ class AsyncTask:
 
     async def _cycle_common(self,fetch_func, conf: dict, state: dict, namefun: str, local_key: str):
         """后台程序"""
+        
         # 调用函数获取最新数据
         try:
             state["state_old"] = await self.get_local_data(local_key)
@@ -131,7 +132,7 @@ class AsyncTask:
         conf = self.conf.get("kfjk", {})
         self.kfjk_conf = {
             "enable": conf.get("enable", True),
-            "time": conf.get("time", 10),
+            "time": conf.get("time", 60),
             "umos": conf.get("umos", []),
         }
         # 状态记录
