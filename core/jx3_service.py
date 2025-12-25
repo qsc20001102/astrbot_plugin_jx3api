@@ -235,6 +235,46 @@ class JX3Service:
             return_data["msg"] = "接口未返回文本"
             
         return return_data
+    
+
+    async def zhuangtai(self) -> Dict[str, Any]:
+        """区服状态"""
+        return_data = self._init_return_data()
+        
+        
+        data: Optional[Dict[str, Any]] = await self._base_request("jx3_zhuangtai", "GET") 
+        
+        if not data:
+            return_data["msg"] = "获取接口信息失败"
+            return return_data
+        
+        server_wj = []
+        server_dx = []
+        server_sx = []
+
+        for itme in data:
+            if itme['zone'] == "无界区":
+                server_wj.append(itme)
+            elif itme['zone'] == "电信区":
+                server_dx.append(itme)
+            elif itme['zone'] == "双线区":
+                server_sx.append(itme)
+
+        return_data["data"]["server_wj"] = server_wj
+        return_data["data"]["server_dx"] = server_dx
+        return_data["data"]["server_sx"] = server_sx
+
+        # 加载模板
+        try:
+            return_data["temp"] = load_template("qufuzhuangtai.html")
+        except FileNotFoundError as e:
+            logger.error(f"加载模板失败: {e}")
+            return_data["msg"] = "系统错误：模板文件不存在"
+            return return_data
+        
+        return_data["code"] = 200
+            
+        return return_data
 
 
     async def jigai(self) -> Dict[str, Any]:

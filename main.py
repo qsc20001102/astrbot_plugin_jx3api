@@ -70,9 +70,6 @@ class Jx3ApiPlugin(Star):
             await self.at.destroy()
             logger.error(f"功能示例初始化失败: {e}")
             return
-        # 周期函数调用
-        
-        # 初始化函数
 
         logger.info("jx3api异步插件初始化完成")
 
@@ -160,6 +157,23 @@ class Jx3ApiPlugin(Star):
             data= await self.jx3fun.kaifu(await self.serverdefault(server))
             if data["code"] == 200:
                 yield event.plain_result(data["data"])
+            else:
+                yield event.plain_result(data["msg"])
+            return
+        except Exception as e:
+            logger.error(f"功能函数执行错误: {e}")
+            yield event.plain_result("猪脑过载，请稍后再试")
+
+
+    @jx3.command("状态")
+    async def jx3_zhuangtai(self, event: AstrMessageEvent,server: str = None):
+        """剑三 开服 服务器"""
+        try:
+            data= await self.jx3fun.zhuangtai()
+            logger.info(data)
+            if data["code"] == 200:
+                url = await self.html_render(data["temp"], data["data"], options={})
+                yield event.image_result(url)
             else:
                 yield event.plain_result(data["msg"])
             return

@@ -195,5 +195,13 @@
             "server": "梦江南",
             "token": ""
         }
+    },
+    "jx3_zhuangtai":{
+        "url":"https://www.jx3api.com/data/server/status",
+        "method":"GET",
+        "description":"此接口用于查询指定服务器的当前状态，包括 维护、正常、繁忙 和 爆满 等状态信息。",
+        "params":{
+            "server": ""
+        }
     }
 }

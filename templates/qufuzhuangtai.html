@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>区服状态面板</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 24px;
+            background: #f5f7fb;
+            color: #2c2c33;
+            font-family: "Microsoft YaHei", Arial, sans-serif;
+        }
+
+        .section {
+            margin-bottom: 32px;
+        }
+        .section-title {
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 16px;
+            border-left: 4px solid #4f7cff;
+            padding-left: 10px;
+            color: #1f2a44;
+        }
+
+        .card-container {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+        }
+        .card {
+            border-radius: 8px;
+            padding: 30px 12px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 28px;
+            color: #ffffff;
+        }
+
+        /* 整块背景颜色控制 */
+        .爆满 {
+            background: #d9534f; /* 红 */
+        }
+        .拥挤 {
+            background: #f0ad4e; /* 橙 */
+            color: #3b2e00;
+        }
+        .正常, .顺畅 {
+            background: #4cae4c; /* 绿 */
+        }
+        .维护 {
+            background: #bfbfbf; /* 灰 */
+            color: #333333;
+        }
+
+        .empty {
+            color: #7a7f99;
+            font-size: 16px;
+            padding: 6px 0;
+        }
+
+        @media (max-width: 1000px) {
+            .card-container { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 600px) {
+            .card-container { grid-template-columns: repeat(1, 1fr); }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- 无界区 -->
+    <div class="section">
+        <div class="section-title">无界区（{{ server_wj|length if server_wj else 0 }}）</div>
+        {% if server_wj %}
+        <div class="card-container">
+            {% for item in server_wj %}
+            <div class="card {{ item.status }}">{{ item.server }}</div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty">暂无数据</div>
+        {% endif %}
+    </div>
+
+    <!-- 电信区 -->
+    <div class="section">
+        <div class="section-title">电信区（{{ server_dx|length if server_dx else 0 }}）</div>
+        {% if server_dx %}
+        <div class="card-container">
+            {% for item in server_dx %}
+            <div class="card {{ item.status }}">{{ item.server }}</div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty">暂无数据</div>
+        {% endif %}
+    </div>
+
+    <!-- 双线区 -->
+    <div class="section">
+        <div class="section-title">双线区（{{ server_sx|length if server_sx else 0 }}）</div>
+        {% if server_sx %}
+        <div class="card-container">
+            {% for item in server_sx %}
+            <div class="card {{ item.status }}">{{ item.server }}</div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty">暂无数据</div>
+        {% endif %}
+    </div>
+
+</body>
+</html>
