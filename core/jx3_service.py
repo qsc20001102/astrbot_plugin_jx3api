@@ -167,6 +167,7 @@ class JX3Service:
         # 3. 处理返回数据
         try:
             # 格式化字符串，利用字典的 get 方法提供默认值
+            
             return_data["code"] = 0
         except Exception as e:
             logger.error(f"richang 数据处理时出错: {e}")
