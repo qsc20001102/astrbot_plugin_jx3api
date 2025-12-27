@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>未来战场日程表</title>
+    <style>
+        body {
+            margin: 0; padding: 20px;
+            background: #f5f7fb; color: #1f2333;
+            font-family: "Microsoft YaHei", Arial, sans-serif;
+        }
+        .calendar {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+        .calendar th {
+            background: #4f7cff;
+            color: white;
+            padding: 10px 0;
+            font-size: 18px;
+        }
+        .calendar td {
+            border: 1px solid #dce1eb;
+            vertical-align: top;
+            padding: 8px;
+            background: #ffffff;
+        }
+        .today {
+            background: #fff6d1;
+            border: 2px solid #ffb100;
+        }
+        .date-num {
+            font-weight: bold;
+            font-size: 16px;
+            margin-bottom: 4px;
+            display: block;
+        }
+        .item-block {
+            font-size: 12px;
+            margin-bottom: 6px;
+            padding: 4px;
+            border-radius: 4px;
+            background: #f0f3fa;
+        }
+        .item-block span {
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<h1 style="margin-bottom:20px;">未来战场日程表</h1>
+
+<table class="calendar">
+    <thead>
+        <tr>
+            <th>日</th><th>一</th><th>二</th><th>三</th><th>四</th><th>五</th><th>六</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for week in items %}
+        <tr>
+        {% for day in week %}
+            {% if day.date %}
+                <td class="{% if day.is_today %}today{% endif %}">
+                    <span class="date-num">{{ day.date }}</span>
+
+                    {% for obj in day.items %}
+                        <div class="item-block">
+                            <div><span>战场：</span>{{ obj.battle }}</div>
+                            <div><span>战役：</span>{{ obj.war }}</div>
+                            <div><span>运车：</span>{{ obj.orecar }}</div>
+                            <div><span>门派：</span>{{ obj.school }}</div>
+                            <div><span>救援：</span>{{ obj.rescue }}</div>
+                            {% if obj.card %}
+                                <div><span>卡牌：</span>{{ obj.card | join('、') }}</div>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+
+                </td>
+            {% else %}
+                <td style="background:#f0f2f7;"></td>
+            {% endif %}
+        {% endfor %}
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+</body>
+</html>

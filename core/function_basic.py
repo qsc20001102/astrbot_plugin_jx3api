@@ -4,6 +4,8 @@ import matplotlib.pyplot as plt
 from matplotlib.font_manager import FontProperties
 from io import BytesIO
 import base64
+from datetime import datetime
+import calendar
 
 def load_template(template_name):
     """
@@ -165,3 +167,39 @@ def plot_line_chart_base64(data, x_field, y_field, title=None, reverse_x=False):
 
     img_base64 = base64.b64encode(buffer.getvalue()).decode('utf-8')
     return f"data:image/png;base64,{img_base64}"
+
+
+def build_calendar_items(start_date_str, data):
+    start_date = datetime.datetime.strptime(start_date_str, "%Y-%m-%d").date()
+    weekday = start_date.weekday()  # 周一0 ~ 周日6
+    weekday = (weekday + 1) % 7     # 调整：周日=0, 周一=1 ... 周六=6
+
+    result = []
+    row = []
+
+    # 第一行补空
+    for _ in range(weekday):
+        row.append({"date": "", "items": [], "is_today": False})
+
+    # 排数据
+    for i, day in enumerate(data):
+        # 识别今天
+        is_today = (day["date"] == start_date_str)
+
+        row.append({
+            "date": day["day"],
+            "items": [day],
+            "is_today": is_today,
+        })
+
+        if len(row) == 7:
+            result.append(row)
+            row = []
+
+    # 最后一行剩余补空
+    if row:
+        while len(row) < 7:
+            row.append({"date": "", "items": [], "is_today": False})
+        result.append(row)
+
+    return result

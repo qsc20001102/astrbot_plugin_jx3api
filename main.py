@@ -154,8 +154,10 @@ class Jx3ApiPlugin(Star):
         """剑三 日常预测 服务器 """
         try:
             data= await self.jx3fun.richangyuche()
+            logger.info(data)
             if data["code"] == 200:
-                yield event.plain_result(data["data"])
+                url = await self.html_render(data["temp"], data["data"], options={})
+                yield event.image_result(url)
             else:
                 yield event.plain_result(data["msg"])
             return

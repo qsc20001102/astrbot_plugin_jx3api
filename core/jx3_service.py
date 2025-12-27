@@ -7,7 +7,7 @@ from astrbot.api import AstrBotConfig
 
 from .request import APIClient
 from .aiosqlite import AsyncSQLite
-from .function_basic import load_template,flatten_field,extract_fields,gold_to_string
+from .function_basic import load_template,gold_to_string,build_calendar_items
 
 class JX3Service:
     def __init__(self, api_config, config:AstrBotConfig):
@@ -159,19 +159,24 @@ class JX3Service:
         data: Optional[Dict[str, Any]] = await self._base_request(
             "jx3_richangyuche", "GET", params=params
         )
-        logger.info(f"richang 接口返回数据: {data}")
         if not data:
             return_data["msg"] = "获取接口信息失败"
             return return_data
     
         # 3. 处理返回数据
         try:
-            # 格式化字符串，利用字典的 get 方法提供默认值
-            
-            return_data["code"] = 0
+            return_data["data"]["items"] = build_calendar_items(data["today"]["date"],data["data"])
         except Exception as e:
             logger.error(f"richang 数据处理时出错: {e}")
             return_data["msg"] = "处理接口返回信息时出错"
+        # 加载模板
+        try:
+            return_data["temp"] = load_template("richangyuche.html")
+        except FileNotFoundError as e:
+            logger.error(f"加载模板失败: {e}")
+            return_data["msg"] = "系统错误：模板文件不存在"
+
+        return_data["code"] = 200
 
         return return_data
 
