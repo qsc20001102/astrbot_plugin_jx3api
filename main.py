@@ -109,7 +109,7 @@ class Jx3ApiPlugin(Star):
 
     
     async def serverdefault(self,server):
-        if server == None:
+        if server == "":
             return self.server
         return server
 
@@ -136,7 +136,7 @@ class Jx3ApiPlugin(Star):
 
 
     @jx3.command("日常")
-    async def jx3_richang(self, event: AstrMessageEvent,server: str = None ,num: int = 0):
+    async def jx3_richang(self, event: AstrMessageEvent,server: str = "" ,num: int = 0):
         """剑三 日常 服务器 天数"""
         try:
             data= await self.jx3fun.richang(await self.serverdefault(server),num)
@@ -151,7 +151,7 @@ class Jx3ApiPlugin(Star):
     
 
     @jx3.command("开服")
-    async def jx3_kaifu(self, event: AstrMessageEvent,server: str = None):
+    async def jx3_kaifu(self, event: AstrMessageEvent,server: str = ""):
         """剑三 开服 服务器"""
         try:
             data= await self.jx3fun.kaifu(await self.serverdefault(server))
@@ -166,7 +166,7 @@ class Jx3ApiPlugin(Star):
 
 
     @jx3.command("状态")
-    async def jx3_zhuangtai(self, event: AstrMessageEvent,server: str = None):
+    async def jx3_zhuangtai(self, event: AstrMessageEvent,server: str = ""):
         """剑三 开服 服务器"""
         try:
             data= await self.jx3fun.zhuangtai()
@@ -183,7 +183,7 @@ class Jx3ApiPlugin(Star):
 
 
     @jx3.command("沙盘")
-    async def jx3_shapan(self, event: AstrMessageEvent,server: str = None):
+    async def jx3_shapan(self, event: AstrMessageEvent,server: str = ""):
         """剑三 沙盘 服务器"""
         try:
             data= await self.jx3fun.shapan(await self.serverdefault(server))
@@ -228,7 +228,7 @@ class Jx3ApiPlugin(Star):
 
 
     @jx3.command("金价")
-    async def jx3_jinjia(self, event: AstrMessageEvent,server: str = None, limit:str = "15"):
+    async def jx3_jinjia(self, event: AstrMessageEvent,server: str = "", limit:str = "15"):
         """剑三 金价 服务器"""
         try:
             data= await self.jx3fun.jinjia(await self.serverdefault(server),limit)
@@ -244,7 +244,7 @@ class Jx3ApiPlugin(Star):
 
 
     @jx3.command("区服奇遇")
-    async def jx3_qufuqiyu(self, event: AstrMessageEvent,adventureName: str = "阴阳两界", server: str = None):
+    async def jx3_qufuqiyu(self, event: AstrMessageEvent,adventureName: str = "阴阳两界", server: str = ""):
         """剑三 区服奇遇 奇遇名称 服务器"""
         try:
             data= await self.jx3fun.qiyu(adventureName,await self.serverdefault(server))
@@ -260,7 +260,7 @@ class Jx3ApiPlugin(Star):
 
 
     @jx3.command("物价")
-    async def jx3_wujia(self, event: AstrMessageEvent,Name: str = "秃盒", server: str = None):
+    async def jx3_wujia(self, event: AstrMessageEvent,Name: str = "秃盒", server: str = ""):
         """剑三 物价 外观名称"""     
         try:
             data=await self.jx3fun.wujia(Name,await self.serverdefault(server))
@@ -276,7 +276,7 @@ class Jx3ApiPlugin(Star):
 
 
     @jx3.command("交易行")
-    async def jx3_jiaoyihang(self, event: AstrMessageEvent,Name: str = "守缺式",server: str = None):
+    async def jx3_jiaoyihang(self, event: AstrMessageEvent,Name: str = "守缺式",server: str = ""):
         """剑三 交易行 物品名称 服务器"""     
         try:
             data=await self.jx3fun.jiaoyihang(Name,await self.serverdefault(server))
@@ -307,7 +307,7 @@ class Jx3ApiPlugin(Star):
 
 
     @jx3.command("名片")
-    async def jx3_jueshemingpian(self, event: AstrMessageEvent, name: str = "飞翔大野猪", server: str = None):
+    async def jx3_jueshemingpian(self, event: AstrMessageEvent, name: str = "飞翔大野猪", server: str = ""):
         """剑三 名片 角色 服务器"""
         try:
             data= await self.jx3fun.jueshemingpian(await self.serverdefault(server),name)
@@ -326,7 +326,7 @@ class Jx3ApiPlugin(Star):
 
 
     @jx3.command("随机名片")
-    async def jx3_shuijimingpian(self, event: AstrMessageEvent,force: str = "万花", body: str = "萝莉", server: str = None):
+    async def jx3_shuijimingpian(self, event: AstrMessageEvent,force: str = "万花", body: str = "萝莉", server: str = ""):
         """剑三 随机名片 职业 体型 服务器"""
         try:
             data= await self.jx3fun.shuijimingpian(force,body,await self.serverdefault(server))
@@ -347,7 +347,7 @@ class Jx3ApiPlugin(Star):
 
 
     @jx3.command("烟花")
-    async def jx3_yanhuachaxun(self, event: AstrMessageEvent,name: str = "飞翔大野猪", server: str = None):
+    async def jx3_yanhuachaxun(self, event: AstrMessageEvent,name: str = "飞翔大野猪", server: str = ""):
         """剑三 烟花 角色 服务器"""
         try:
             data= await self.jx3fun.yanhuachaxun(await self.serverdefault(server),name)
@@ -363,7 +363,7 @@ class Jx3ApiPlugin(Star):
 
 
     @jx3.command("的卢")
-    async def jx3_dilujilu(self, event: AstrMessageEvent,server: str = None):
+    async def jx3_dilujilu(self, event: AstrMessageEvent,server: str = ""):
         """剑三 的卢 服务器"""
         try:
             data= await self.jx3fun.dilujilu(await self.serverdefault(server))
@@ -379,7 +379,7 @@ class Jx3ApiPlugin(Star):
 
 
     @jx3.command("招募")
-    async def jx3_tuanduizhaomu(self, event: AstrMessageEvent,keyword: str = "25人普通会战弓月城", server: str = None):
+    async def jx3_tuanduizhaomu(self, event: AstrMessageEvent,keyword: str = "25人普通会战弓月城", server: str = ""):
         """剑三 招募 副本 服务器"""
         try:
             data= await self.jx3fun.tuanduizhaomu(await self.serverdefault(server),keyword)
@@ -395,7 +395,7 @@ class Jx3ApiPlugin(Star):
 
 
     @jx3.command("战绩")
-    async def jx3_zhanji(self, event: AstrMessageEvent,name: str = "飞翔大野猪", server: str = None, mode:str = "33"):
+    async def jx3_zhanji(self, event: AstrMessageEvent,name: str = "飞翔大野猪", server: str = "", mode:str = "33"):
         """剑三 战绩 角色 服务器 类型"""
         try:
             data= await self.jx3fun.zhanji(name,await self.serverdefault(server),mode)
@@ -411,7 +411,7 @@ class Jx3ApiPlugin(Star):
 
 
     @jx3.command("奇遇")
-    async def jx3_qiyu(self, event: AstrMessageEvent,name: str = "飞翔大野猪", server: str = None):
+    async def jx3_qiyu(self, event: AstrMessageEvent,name: str = "飞翔大野猪", server: str = ""):
         """剑三 奇遇 角色名称 服务器"""
         try:
             data= await self.jx3fun.juesheqiyu(name,await self.serverdefault(server))
@@ -427,7 +427,7 @@ class Jx3ApiPlugin(Star):
 
 
     @jx3.command("阵营拍卖")
-    async def jx3_zhengyingpaimai(self, event: AstrMessageEvent,name: str = "玄晶", server: str = None):
+    async def jx3_zhengyingpaimai(self, event: AstrMessageEvent,name: str = "玄晶", server: str = ""):
         """剑三 阵营拍卖 物品名称 服务器"""
         try:
             data= await self.jx3fun.zhengyingpaimai(await self.serverdefault(server), name)
@@ -443,7 +443,7 @@ class Jx3ApiPlugin(Star):
 
 
     @jx3.command("扶摇九天")
-    async def jx3_fuyaojjiutian(self, event: AstrMessageEvent,server: str = None):
+    async def jx3_fuyaojjiutian(self, event: AstrMessageEvent,server: str = ""):
         """剑三 日常 服务器 天数"""
         try:
             data= await self.jx3fun.fuyaojjiutian(await self.serverdefault(server))
@@ -458,7 +458,7 @@ class Jx3ApiPlugin(Star):
 
 
     @jx3.command("刷马")
-    async def jx3_shuma(self, event: AstrMessageEvent,server: str = None):
+    async def jx3_shuma(self, event: AstrMessageEvent,server: str = ""): 
         """剑三 日常 服务器 天数"""
         try:
             data= await self.jx3fun.shuma(await self.serverdefault(server))
