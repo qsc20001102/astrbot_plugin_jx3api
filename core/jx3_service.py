@@ -1,3 +1,4 @@
+
 from datetime import datetime
 from typing import Dict, Any, Optional, List, Union
 
@@ -114,7 +115,6 @@ class JX3Service:
         data: Optional[Dict[str, Any]] = await self._base_request(
             "jx3_richang", "GET", params=params
         )
-        logger.info(f"richang 接口返回数据: {data}")
         if not data:
             return_data["msg"] = "获取接口信息失败"
             return return_data
@@ -147,7 +147,32 @@ class JX3Service:
             return_data["msg"] = "处理接口返回信息时出错"
 
         return return_data
+    
+    async def richangyuche(self,server: str) -> Dict[str, Any]:
+        """日常预测"""
+        return_data = self._init_return_data()
 
+        # 1. 构造请求参数
+        params = { "num": 30}
+
+        # 2. 调用基础请求
+        data: Optional[Dict[str, Any]] = await self._base_request(
+            "jx3_richangyuche", "GET", params=params
+        )
+        logger.info(f"richang 接口返回数据: {data}")
+        if not data:
+            return_data["msg"] = "获取接口信息失败"
+            return return_data
+    
+        # 3. 处理返回数据
+        try:
+            # 格式化字符串，利用字典的 get 方法提供默认值
+            return_data["code"] = 0
+        except Exception as e:
+            logger.error(f"richang 数据处理时出错: {e}")
+            return_data["msg"] = "处理接口返回信息时出错"
+
+        return return_data
 
     async def shapan(self, server: str ) -> Dict[str, Any]:
         """区服沙盘"""
@@ -464,7 +489,7 @@ class JX3Service:
         
         try:
             for item in data:
-                inner_list = item.get("data", [])
+                inner_list = item.get("data", []) 
                 first = inner_list[0] if inner_list else {}
                 new_item = {
                     "name": item.get("name"),

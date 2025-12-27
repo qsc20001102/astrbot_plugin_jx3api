@@ -149,6 +149,19 @@ class Jx3ApiPlugin(Star):
             logger.error(f"功能函数执行错误: {e}")
             yield event.plain_result("猪脑过载，请稍后再试")
     
+    @jx3.command("月历")
+    async def jx3_richangyuche(self, event: AstrMessageEvent,server: str = "" ,num: int = 0):
+        """剑三 月历 服务器 """
+        try:
+            data= await self.jx3fun.richangyuche(await self.serverdefault(server))
+            if data["code"] == 200:
+                yield event.plain_result(data["data"])
+            else:
+                yield event.plain_result(data["msg"])
+            return
+        except Exception as e:
+            logger.error(f"功能函数执行错误: {e}")
+            yield event.plain_result("猪脑过载，请稍后再试")
 
     @jx3.command("开服")
     async def jx3_kaifu(self, event: AstrMessageEvent,server: str = ""):

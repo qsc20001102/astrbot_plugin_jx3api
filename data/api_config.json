@@ -203,5 +203,13 @@
         "params":{
             "server": ""
         }
+    },
+    "jx3_richangyuche":{
+        "url":"https://www.jx3api.com/data/active/list/calendar",
+        "method":"GET",
+        "description":"该 API 用于预测每天的日常任务，您可以通过指定时间范围来获取相关任务数据。",
+        "params":{
+            "num": "30"
+        }
     }
 }
