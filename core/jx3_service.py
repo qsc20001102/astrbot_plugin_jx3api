@@ -148,7 +148,7 @@ class JX3Service:
 
         return return_data
     
-    async def richangyuche(self,server: str) -> Dict[str, Any]:
+    async def richangyuche(self) -> Dict[str, Any]:
         """日常预测"""
         return_data = self._init_return_data()
 
