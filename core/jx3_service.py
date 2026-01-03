@@ -1,4 +1,6 @@
 
+# pyright: reportArgumentType=false
+
 from datetime import datetime
 from typing import Dict, Any, Optional, List, Union
 
@@ -7,7 +9,7 @@ from astrbot.api import AstrBotConfig
 
 from .request import APIClient
 from .aiosqlite import AsyncSQLite
-from .function_basic import load_template,gold_to_string,build_calendar_items
+from .function_basic import load_template,gold_to_string,week_to_num,compare_date_str
 
 class JX3Service:
     def __init__(self, api_config, config:AstrBotConfig):
@@ -165,16 +167,41 @@ class JX3Service:
     
         # 3. 处理返回数据
         try:
-            return_data["data"]["items"] = build_calendar_items(data["today"]["date"],data["data"])
+            items = []
+            num_richang  = week_to_num(data["data"][0]["week"])
+            # 空白数据
+            for _ in range(num_richang):
+                items.append({
+                    "en": False,
+                    "compare": "",
+                    "date": "",
+                    "war": "",
+                    "battle": ""
+                })
+
+            # 真实数据
+            for m in data["data"]:
+                items.append({
+                    "en": True,
+                    "compare": compare_date_str(m.get("date", "")),
+                    "date": m.get("date", ""),
+                    "war": m.get("war", ""),
+                    "battle": m.get("battle", "")
+                })
+
+            return_data["data"]["items"] = items
+            return_data["data"]["today"] = data["today"]
         except Exception as e:
             logger.error(f"richang 数据处理时出错: {e}")
             return_data["msg"] = "处理接口返回信息时出错"
+            
         # 加载模板
         try:
             return_data["temp"] = load_template("richangyuche.html")
         except FileNotFoundError as e:
             logger.error(f"加载模板失败: {e}")
             return_data["msg"] = "系统错误：模板文件不存在"
+
 
         return_data["code"] = 200
 

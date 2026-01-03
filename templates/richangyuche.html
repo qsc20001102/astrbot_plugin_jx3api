@@ -1,93 +1,112 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <title>未来战场日程表</title>
-    <style>
-        body {
-            margin: 0; padding: 20px;
-            background: #f5f7fb; color: #1f2333;
-            font-family: "Microsoft YaHei", Arial, sans-serif;
-        }
-        .calendar {
-            width: 100%;
-            border-collapse: collapse;
-            table-layout: fixed;
-        }
-        .calendar th {
-            background: #4f7cff;
-            color: white;
-            padding: 10px 0;
-            font-size: 18px;
-        }
-        .calendar td {
-            border: 1px solid #dce1eb;
-            vertical-align: top;
-            padding: 8px;
-            background: #ffffff;
-        }
-        .today {
-            background: #fff6d1;
-            border: 2px solid #ffb100;
-        }
-        .date-num {
-            font-weight: bold;
-            font-size: 16px;
-            margin-bottom: 4px;
-            display: block;
-        }
-        .item-block {
-            font-size: 12px;
-            margin-bottom: 6px;
-            padding: 4px;
-            border-radius: 4px;
-            background: #f0f3fa;
-        }
-        .item-block span {
-            font-weight: bold;
-        }
-    </style>
+<meta charset="UTF-8">
+<title>日常预测</title>
+
+<style>
+body {
+    font-family: 'Microsoft YaHei', Arial, sans-serif;
+    background: #f1f2f6;
+    margin: 0;
+    padding: 20px;
+}
+
+.container {
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+h1 {
+    font-size: 32px;
+    margin-bottom: 25px;
+    color: #222;
+    font-weight: 800;
+    text-align: center;
+}
+
+/* ====== 日历网格 ====== */
+.calendar {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 14px;
+}
+
+/* 表头 */
+.week {
+    text-align: center;
+    font-size: 18px;
+    font-weight: 700;
+    color: #555;
+}
+
+/* 卡片基础 */
+.card {
+    min-height: 120px;
+    border-radius: 12px;
+    padding: 12px;
+    box-sizing: border-box;
+    background: transparent;
+}
+
+/* 状态样式 */
+.card.past {
+    background: #e5e5e5;
+    color: #666;
+}
+
+.card.today {
+    background: #3b82f6;
+    color: #fff;
+}
+
+.card.future {
+    background: #ffffff;
+    color: #333;
+    border: 1px solid #ddd;
+}
+
+/* 内容 */
+.date {
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.line {
+    font-size: 16px;
+    margin-top: 6px;
+}
+</style>
 </head>
+
 <body>
 
-<h1 style="margin-bottom:20px;">未来战场日程表</h1>
+<div class="container">
+    <h1>日常预测</h1>
 
-<table class="calendar">
-    <thead>
-        <tr>
-            <th>日</th><th>一</th><th>二</th><th>三</th><th>四</th><th>五</th><th>六</th>
-        </tr>
-    </thead>
-    <tbody>
-    {% for week in items %}
-        <tr>
-        {% for day in week %}
-            {% if day.date %}
-                <td class="{% if day.is_today %}today{% endif %}">
-                    <span class="date-num">{{ day.date }}</span>
-
-                    {% for obj in day.items %}
-                        <div class="item-block">
-                            <div><span>战场：</span>{{ obj.battle }}</div>
-                            <div><span>战役：</span>{{ obj.war }}</div>
-                            <div><span>运车：</span>{{ obj.orecar }}</div>
-                            <div><span>门派：</span>{{ obj.school }}</div>
-                            <div><span>救援：</span>{{ obj.rescue }}</div>
-                            {% if obj.card %}
-                                <div><span>卡牌：</span>{{ obj.card | join('、') }}</div>
-                            {% endif %}
-                        </div>
-                    {% endfor %}
-
-                </td>
-            {% else %}
-                <td style="background:#f0f2f7;"></td>
-            {% endif %}
+    <div class="calendar">
+        <!-- 星期头 -->
+        {% for w in ["周一","周二","周三","周四","周五","周六","周日"] %}
+        <div class="week">{{ w }}</div>
         {% endfor %}
-        </tr>
-    {% endfor %}
-    </tbody>
-</table>
+
+        <!-- 日程卡片 -->
+        {% for m in items %}
+        <div class="
+            card
+            {% if m.compare == '过去' %}past{% endif %}
+            {% if m.compare == '今天' %}today{% endif %}
+            {% if m.compare == '将来' %}future{% endif %}
+        ">
+            {% if m.en %}
+                <div class="date">{{ m.date }}</div>
+                <div class="line">日常：{{ m.war }}</div>
+                <div class="line">战场：{{ m.battle }}</div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+</div>
 
 </body>
 </html>
