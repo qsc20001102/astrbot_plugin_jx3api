@@ -10,7 +10,6 @@ from astrbot.api import logger
 from astrbot.api import AstrBotConfig
 
 from .request import APIClient
-from .aiosqlite import AsyncSQLite
 from .function_basic import load_template,gold_to_string,week_to_num,compare_date_str
 
 class JX3Service:

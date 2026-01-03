@@ -1,11 +1,10 @@
 import os
-from pathlib import Path
-import matplotlib.pyplot as plt
-from matplotlib.font_manager import FontProperties
-from io import BytesIO
 import base64
+import matplotlib.pyplot as plt
+
+from pathlib import Path
+from io import BytesIO
 from datetime import datetime,date
-import calendar
 
 def load_template(template_name):
     """

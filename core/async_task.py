@@ -1,7 +1,5 @@
 import asyncio
-from pathlib import Path
 import json
-from typing import Callable, Awaitable, Optional
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.interval import IntervalTrigger

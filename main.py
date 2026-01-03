@@ -1,10 +1,8 @@
 import json
 import shutil
-import asyncio
 import pathlib
 from pathlib import Path
 from typing import Union
-from datetime import datetime
 
 from astrbot.api.event import filter, AstrMessageEvent, MessageEventResult, MessageChain
 from astrbot.api.star import Context, Star, register, StarTools
@@ -12,7 +10,6 @@ from astrbot.api import logger
 from astrbot.api import AstrBotConfig
 import astrbot.api.message_components as Comp
 
-from .core.aiosqlite import AsyncSQLite
 from .core.jx3_service import JX3Service
 from .core.async_task import AsyncTask
 
