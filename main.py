@@ -149,12 +149,12 @@ class Jx3ApiPlugin(Star):
             logger.error(f"功能函数执行错误: {e}")
             yield event.plain_result("猪脑过载，请稍后再试")
     
+
     @jx3.command("日常预测")
     async def jx3_richangyuche(self, event: AstrMessageEvent):
         """剑三 日常预测 服务器 """
         try:
             data= await self.jx3fun.richangyuche()
-            logger.info(data)
             if data["code"] == 200:
                 url = await self.html_render(data["temp"], data["data"], options={})
                 yield event.image_result(url)
@@ -164,6 +164,23 @@ class Jx3ApiPlugin(Star):
         except Exception as e:
             logger.error(f"功能函数执行错误: {e}")
             yield event.plain_result("猪脑过载，请稍后再试")
+
+
+    @jx3.command("名望")
+    async def jx3_xingxiashijian(self, event: AstrMessageEvent,name: str = "穹野卫"):
+        """剑三 名望"""
+        try:
+            data= await self.jx3fun.xingxiashijian(name)
+            if data["code"] == 200:
+                url = await self.html_render(data["temp"], data["data"], options={})
+                yield event.image_result(url)
+            else:
+                yield event.plain_result(data["msg"])
+            return
+        except Exception as e:
+            logger.error(f"功能函数执行错误: {e}")
+            yield event.plain_result("猪脑过载，请稍后再试")
+
 
     @jx3.command("开服")
     async def jx3_kaifu(self, event: AstrMessageEvent,server: str = ""):

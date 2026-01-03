@@ -211,5 +211,13 @@
         "params":{
             "num": "30"
         }
+    },
+    "jx3_xingxiashijian":{
+        "url":"https://www.jx3api.com/data/active/celebs",
+        "method":"GET",
+        "description":"查询当前时间的楚天社或云从社的进度。",
+        "params":{
+            "name": "穹野卫"
+        }
     }
 }
