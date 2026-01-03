@@ -109,6 +109,7 @@ class Jx3ApiPlugin(Star):
 
     
     async def serverdefault(self,server):
+        """加载配置默认服务器"""
         if server == "":
             return self.server
         return server
@@ -122,14 +123,14 @@ class Jx3ApiPlugin(Star):
     @jx3.command("帮助")
     async def jx3_helps(self, event: AstrMessageEvent):
         """剑三 帮助"""
+        data = await self.jx3fun.helps()
         try:
-            data= await self.jx3fun.helps()
+            
             if data["code"] == 200:
                 url = await self.html_render(data["temp"], data["data"], options={})
                 yield event.image_result(url)
             else:
                 yield event.plain_result(data["msg"])
-            return
         except Exception as e:
             logger.error(f"功能函数执行错误: {e}")
             yield event.plain_result("猪脑过载，请稍后再试") 
@@ -152,7 +153,7 @@ class Jx3ApiPlugin(Star):
 
     @jx3.command("日常预测")
     async def jx3_richangyuche(self, event: AstrMessageEvent):
-        """剑三 日常预测 服务器 """
+        """剑三 日常预测"""
         try:
             data= await self.jx3fun.richangyuche()
             if data["code"] == 200:
@@ -202,7 +203,6 @@ class Jx3ApiPlugin(Star):
         """剑三 开服 服务器"""
         try:
             data= await self.jx3fun.zhuangtai()
-            logger.info(data)
             if data["code"] == 200:
                 url = await self.html_render(data["temp"], data["data"], options={})
                 yield event.image_result(url)
@@ -212,22 +212,7 @@ class Jx3ApiPlugin(Star):
         except Exception as e:
             logger.error(f"功能函数执行错误: {e}")
             yield event.plain_result("猪脑过载，请稍后再试")
-
-
-    @jx3.command("沙盘")
-    async def jx3_shapan(self, event: AstrMessageEvent,server: str = ""):
-        """剑三 沙盘 服务器"""
-        try:
-            data= await self.jx3fun.shapan(await self.serverdefault(server))
-            if data["code"] == 200:
-                yield event.image_result(data["data"])
-            else:
-                yield event.plain_result(data["msg"])
-            return
-        except Exception as e:
-            logger.error(f"功能函数执行错误: {e}")
-            yield event.plain_result("猪脑过载，请稍后再试")        
-
+     
 
     @jx3.command("骚话")
     async def jx3_shaohua(self, event: AstrMessageEvent,):
@@ -257,22 +242,21 @@ class Jx3ApiPlugin(Star):
         except Exception as e:
             logger.error(f"功能函数执行错误: {e}")
             yield event.plain_result("猪脑过载，请稍后再试") 
+ 
 
-
-    @jx3.command("金价")
-    async def jx3_jinjia(self, event: AstrMessageEvent,server: str = "", limit:str = "15"):
-        """剑三 金价 服务器"""
+    @jx3.command("沙盘")
+    async def jx3_shapan(self, event: AstrMessageEvent,server: str = ""):
+        """剑三 沙盘 服务器"""
         try:
-            data= await self.jx3fun.jinjia(await self.serverdefault(server),limit)
+            data= await self.jx3fun.shapan(await self.serverdefault(server))
             if data["code"] == 200:
-                url = await self.html_render(data["temp"], data["data"], options={})
-                yield event.image_result(url)
+                yield event.image_result(data["data"])
             else:
                 yield event.plain_result(data["msg"])
             return
         except Exception as e:
             logger.error(f"功能函数执行错误: {e}")
-            yield event.plain_result("猪脑过载，请稍后再试") 
+            yield event.plain_result("猪脑过载，请稍后再试")   
 
 
     @jx3.command("区服奇遇")
@@ -289,6 +273,22 @@ class Jx3ApiPlugin(Star):
         except Exception as e:
             logger.error(f"功能函数执行错误: {e}")
             yield event.plain_result("猪脑过载，请稍后再试") 
+
+
+    @jx3.command("金价")
+    async def jx3_jinjia(self, event: AstrMessageEvent,server: str = "", limit:str = "15"):
+        """剑三 金价 服务器"""
+        try:
+            data= await self.jx3fun.jinjia(await self.serverdefault(server),limit)
+            if data["code"] == 200:
+                url = await self.html_render(data["temp"], data["data"], options={})
+                yield event.image_result(url)
+            else:
+                yield event.plain_result(data["msg"])
+            return
+        except Exception as e:
+            logger.error(f"功能函数执行错误: {e}")
+            yield event.plain_result("猪脑过载，请稍后再试")
 
 
     @jx3.command("物价")
@@ -322,20 +322,6 @@ class Jx3ApiPlugin(Star):
         except Exception as e:
             logger.error(f"功能函数执行错误: {e}")
             yield event.plain_result("猪脑过载，请稍后再试") 
-
-
-    @jx3.command("开服监控")
-    async def jx3_kaifhujiank(self, event: AstrMessageEvent):
-        """剑三 开服监控"""     
-        return_msg = await self.at.get_task_info("kfjk")
-        yield event.plain_result(return_msg) 
-
-
-    @jx3.command("新闻推送")
-    async def jx3_xinwenzhixun(self, event: AstrMessageEvent):
-        """剑三 新闻推送"""     
-        return_msg = await self.at.get_task_info("xwzx")
-        yield event.plain_result(return_msg) 
 
 
     @jx3.command("名片")
@@ -476,7 +462,7 @@ class Jx3ApiPlugin(Star):
 
     @jx3.command("扶摇九天")
     async def jx3_fuyaojjiutian(self, event: AstrMessageEvent,server: str = ""):
-        """剑三 日常 服务器 天数"""
+        """剑三 扶摇九天 服务器"""
         try:
             data= await self.jx3fun.fuyaojjiutian(await self.serverdefault(server))
             if data["code"] == 200:
@@ -491,7 +477,7 @@ class Jx3ApiPlugin(Star):
 
     @jx3.command("刷马")
     async def jx3_shuma(self, event: AstrMessageEvent,server: str = ""): 
-        """剑三 日常 服务器 天数"""
+        """剑三 刷马 服务器"""
         try:
             data= await self.jx3fun.shuma(await self.serverdefault(server))
             if data["code"] == 200:
@@ -502,6 +488,20 @@ class Jx3ApiPlugin(Star):
         except Exception as e:
             logger.error(f"功能函数执行错误: {e}")
             yield event.plain_result("猪脑过载，请稍后再试")
+
+
+    @jx3.command("开服监控")
+    async def jx3_kaifhujiank(self, event: AstrMessageEvent):
+        """剑三 开服监控"""     
+        return_msg = await self.at.get_task_info("kfjk")
+        yield event.plain_result(return_msg) 
+
+
+    @jx3.command("新闻推送")
+    async def jx3_xinwenzhixun(self, event: AstrMessageEvent):
+        """剑三 新闻推送"""     
+        return_msg = await self.at.get_task_info("xwzx")
+        yield event.plain_result(return_msg) 
 
 
     async def terminate(self):
