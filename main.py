@@ -27,22 +27,10 @@ class Jx3ApiPlugin(Star):
         self.conf = config
 
         # 本地数据存储路径
-        local_data_dir = StarTools.get_data_dir("astrbot_plugin_jx3")
+        self.local_data_dir = StarTools.get_data_dir("astrbot_plugin_jx3")
 
         # 插件数据文件路径
-        data_file_path = Path(__file__).parent / "data"
-
-        # --- 调用函数完成检查和复制 ---
-        try:
-            self.file_local_data = self.check_and_copy_db(
-                local_data_dir=local_data_dir,
-                db_filename="local_async.json",
-                default_db_dir=data_file_path
-            )
-        except FileNotFoundError as e:
-            # 处理默认文件丢失的严重错误
-            logger.critical(f"插件初始化失败：{e}")
-            raise # 中断初始化
+        self.data_file_path = Path(__file__).parent / "data"
 
         # 读取API配置文件
         self.api_file_path = Path(__file__).parent / "data" / "api_config.json"
@@ -57,8 +45,18 @@ class Jx3ApiPlugin(Star):
 
     async def initialize(self):
         """可选择实现异步的插件初始化方法，当实例化该插件类之后会自动调用该方法。"""     
-        #创建类实例
-        # self.db = AsyncSQLite(str(self.file_local_data))
+        # --- 调用函数完成检查和复制 ---
+        try:
+            self.file_local_data = self.check_and_copy_db(
+                local_data_dir=self.local_data_dir,
+                db_filename="local_async.json",
+                default_db_dir=self.data_file_path
+            )
+        except FileNotFoundError as e:
+            # 处理默认文件丢失的严重错误
+            logger.critical(f"插件初始化失败：{e}")
+            raise # 中断初始化
+        
         try:
             self.jx3fun = JX3Service(self.api_config,self.conf)
             self.at = AsyncTask(self.context, self.conf, self.jx3fun)
