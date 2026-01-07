@@ -137,11 +137,11 @@ class JX3Service:
             
             # 安全地处理列表索引
             luck = data.get('luck', [])
-            luck_msg = f"[宠物福缘]：\n{', '.join(luck)}\n"
+            luck_msg = f"宠物福缘：{', '.join(luck)}\n"
             card = data.get('card', [])
-            card_msg = f"[家园声望·加倍道具]：\n{', '.join(card)}\n"
+            card_msg = f"家园声望·加倍道具：{', '.join(card)}\n"
             team = data.get('team', [None, None, None])
-            team_msg = f"[武林通鉴·公共任务]：\n{team[0] or '无'}\n[武林通鉴·团队秘境]：\n{team[2] or '无'}\n"
+            team_msg = f"武林通鉴·公共任务：{team[0] or '无'}\n武林通鉴·团队秘境：{team[2] or '无'}\n"
 
             return_data["data"] = result_msg + luck_msg + card_msg + team_msg
             return_data["code"] = 200
