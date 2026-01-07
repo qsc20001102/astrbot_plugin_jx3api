@@ -1,5 +1,6 @@
 import asyncio
 import json
+import aiofiles
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.interval import IntervalTrigger
@@ -36,17 +37,22 @@ class AsyncTask:
         async with self._file_lock:
             try:
                 self.file_path.parent.mkdir(parents=True, exist_ok=True)
+
                 if not self.file_path.exists():
                     local_data = {}
                 else:
-                    with open(self.file_path, 'r', encoding='utf-8') as f:
-                        local_data = json.load(f)
+                    async with aiofiles.open(self.file_path, "r", encoding="utf-8") as f:
+                        content = await f.read()
+                        local_data = json.loads(content) if content else {}
 
                 local_data[key] = value
-                with open(self.file_path, 'w', encoding='utf-8') as f:
-                    json.dump(local_data, f, ensure_ascii=False, indent=4)
 
-            except Exception as e:
+                async with aiofiles.open(self.file_path, "w", encoding="utf-8") as f:
+                    await f.write(
+                        json.dumps(local_data, ensure_ascii=False, indent=4)
+                    )
+
+            except (OSError, json.JSONDecodeError) as e:
                 logger.error(f"数据写入文件失败：{e}")
 
     async def get_local_data(self, key: str, default=None):
@@ -54,10 +60,16 @@ class AsyncTask:
             try:
                 if not self.file_path.exists():
                     return default
-                with open(self.file_path, 'r', encoding='utf-8') as f:
-                    local_data = json.load(f)
+
+                async with aiofiles.open(self.file_path, "r", encoding="utf-8") as f:
+                    content = await f.read()
+                    if not content:
+                        return default
+                    local_data = json.loads(content)
+
                 return local_data.get(key, default)
-            except Exception as e:
+
+            except (OSError, json.JSONDecodeError) as e:
                 logger.error(f"读取数据文件失败：{e}")
                 return default
 
@@ -65,9 +77,14 @@ class AsyncTask:
 
     async def _job_common(self, fetch_func, task_key: str, namefun: str):
         state = self.tasks[task_key]
+
         try:
             data = await fetch_func()
-            state["state_new"] = data["status"]
+
+            if not isinstance(data, dict):
+                raise ValueError("fetch_func 返回数据不是 dict")
+
+            state["state_new"] = data.get("status")
 
             if state["state_old"] != state["state_new"]:
                 message_chain = MessageChain().message(data.get("data"))
@@ -78,8 +95,15 @@ class AsyncTask:
                 await self.set_local_data(task_key, state["state_new"])
                 state["state_old"] = state["state_new"]
 
+        except asyncio.CancelledError:
+            # 调度器 shutdown 时的正常路径
+            raise
+
+        except (KeyError, TypeError, ValueError) as e:
+            logger.error(f"{namefun} 数据结构异常: {e}")
+
         except Exception as e:
-            logger.error(f"{namefun}后台任务执行异常: {e}")
+            logger.exception(f"{namefun} 后台任务执行异常")
 
     """===================== 初始化任务 ====================="""
 
@@ -137,13 +161,11 @@ class AsyncTask:
             logger.error(f"停止全部后台任务失败：{e}")
 
     async def destroy(self):
-        """
-        销毁整个调度器，适合插件卸载/重启时调用
-        """
         try:
             self.stop_all_tasks()
             if self.scheduler.running:
                 self.scheduler.shutdown(wait=False)
+            self.tasks.clear()
             logger.info("后台调度器已销毁")
         except Exception as e:
             logger.error(f"销毁调度器失败：{e}")

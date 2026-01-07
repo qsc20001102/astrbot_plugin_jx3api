@@ -33,6 +33,13 @@ class JX3Service:
             logger.info(f"获取配置ticket成功。{self.ticket}")
         
 
+    async def close(self):
+        """释放底层 APIClient 资源"""
+        if self._api:
+            await self._api.close()
+            self._api = None
+
+
     def _init_return_data(self) -> Dict[str, Any]:
             """初始化标准的返回数据结构"""
             return {
@@ -96,7 +103,7 @@ class JX3Service:
         
         # 加载模板
         try:
-            return_data["temp"] = load_template("helps.html")
+            return_data["temp"] = await load_template("helps.html")
         except FileNotFoundError as e:
             logger.error(f"加载模板失败: {e}")
             return_data["msg"] = "系统错误：模板文件不存在"
@@ -198,7 +205,7 @@ class JX3Service:
             
         # 加载模板
         try:
-            return_data["temp"] = load_template("richangyuche.html")
+            return_data["temp"] = await load_template("richangyuche.html")
         except FileNotFoundError as e:
             logger.error(f"加载模板失败: {e}")
             return_data["msg"] = "系统错误：模板文件不存在"
@@ -233,7 +240,7 @@ class JX3Service:
             
         # 加载模板
         try:
-            return_data["temp"] = load_template("xingxiashijian.html")
+            return_data["temp"] = await load_template("xingxiashijian.html")
         except FileNotFoundError as e:
             logger.error(f"加载模板失败: {e}")
             return_data["msg"] = "系统错误：模板文件不存在"
@@ -361,7 +368,7 @@ class JX3Service:
 
         # 加载模板
         try:
-            return_data["temp"] = load_template("qufuzhuangtai.html")
+            return_data["temp"] = await load_template("qufuzhuangtai.html")
         except FileNotFoundError as e:
             logger.error(f"加载模板失败: {e}")
             return_data["msg"] = "系统错误：模板文件不存在"
@@ -450,7 +457,7 @@ class JX3Service:
             return return_data
         # 加载模板
         try:
-            return_data["temp"] = load_template("jinjia.html")
+            return_data["temp"] = await load_template("jinjia.html")
         except FileNotFoundError as e:
             logger.error(f"加载模板失败: {e}")
             return_data["msg"] = "系统错误：模板文件不存在"
@@ -489,7 +496,7 @@ class JX3Service:
                 
         # 加载模板
         try:
-            return_data["temp"] = load_template("qiyuliebiao.html")
+            return_data["temp"] = await  load_template("qiyuliebiao.html")
         except FileNotFoundError as e:
             logger.error(f"加载模板失败: {e}")
             return_data["msg"] = "系统错误：模板文件不存在"
@@ -528,7 +535,7 @@ class JX3Service:
             
         # 5. 加载模板
         try:
-            return_data["temp"] = load_template("wujia.html")
+            return_data["temp"] = await load_template("wujia.html")
             return_data["code"] = 200
         except FileNotFoundError as e:
             logger.error(f"加载模板失败: {e}")
@@ -578,7 +585,7 @@ class JX3Service:
 
         # 5. 模板渲染
         try:
-            return_data["temp"] = load_template("jiaoyihang.html")
+            return_data["temp"] = await load_template("jiaoyihang.html")
             return_data["code"] = 200
         except FileNotFoundError as e:
             logger.error(f"加载模板失败: {e}")
@@ -661,7 +668,7 @@ class JX3Service:
         
         # 4. 加载模板
         try:
-            return_data["temp"] = load_template("yanhuan.html")
+            return_data["temp"] = await load_template("yanhuan.html")
         except FileNotFoundError as e:
             logger.error(f"加载模板失败: {e}")
             return_data["msg"] = "系统错误：模板文件不存在"
@@ -697,7 +704,7 @@ class JX3Service:
         
         # 4. 加载模板
         try:
-            return_data["temp"] = load_template("dilujilu.html")
+            return_data["temp"] = await load_template("dilujilu.html")
         except FileNotFoundError as e:
             logger.error(f"加载模板失败: {e}")
             return_data["msg"] = "系统错误：模板文件不存在"
@@ -732,7 +739,7 @@ class JX3Service:
 
         # 4. 加载模板
         try:
-            return_data["temp"] = load_template("tuanduizhaomu.html")
+            return_data["temp"] = await load_template("tuanduizhaomu.html")
         except FileNotFoundError as e:
             logger.error(f"加载模板失败: {e}")
             return_data["msg"] = "系统错误：模板文件不存在"
@@ -772,7 +779,7 @@ class JX3Service:
 
         # 4. 加载模板
         try:
-            return_data["temp"] = load_template("zhanji.html")
+            return_data["temp"] = await load_template("zhanji.html")
         except FileNotFoundError as e:
             logger.error(f"加载模板失败: {e}")
             return_data["msg"] = "系统错误：模板文件不存在"
@@ -820,7 +827,7 @@ class JX3Service:
 
         # 4. 加载模板
         try:
-            return_data["temp"] = load_template("juesheqiyu.html")
+            return_data["temp"] = await load_template("juesheqiyu.html")
         except FileNotFoundError as e:
             logger.error(f"加载模板失败: {e}")
             return_data["msg"] = "系统错误：模板文件不存在"
@@ -853,7 +860,7 @@ class JX3Service:
         
         # 4. 加载模板
         try:
-            return_data["temp"] = load_template("zhengyingpaimai.html")
+            return_data["temp"] = await load_template("zhengyingpaimai.html")
         except FileNotFoundError as e:
             logger.error(f"加载模板失败: {e}")
             return_data["msg"] = "系统错误：模板文件不存在"

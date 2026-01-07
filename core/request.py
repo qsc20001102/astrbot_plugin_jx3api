@@ -32,6 +32,7 @@ class APIClient:
         """关闭 Session"""
         if self._session and not self._session.closed:
             await self._session.close()
+            self._session = None
 
     async def __aenter__(self):
         await self.get_session()

@@ -1,6 +1,7 @@
 import json
 import shutil
 import pathlib
+import asyncio
 from pathlib import Path
 from typing import Union
 
@@ -47,26 +48,29 @@ class Jx3ApiPlugin(Star):
         """可选择实现异步的插件初始化方法，当实例化该插件类之后会自动调用该方法。"""     
         # --- 调用函数完成检查和复制 ---
         try:
-            self.file_local_data = self.check_and_copy_db(
-                local_data_dir=self.local_data_dir,
-                db_filename="local_async.json",
-                default_db_dir=self.data_file_path
+            loop = asyncio.get_running_loop()
+            self.file_local_data = await loop.run_in_executor(
+                None,
+                self.check_and_copy_db,
+                self.local_data_dir,
+                "local_async.json",
+                self.data_file_path
             )
         except FileNotFoundError as e:
-            # 处理默认文件丢失的严重错误
             logger.critical(f"插件初始化失败：{e}")
-            raise # 中断初始化
-        
+            raise
+
         try:
-            self.jx3fun = JX3Service(self.api_config,self.conf)
+            self.jx3fun = JX3Service(self.api_config, self.conf)
             self.at = AsyncTask(self.context, self.conf, self.jx3fun)
             await self.at.init_tasks()
         except Exception as e:
-            await self.at.destroy()
-            logger.error(f"功能示例初始化失败: {e}")
-            return
+            if hasattr(self, "at"):
+                await self.at.destroy()
+            logger.error(f"功能模块初始化失败: {e}")
+            raise
 
-        logger.info("jx3api异步插件初始化完成")
+        logger.info("jx3api 异步插件初始化完成")
 
 
     def check_and_copy_db(self, local_data_dir: Union[str, Path], db_filename: str, default_db_dir: Union[str, Path]) -> pathlib.Path:
@@ -501,8 +505,11 @@ class Jx3ApiPlugin(Star):
 
     async def terminate(self):
         """可选择实现异步的插件销毁方法，当插件被卸载/停用时会调用。"""
-        # 关闭数据库连接
-        
-        # 后台z周期进程销毁
-        await self.at.destroy()
+        if self.at:
+            await self.at.destroy()
+            self.at = None
+
+        if self.jx3fun:
+            await self.jx3fun.close()
+            self.jx3fun = None
         logger.info("jx3api插件已卸载/停用")
