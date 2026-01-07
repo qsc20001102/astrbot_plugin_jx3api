@@ -1,6 +1,7 @@
 # core/request.py
 import json
 import aiohttp
+import asyncio
 from typing import Optional, Dict, Any, Union, List
 from aiohttp import ClientTimeout, ClientSession
 
@@ -75,23 +76,20 @@ class APIClient:
         """处理响应：自动识别二进制或JSON"""
         try:
             logger.debug(f"响应状态: {response.status}")
-            response.raise_for_status() # 如果是 4xx/5xx 直接抛出异常
+            response.raise_for_status()
 
             content_type = response.headers.get('Content-Type', '').lower()
 
-            # 处理二进制流 (图片、文件等)
             if 'image' in content_type or 'octet-stream' in content_type:
                 return await response.read()
 
-            # 处理 JSON
-            # 优先尝试标准 json 解析
             try:
                 data = await response.json()
             except Exception:
-                # 容错：有些 API 返回 text/html 但内容是 JSON
                 text = await response.text()
                 try:
-                    data = json.loads(text)
+                    loop = asyncio.get_running_loop()
+                    data = await loop.run_in_executor(None, json.loads, text)
                 except json.JSONDecodeError:
                     logger.error(f"无法解析响应为 JSON。原始内容: {text[:100]}...")
                     return None

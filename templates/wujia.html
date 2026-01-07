@@ -102,6 +102,28 @@
         color: #d93939;
         font-weight: 700;
     }
+
+    /* ===== 万宝楼公示（蓝色） ===== */
+    .table-card.notice .table-title {
+        color: #1e6bd6;
+    }
+    .table-card.notice .price-col {
+        color: #1e6bd6;
+    }
+    .table-card.notice thead {
+        background: #1e6bd6;
+    }
+
+    /* ===== 万宝楼在售（绿色） ===== */
+    .table-card.sale .table-title {
+        color: #2e8b57;
+    }
+    .table-card.sale .price-col {
+        color: #2e8b57;
+    }
+    .table-card.sale thead {
+        background: #2e8b57;
+    }
 </style>
 </head>
 
@@ -123,7 +145,7 @@
     <div class="table-wrapper">
 
         <!-- 1 万宝楼公示 -->
-        <div class="table-card">
+        <div class="table-card notice">
             <div class="table-title">万宝楼公示</div>
             <table>
                 <thead>
@@ -140,7 +162,7 @@
                         <td class="server-col">{{ item.date }}</td>
                         <td class="server-col">{{ item.server }}</td>
                         <td class="price-col">{{ item.value }}</td>
-                        <td class="server-col"> 公示 </td>
+                        <td class="server-col">公示</td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -148,7 +170,7 @@
         </div>
 
         <!-- 2 万宝楼在售 -->
-        <div class="table-card">
+        <div class="table-card sale">
             <div class="table-title">万宝楼在售</div>
             <table>
                 <thead>
@@ -165,7 +187,7 @@
                         <td class="server-col">{{ item.date }}</td>
                         <td class="server-col">{{ item.server }}</td>
                         <td class="price-col">{{ item.value }}</td>
-                        <td class="server-col"> 在售 </td>
+                        <td class="server-col">在售</td>
                     </tr>
                     {% endfor %}
                 </tbody>
