@@ -490,10 +490,25 @@ class Jx3ApiPlugin(Star):
 
 
     @jx3.command("骗子")
-    async def jx3_pianzhi(self, event: AstrMessageEvent,qq: str = ""):
-        """剑三 骗子 服务器 天数"""
+    async def jx3_pianzhi(self, event: AstrMessageEvent,qq: str):
+        """剑三 骗子 QQ"""
         try:
             data= await self.jx3fun.pianzhi(qq)
+            if data["code"] == 200:
+                yield event.plain_result(data["data"])
+            else:
+                yield event.plain_result(data["msg"])
+            return
+        except Exception as e:
+            logger.error(f"功能函数执行错误: {e}")
+            yield event.plain_result("猪脑过载，请稍后再试")
+
+
+    @jx3.command("八卦")
+    async def jx3_bagua(self, event: AstrMessageEvent,type: str):
+        """剑三 八卦 类型"""
+        try:
+            data= await self.jx3fun.bagua(type)
             if data["code"] == 200:
                 yield event.plain_result(data["data"])
             else:

@@ -228,5 +228,16 @@
             "uid": "",
             "token": ""
         }
+    },
+    "jx3_bagua":{
+        "url":"https://www.jx3api.com/data/tieba/random",
+        "method":"GET",
+        "description":"此接口用于随机搜索指定分类的贴吧帖子，支持多种分类查询。",
+        "params":{
+            "class": "",
+            "server": "",
+            "limit": "10",
+            "token": ""
+        }
     }
 }
