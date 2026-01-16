@@ -219,5 +219,14 @@
         "params":{
             "name": "穹野卫"
         }
+    },
+    "jx3_pianzhi":{
+        "url":"https://www.jx3api.com/data/fraud/detailed",
+        "method":"GET",
+        "description":"此接口用于通过用户的 QQ 号搜索其在贴吧上的行骗记录，包括贴吧名称、记录标题和详细内容。",
+        "params":{
+            "uid": "",
+            "token": ""
+        }
     }
 }

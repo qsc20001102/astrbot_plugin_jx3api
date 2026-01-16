@@ -24,13 +24,13 @@ class JX3Service:
         if  self.token == "":
             logger.info("获取配置token失败，请正确填写token,否则部分功能无法正常使用")
         else:
-            logger.info(f"获取配置token成功。{self.token}")
+            logger.debug(f"获取配置token成功。{self.token}")
         # 获取配置中的 ticket
         self.ticket = self._config.get("jx3api_ticket", "")
         if  self.ticket == "":
             logger.info("获取配置ticket失败，请正确填写ticket,否则部分功能无法正常使用")
         else:
-            logger.info(f"获取配置ticket成功。{self.ticket}")
+            logger.debug(f"获取配置ticket成功。{self.ticket}")
         
 
     async def close(self):
@@ -407,7 +407,7 @@ class JX3Service:
         return return_data
     
 
-    async def xinwei(self) -> Dict[str, Any]:
+    async def xinwen(self) -> Dict[str, Any]:
         """新闻资讯"""
         return_data = self._init_return_data()
         
@@ -930,6 +930,57 @@ class JX3Service:
             result_msg += f"鲲鹏岛：\n{_data['鲲鹏岛'][0]}\n"
             result_msg += f"的卢:\n{_data['龙泉府 / 进图（21:10）'][0]}\n"
             result_msg += f"赤兔:\n{data['data']['note']}"
+        except Exception as e:
+            logger.error(f"处理返回数据失败: {e}")
+            return_data["msg"] = "处理返回数据失败"
+        
+        return_data["data"] = result_msg
+        return_data["code"] = 200
+        
+        return return_data
+    
+
+    async def pianzhi(self, uid: str) -> Dict[str, Any]:
+        """骗子查询"""
+        return_data = self._init_return_data()
+        
+        # 1. 构造请求参数
+        params = {"uid": uid, "token": self.token}
+        
+        # 2. 调用基础请求
+        data: Optional[Dict[str, Any]] = await self._base_request(
+            "jx3_pianzhi", "GET", params=params
+        )
+        
+        if not data:
+            return_data["msg"] = "获取接口信息失败"
+            return return_data
+            
+        # 3. 处理返回数据
+        try:
+            records = data["records"]
+
+            if not records:
+                result_msg = "未找到该用户行骗记录，很棒！继续保持！"
+            else:
+                result_msg = ""
+
+                for record in records:
+                    result_msg += f"区服：{record['server']}  标签：{record['tieba']}\n"
+
+                    list_id = 1
+                    for item in record["data"]:
+                        result_msg += f"{list_id}、标题：{item['title']}\n"
+                        result_msg += f"地址：{item['url']}\n"
+                        result_msg += f"ID：{item['tid']}\n"
+                        result_msg += f"内容：{item['text']}\n"
+                        result_msg += (
+                            f"时间：{datetime.fromtimestamp(item['time']).strftime('%Y-%m-%d %H:%M:%S')}\n"
+                        )
+                        list_id += 1
+
+                    result_msg += "\n"
+
         except Exception as e:
             logger.error(f"处理返回数据失败: {e}")
             return_data["msg"] = "处理返回数据失败"

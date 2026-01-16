@@ -110,7 +110,7 @@ class AsyncTask:
     async def init_tasks(self):
         settings = [
             ("kfjk", "开服监控", lambda: self.jx3fun.kaifu("梦江南")),
-            ("xwzx", "新闻资讯", lambda: self.jx3fun.xinwei()),
+            ("xwzx", "新闻资讯", lambda: self.jx3fun.xinwen()),
         ]
 
         for key, name, fetch in settings:
